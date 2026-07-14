@@ -1,0 +1,17 @@
+.play-by-play-toggle{appearance:none;width:100%;padding:18px 22px;border:1px solid #3a4359;border-radius:14px;background:#202638;color:#f2f4f8;font:800 14px "Barlow Condensed";letter-spacing:1.5px;cursor:pointer;display:flex;justify-content:center;gap:18px}
+.postfight-rounds{display:block;text-align:left;margin:12px 0 30px}
+.postfight-rounds.hidden{display:none}
+.round-review{display:block;border:1px solid #30384d;border-radius:13px;background:#151a27;margin-bottom:8px;overflow:hidden}
+.round-review summary{list-style:none;cursor:pointer;padding:16px 18px;display:grid;grid-template-columns:90px minmax(0,1fr) auto;align-items:center;gap:16px;text-align:left}
+.round-review summary::-webkit-details-marker{display:none}
+.round-review summary small{font:700 9px "DM Mono";color:#ff5969;letter-spacing:1px}
+.round-review summary strong{font:800 19px "Barlow Condensed";color:#f4f0e8}
+.round-review summary span{font:700 15px "DM Mono";color:#ddd}.round-review summary span b:first-child{color:#ff493f}.round-review summary span b:last-child{color:#55a8ff}
+.round-review-body{border-top:1px solid #30384d;padding:10px 18px 18px}
+.round-review-meta{display:flex;flex-wrap:wrap;gap:8px;margin:5px 0 12px}
+.round-review-meta b{padding:6px 9px;border-radius:7px;background:#252d42;color:#aeb9d2;font:700 8px "DM Mono";letter-spacing:.7px}
+.round-review-meta .event{background:#4a242f;color:#ffb0b8}
+.round-review-body p{margin:0;padding:10px 0;border-top:1px solid #292f40;color:#aab2c2;font-size:12px;line-height:1.55;text-align:left}.round-review-body p:first-of-type{border-top:0}
+.report-line{padding:16px 0;align-items:flex-start}.report-line b{min-width:76px;padding-top:3px;font-size:8px;letter-spacing:.7px}.report-line span{font-size:13px;line-height:1.7;color:#b8bdc8}
+.fan-consensus{margin:24px 0 0;padding:22px;border:1px solid #3b4260;border-radius:16px;background:linear-gradient(135deg,#191e2d,#141824);text-align:left}.fan-consensus-head{display:flex;align-items:center;justify-content:space-between;gap:16px}.fan-consensus-head small{font:800 9px "DM Mono";letter-spacing:1.2px;color:#9aa8ff}.fan-consensus-head b{padding:6px 9px;border-radius:7px;background:#422a38;color:#ffb3c0;font:800 8px "DM Mono"}.fan-consensus h3{margin:12px 0 8px;font:800 25px "Barlow Condensed"}.fan-consensus p{margin:0;color:#aab2c2;font-size:12px;line-height:1.7}.fan-themes{display:flex;flex-wrap:wrap;gap:7px;margin:16px 0}.fan-themes span{padding:6px 9px;border-radius:15px;background:#252d42;color:#bdc7dc;font:700 8px "DM Mono"}.fan-sources{display:flex;gap:14px;flex-wrap:wrap}.fan-sources a{color:#9aa8ff;font:700 9px Inter;text-decoration:none}
+@media(max-width:600px){.round-review summary{grid-template-columns:65px minmax(0,1fr)}.round-review summary span{grid-column:1/-1}}

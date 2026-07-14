@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#080a0c" />
+  <title>RINGSIDE — Fantasy Boxing Simulator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,500;0,600;0,700;0,800;0,900;1,700&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=durability-history-1" />
+  <link rel="stylesheet" href="dashboard.css?v=durability-history-1" />
+  <link rel="stylesheet" href="playback.css?v=durability-history-1" />
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#"><span class="brand-mark">R</span><span>RING<span>SIDE</span></span></a>
+    <nav class="utility-nav"><button>FIGHT LAB</button><button>RANKINGS</button><button>NEWS</button></nav>
+    <div class="header-actions"><button class="search-btn" aria-label="Search">⌕</button><button class="avatar-btn" aria-label="Profile">KS</button></div>
+  </header>
+  <nav class="sport-nav">
+    <button class="active">BOXING</button><button>MMA</button><button>MY FIGHTS</button><button>ARCHIVE</button>
+  </nav>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="eyebrow">RINGSIDE FIGHT LAB</div>
+        <h1>Fantasy <em>Matchup</em></h1>
+        <p>Build an impossible fight. We’ll handle the scoring.</p>
+      </div>
+      <div class="season-chip"><small>ROSTER UPDATED</small><b>July 8, 2026</b><span>●</span></div>
+    </section>
+
+    <section class="matchup-shell" id="setup">
+      <div class="matchup-header">
+        <div><small>FEATURED MATCHUP</small><h2>TALE OF THE TAPE</h2></div>
+        <span>PRE-FIGHT</span>
+      </div>
+      <div class="fighter-card red-corner" data-side="a">
+        <div class="corner-label">RED CORNER</div>
+        <button class="fighter-select" data-picker="a">
+          <span class="portrait-wrap"><img id="portrait-a" alt=""></span>
+          <span class="fighter-info">
+            <small>SELECTED FIGHTER</small>
+            <strong id="name-a"></strong>
+            <span id="meta-a"></span>
+          </span>
+          <span class="chevron">⌄</span>
+        </button>
+        <label class="year-label">FIGHTER VERSION
+          <select id="year-a"></select>
+        </label>
+        <div class="version-scout" id="version-a"></div>
+        <div class="physical-row" id="physical-a"></div>
+        <div class="rating-row" id="ratings-a"></div>
+        <div class="gems-profile" id="gems-a"></div>
+      </div>
+
+      <div class="versus">
+        <span></span><b>VS</b><span></span>
+      </div>
+
+      <div class="fighter-card blue-corner" data-side="b">
+        <div class="corner-label">BLUE CORNER</div>
+        <button class="fighter-select" data-picker="b">
+          <span class="portrait-wrap"><img id="portrait-b" alt=""></span>
+          <span class="fighter-info">
+            <small>SELECTED FIGHTER</small>
+            <strong id="name-b"></strong>
+            <span id="meta-b"></span>
+          </span>
+          <span class="chevron">⌄</span>
+        </button>
+        <label class="year-label">FIGHTER VERSION
+          <select id="year-b"></select>
+        </label>
+        <div class="version-scout" id="version-b"></div>
+        <div class="physical-row" id="physical-b"></div>
+        <div class="rating-row" id="ratings-b"></div>
+        <div class="gems-profile" id="gems-b"></div>
+      </div>
+      <div class="matchup-footer">
+        <span><i></i> Simulation ratings tuned to each fighter’s selected year</span>
+        <a href="https://boxrec.com/wiki/index.php/The_Ring_Magazine%27s_Annual_Ratings" target="_blank" rel="noreferrer">VIEW ERA SOURCES →</a>
+      </div>
+    </section>
+
+    <section class="research-desk" id="research-desk"></section>
+
+    <section class="settings-panel">
+      <div class="section-title"><span>02</span><div><small>THE CONDITIONS</small><h2>FIGHT SETTINGS</h2></div></div>
+      <div class="settings-grid">
+        <label>WEIGHT CLASS<select id="weight"><option>Heavyweight</option><option>Middleweight</option><option>Welterweight</option><option>Open Weight</option></select></label>
+        <label>SCHEDULED ROUNDS<div class="segmented"><button data-rounds="10">10</button><button class="active" data-rounds="12">12</button><button data-rounds="15">15</button><button data-rounds="20">20</button><button data-rounds="45">45</button></div></label>
+        <label>RING SIZE<select id="ring"><option value="20">20 ft · Standard</option><option value="18">18 ft · Phone booth</option><option value="24">24 ft · Large</option></select></label>
+        <label>VENUE<select id="venue"><option>Madison Square Garden</option><option>Las Vegas · MGM Grand</option><option>Wembley Stadium</option><option>Neutral Arena</option></select></label>
+        <label>RULES ERA<select id="ruleset"><option value="modern">Modern rules · strict referee</option><option value="classic">Classic rules · 15-round era</option><option value="old-school">Old-school rules · rough infighting</option><option value="bareknuckle">Bareknuckle-era rules · marathon fight</option></select></label>
+        <label>CONDITIONS<select id="environment"><option value="indoor">Indoor · climate controlled</option><option value="outdoor">Outdoor · normal weather</option><option value="outdoor-heat">Outdoor · heat/humidity</option></select></label>
+        <label>WEIGH-IN<select id="weighin"><option value="next-day">Next-day weigh-in</option><option value="same-day">Same-day weigh-in</option></select></label>
+        <label>EQUIPMENT<select id="equipment"><option value="modern">Modern gloves & shoes</option><option value="vintage">Vintage gloves & low-traction shoes</option><option value="minimal">Minimal padding · poor traction</option></select></label>
+      </div>
+      <div class="toggle-row">
+        <label><input id="championship" type="checkbox" checked><span></span><div><b>CHAMPIONSHIP FIGHT</b><small>Three judges · championship rules</small></div></label>
+        <label><input id="neutral" type="checkbox" checked><span></span><div><b>NEUTRAL OFFICIALS</b><small>No hometown scoring advantage</small></div></label>
+      </div>
+      <button class="simulate-btn" id="simulate"><span>SIMULATE THE FIGHT</span><b>→</b></button>
+      <p class="engine-note"><i></i> Statistical engine with a Research Desk tactical layer. No AI picks the winner.</p>
+    </section>
+
+    <section class="data-panel">
+      <div class="data-heading">
+        <div class="data-icon">⌁</div>
+        <div><small>RINGSIDE ARCHIVE</small><h2>HISTORICAL DATA</h2></div>
+        <span>3 SOURCES</span>
+      </div>
+      <div class="source-grid">
+        <a href="https://boxrec.com/wiki/index.php/The_Ring_Magazine%27s_Annual_Ratings" target="_blank" rel="noreferrer" class="source-card">
+          <div class="source-logo ring-logo">R</div>
+          <div><small>ERA &amp; DIVISION CONTEXT</small><b>The Ring Annual Ratings</b><p>Historical rankings through 2025, supplemented by current 2026 ratings updates.</p></div>
+          <span>↗</span>
+        </a>
+        <a href="https://boxrec.com" target="_blank" rel="noreferrer" class="source-card">
+          <div class="source-logo boxrec-logo">BR</div>
+          <div><small>CAREER RECORDS</small><b>BoxRec Database</b><p>Professional records, bouts, results, titles, and event history.</p></div>
+          <span>↗</span>
+        </a>
+        <a href="https://www.youtube.com/@BoxingGems" target="_blank" rel="noreferrer" class="source-card">
+          <div class="source-logo gems-logo">BG</div>
+          <div><small>TACTICAL FILM STUDY</small><b>Boxing Gems</b><p>579 uploads indexed; fighter concepts and source videos connected to the engine.</p></div>
+          <span>↗</span>
+        </a>
+      </div>
+      <p class="source-note">Historical sources inform fighter versions and era context. Power, speed, defense, and other simulation attributes are RINGSIDE model ratings—not official BoxRec or Ring ratings.</p>
+    </section>
+
+    <section class="broadcast hidden" id="broadcast">
+      <div class="broadcast-top">
+        <button class="back-btn" id="new-fight">← NEW FIGHT</button>
+        <div class="on-air"><i></i> LIVE SIMULATION</div>
+        <div id="venue-display"></div>
+      </div>
+      <div class="score-strip">
+        <div><img id="live-img-a" alt=""><span><small>RED CORNER</small><b id="live-name-a"></b></span></div>
+        <div class="round-clock"><small id="round-label">ROUND 1 OF 12</small><strong id="clock">3:00</strong><span>OFFICIAL TIME</span></div>
+        <div class="blue-live"><span><small>BLUE CORNER</small><b id="live-name-b"></b></span><img id="live-img-b" alt=""></div>
+      </div>
+      <div class="broadcast-grid">
+        <article class="commentary-card">
+          <div class="canvas-ring">
+            <div class="fight-poster" id="fight-poster">
+              <div class="poster-bg-name poster-bg-red" id="poster-bg-a"></div>
+              <div class="poster-bg-name poster-bg-blue" id="poster-bg-b"></div>
+              <div class="poster-corner poster-red">
+                <img id="poster-img-a" alt="">
+                <small>RED CORNER</small>
+                <b id="poster-name-a"></b>
+                <span id="poster-version-a"></span>
+              </div>
+              <div class="poster-center">
+                <small>RINGSIDE PRESENTS</small>
+                <strong>VS</strong>
+                <span id="poster-weight"></span>
+                <em id="poster-round">ROUND 01</em>
+                <i id="poster-venue"></i>
+              </div>
+              <div class="poster-corner poster-blue">
+                <img id="poster-img-b" alt="">
+                <small>BLUE CORNER</small>
+                <b id="poster-name-b"></b>
+                <span id="poster-version-b"></span>
+              </div>
+            </div>
+            <div class="round-watermark" id="round-watermark">01</div>
+          </div>
+          <div class="round-copy">
+            <div class="round-kicker" id="round-kicker">ROUND 1 · FEELING OUT</div>
+            <h2 id="round-headline">THE OPENING BELL</h2>
+            <div id="commentary-lines"></div>
+          </div>
+          <button class="next-btn" id="next-round"><span>BEGIN ROUND 1</span><b>→</b></button>
+        </article>
+        <aside>
+          <div class="panel">
+            <div class="panel-head"><span>LIVE SCORECARD</span><small>UNOFFICIAL</small></div>
+            <div class="scorecard-head"><span>RD</span><b id="score-head-a"></b><b id="score-head-b"></b></div>
+            <div id="scorecard"></div>
+            <div class="score-total"><span>TOTAL</span><b id="total-a">0</b><b id="total-b">0</b></div>
+          </div>
+          <div class="panel probability">
+            <div class="panel-head"><span>WIN PROBABILITY</span><small>LIVE</small></div>
+            <div class="prob-labels"><b id="prob-a">50%</b><b id="prob-b">50%</b></div>
+            <div class="prob-bar"><span id="prob-fill"></span></div>
+            <div class="prob-names"><span id="prob-name-a"></span><span id="prob-name-b"></span></div>
+          </div>
+          <div class="panel condition">
+            <div class="panel-head"><span>FIGHTER CONDITION</span></div>
+            <div id="condition-bars"></div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="results hidden" id="results">
+      <div class="result-glow"></div>
+      <div class="result-kicker">OFFICIAL RESULT</div>
+      <h2 id="winner-name"></h2>
+      <p id="decision"></p>
+      <div class="official-cards" id="official-cards"></div>
+      <div class="stats-table" id="stats-table"></div>
+      <section class="fan-consensus hidden" id="fan-consensus"></section>
+      <div class="highlights"><h3>FIGHT HIGHLIGHTS</h3><div id="highlights"></div></div>
+      <button class="play-by-play-toggle" id="view-play-by-play">VIEW ROUND-BY-ROUND PLAY BY PLAY <b>↓</b></button>
+      <div class="postfight-rounds hidden" id="postfight-rounds"></div>
+      <button class="simulate-btn" id="run-again"><span>RUN IT BACK</span><b>↻</b></button>
+    </section>
+  </main>
+  <nav class="bottom-nav">
+    <button class="active"><b>⌂</b><span>Home</span></button>
+    <button><b>⚔</b><span>Matchup</span></button>
+    <button><b>＋</b><span>Simulate</span></button>
+    <button><b>▤</b><span>Archive</span></button>
+    <button><b>●</b><span>Profile</span></button>
+  </nav>
+
+  <dialog id="picker">
+    <div class="picker-head"><div><small>THE ARCHIVE</small><h2>CHOOSE YOUR FIGHTER</h2></div><button id="close-picker">×</button></div>
+    <input id="fighter-search" placeholder="Search fighters, nicknames, eras…" autocomplete="off">
+    <div class="division-filters" id="division-filters"></div>
+    <div class="fighter-grid" id="fighter-grid"></div>
+  </dialog>
+  <script src="fight-history.js?v=durability-history-1"></script>
+  <script src="compubox-provider.js?v=durability-history-1"></script>
+  <script src="engine.js?v=durability-history-1"></script>
+  <script src="roster.js?v=durability-history-1"></script>
+  <script src="roster-expanded.js?v=durability-history-1"></script>
+  <script src="roster-active.js?v=durability-history-1"></script>
+  <script src="roster-deep.js?v=durability-history-1"></script>
+  <script src="roster-versions.js?v=durability-history-1"></script>
+  <script src="boxing-gems-data.js?v=durability-history-1"></script>
+  <script src="rummy-corner-data.js?v=durability-history-1"></script>
+  <script src="research-desk.js?v=durability-history-1"></script>
+  <script src="app.js?v=durability-history-1"></script>
+</body>
+</html>

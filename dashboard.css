@@ -1,0 +1,145 @@
+body{background:#eef0f2;color:#17191c;background-image:none}
+.topbar{height:60px;background:#d71920;border:0;padding:0 max(24px,calc((100vw - 1180px)/2));color:#fff}
+.brand>span:last-child span{color:#fff}.brand-mark{background:#fff;color:#d71920}
+.utility-nav{height:100%;display:flex;align-items:center;margin-right:auto;margin-left:42px}
+.utility-nav button{height:100%;padding:0 18px;background:none;border:0;color:#fff;font:700 12px Inter;cursor:pointer}
+.utility-nav button:first-child{background:rgba(0,0,0,.15)}
+.header-actions{display:flex;align-items:center;gap:10px}.search-btn,.avatar-btn{border:0;color:#fff;background:rgba(0,0,0,.16);height:34px;min-width:34px;border-radius:50%;font-weight:800}
+.sport-nav{height:44px;background:#fff;border-bottom:1px solid #d9dcdf;padding-left:max(24px,calc((100vw - 1180px)/2));display:flex}
+.sport-nav button{position:relative;border:0;background:none;padding:0 22px;color:#62676c;font:700 11px Inter}
+.sport-nav button.active{color:#17191c}.sport-nav button.active:after{content:"";position:absolute;left:18px;right:18px;bottom:0;height:3px;background:#d71920}
+.hero{max-width:1180px;margin:auto;min-height:128px;padding:30px 24px 24px;display:flex;align-items:center;justify-content:space-between;text-align:left;background:none}
+.hero h1{font:800 34px/1 Inter;letter-spacing:-1.2px;text-transform:none;color:#17191c;margin:7px 0}
+.hero h1 em{font-style:normal;color:#d71920;-webkit-text-stroke:0}.hero p{margin:0;color:#686d72;line-height:1.4}.eyebrow{font:800 9px Inter;letter-spacing:1.4px;color:#d71920}
+.season-chip{min-width:220px;padding:13px 15px;background:#fff;border:1px solid #d9dcdf;border-radius:4px;display:grid;grid-template-columns:1fr auto;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.season-chip small{grid-column:1/-1;font:700 8px Inter;color:#8a8f94;margin-bottom:4px}.season-chip b{font-size:12px}.season-chip span{color:#777}
+.matchup-shell{max-width:1132px;padding:0;margin:auto;grid-template-columns:1fr 66px 1fr;background:#fff;border:1px solid #d9dcdf;border-radius:6px;box-shadow:0 2px 8px rgba(20,25,30,.06);overflow:hidden}
+.matchup-header,.matchup-footer{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between}
+.matchup-header{height:62px;padding:0 20px;border-bottom:1px solid #e1e3e5}.matchup-header small{font:800 8px Inter;color:#8a8f94;letter-spacing:1px}.matchup-header h2{font:800 16px Inter;margin:3px 0;color:#202327}
+.matchup-header>span{font:800 9px Inter;color:#9a6b00;background:#fff1c6;padding:6px 9px;border-radius:3px}
+.fighter-card{border:0;background:#fff;color:#17191c}.fighter-card:before{background:linear-gradient(90deg,rgba(215,25,32,.06),transparent 50%)}.blue-corner:before{background:linear-gradient(-90deg,rgba(34,111,191,.07),transparent 50%)}
+.corner-label{color:#d71920;padding:14px 20px;border-bottom:1px solid #e1e3e5;font-family:Inter;font-weight:800}.blue-corner .corner-label{color:#2270bf}
+.fighter-select{height:170px}.portrait-wrap{background:#e5e7e9;border-radius:50%;width:108px;height:108px;align-self:center;border:4px solid #fff;box-shadow:0 0 0 2px #d71920}.blue-corner .portrait-wrap{box-shadow:0 0 0 2px #2270bf}
+.fighter-info small{font-family:Inter;color:#92969a}.fighter-info strong{font-family:Inter;font-size:24px;letter-spacing:-1px}.fighter-info span{font-family:Inter;color:#777}
+.year-label{border-color:#e1e3e5;color:#858a8f;font-family:Inter}.year-label select,.settings-grid select{background:#f6f7f8;color:#303438;border-color:#d9dcdf;font-family:Inter}
+.rating-row{border-bottom:0}.mini-rating{border-color:#e1e3e5}.mini-rating b{font-family:Inter}.mini-rating small{font-family:Inter;color:#8a8f94}
+.versus{background:#fff}.versus b{width:42px;height:42px;display:grid;place-items:center;color:#fff;background:#202327;border-radius:50%;font-family:Inter;font-size:13px;font-style:normal;z-index:2}.versus span{background:#d9dcdf}
+.matchup-footer{height:45px;padding:0 20px;border-top:1px solid #e1e3e5;color:#7d8287;font:600 9px Inter}.matchup-footer i{display:inline-block;width:6px;height:6px;background:#3bb273;border-radius:50%;margin-right:7px}.matchup-footer a{border:0;background:none;color:#d71920;font:800 9px Inter;text-decoration:none}
+.settings-panel{max-width:1132px;margin:22px auto 90px;padding:0;background:#fff;border:1px solid #d9dcdf;border-radius:6px;box-shadow:0 2px 8px rgba(20,25,30,.05);overflow:hidden;color:#17191c}
+.section-title{margin:0;padding:18px 20px;border-bottom:1px solid #e1e3e5}.section-title>span{color:#d71920;border-color:#efb5b7}.section-title small{font-family:Inter}.section-title h2{font-family:Inter;font-size:17px}
+.settings-grid{border:0;border-bottom:1px solid #e1e3e5}.settings-grid>label{border-color:#e1e3e5;color:#858a8f;font-family:Inter}.segmented button{background:#f6f7f8;color:#74797e;border-color:#d9dcdf;font-family:Inter}.segmented button.active{background:#202327;color:#fff}
+.toggle-row{border:0;border-bottom:1px solid #e1e3e5}.toggle-row b{color:#34383c;font-family:Inter}.toggle-row small{color:#8b9095}
+.simulate-btn{width:calc(100% - 40px);margin:20px;background:#d71920;border-radius:3px;box-shadow:none;font-family:Inter;font-size:13px}.engine-note{font-family:Inter;margin-bottom:20px}
+.bottom-nav{display:none}.broadcast,.results{color:var(--ink)}
+@media(max-width:760px){
+ body{padding-bottom:64px}.topbar{padding:0 16px}.utility-nav{display:none}.sport-nav{padding:0;overflow:auto}.sport-nav button{flex:1;white-space:nowrap;padding:0 13px}
+ .hero{padding:22px 16px 18px;min-height:unset}.hero h1{font-size:28px}.hero p{font-size:12px}.season-chip{display:none}
+ .matchup-shell{margin:0 12px;grid-template-columns:1fr;border-radius:5px}.matchup-header{height:55px}.matchup-footer{display:none}.versus{height:44px;justify-content:center}.versus span{display:none}
+ .fighter-select{height:138px}.portrait-wrap{width:88px;height:88px}.fighter-info strong{font-size:21px}
+ .settings-panel{margin:14px 12px 30px}.settings-grid{grid-template-columns:1fr 1fr}
+ .bottom-nav{position:fixed;display:grid;grid-template-columns:repeat(5,1fr);height:62px;z-index:20;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #d6d9dc;box-shadow:0 -2px 8px rgba(0,0,0,.08)}
+ .bottom-nav button{border:0;background:none;color:#777;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:3px}.bottom-nav b{font-size:17px}.bottom-nav span{font:700 9px Inter}.bottom-nav button.active{color:#d71920}
+}
+@media(max-width:480px){.settings-grid{grid-template-columns:1fr}.settings-grid>label{border-right:0;border-bottom:1px solid #e1e3e5}.fighter-grid{grid-template-columns:1fr}}
+
+/* Game-like polish */
+:root{--game-red:#ff3b4d;--game-blue:#2f8cff;--game-violet:#7b61ff;--game-bg:#111522;--game-card:#1b2030}
+body{background:radial-gradient(circle at 15% 0,rgba(123,97,255,.18),transparent 34%),radial-gradient(circle at 85% 18%,rgba(47,140,255,.12),transparent 32%),#111522;color:#f7f8fb}
+.topbar{background:linear-gradient(90deg,#e7233a,#ff4b39);box-shadow:0 8px 30px rgba(231,35,58,.2)}
+.sport-nav{background:#181d2a;border-color:#2b3244}.sport-nav button{color:#9299aa}.sport-nav button.active{color:#fff}.sport-nav button.active:after{height:4px;border-radius:4px 4px 0 0;background:#ff4b55}
+.hero h1{color:#fff}.hero h1 em{color:#ff5667}.hero p{color:#a8afbd}.eyebrow{color:#ff6574}
+.season-chip{background:linear-gradient(145deg,#202638,#171c2a);border:1px solid #343c52;border-radius:14px;color:#fff;box-shadow:0 12px 32px rgba(0,0,0,.2)}
+.season-chip small{color:#838ca0}
+.matchup-shell{background:#181d2a;border:1px solid #30384d;border-radius:22px;box-shadow:0 24px 70px rgba(0,0,0,.32),inset 0 1px rgba(255,255,255,.04)}
+.matchup-header{border-color:#30384d;background:linear-gradient(90deg,#202638,#1a1f2d)}.matchup-header small{color:#818a9e}.matchup-header h2{color:#fff}.matchup-header>span{color:#ffd36a;background:rgba(255,191,54,.13);border:1px solid rgba(255,191,54,.25);border-radius:20px}
+.fighter-card{background:#181d2a;color:#fff}.fighter-card:before{background:radial-gradient(circle at 15% 45%,rgba(255,59,77,.18),transparent 53%)}.blue-corner:before{background:radial-gradient(circle at 85% 45%,rgba(47,140,255,.2),transparent 53%)}
+.corner-label{border-color:#30384d;color:#ff6574}.blue-corner .corner-label{color:#62aaff}
+.portrait-wrap{border-width:5px;border-color:#242b3d;box-shadow:0 0 0 3px #ff4658,0 0 28px rgba(255,70,88,.25)}.blue-corner .portrait-wrap{box-shadow:0 0 0 3px #4299ff,0 0 28px rgba(66,153,255,.25)}
+.fighter-info small{color:#7f889c}.fighter-info span{color:#a0a8b8}.chevron{color:#7d879b}
+.year-label{border-color:#30384d;color:#80899d}.year-label select,.settings-grid select{background:#232a3c;color:#eef1f7;border:1px solid #3a4359;border-radius:10px}
+.version-scout{display:grid;grid-template-columns:1.1fr .75fr 1.05fr 1.7fr;gap:1px;background:#30384d;border-bottom:1px solid #30384d}
+.version-scout>div{background:#111827;padding:11px 14px;min-width:0}
+.version-scout small,.version-scout b,.version-scout span{display:block}
+.version-scout small{color:#667188;font:800 7px Inter;letter-spacing:.8px}
+.version-scout b{margin-top:4px;color:#eef1f7;font:900 12px "Barlow Condensed";letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.version-scout span{margin-top:3px;color:#9aa4b8;font:700 9px Inter;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini-rating{border-color:#30384d}.mini-rating small{color:#778196}.rating-row{background:rgba(10,13,22,.17)}
+.physical-row{position:relative;display:grid;grid-template-columns:repeat(5,1fr);padding:13px 15px;border-bottom:1px solid #30384d;background:#151a27}.physical-row>div{text-align:center;border-right:1px solid #30384d;min-width:0}.physical-row>div:last-child{border:0}.physical-row small,.physical-row b{display:block}.physical-row small{color:#657086;font:700 7px Inter;letter-spacing:.7px}.physical-row b{margin-top:5px;color:#dfe4ed;font:800 10px Inter;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.physical-row.source-boxrec:after{content:"BOXREC";position:absolute;right:7px;top:4px;color:#f5ce37;font:800 6px Inter;letter-spacing:.6px}
+.gems-profile{min-height:48px;padding:9px 15px;display:flex;align-items:center;justify-content:space-between;gap:10px;background:#121722;border-top:1px solid #293044;color:#687287}.gems-profile>div>small,.gems-profile>small{font:700 6px Inter;letter-spacing:.6px}.gems-profile span{display:flex;gap:4px;margin-top:5px;flex-wrap:wrap}.gems-profile span b{padding:3px 5px;border-radius:5px;background:#252d42;color:#aeb9d2;font:700 6px Inter}.gems-profile a{flex:none;color:#9aa8ff;text-decoration:none;font:800 7px Inter}
+.versus{background:#181d2a}.versus span{background:#3a4357}.versus b{width:48px;height:48px;background:linear-gradient(145deg,#ff4b5f,#765dff);box-shadow:0 0 25px rgba(123,97,255,.35)}
+.matchup-footer{border-color:#30384d;color:#7f899d;background:#151a27}.matchup-footer a{color:#ff6574}
+.settings-panel{background:#181d2a;border:1px solid #30384d;border-radius:22px;box-shadow:0 24px 70px rgba(0,0,0,.25);color:#fff}
+.section-title{border-color:#30384d;background:linear-gradient(90deg,#202638,#1a1f2d)}.section-title h2{color:#fff}.section-title small{color:#818a9e}.section-title>span{color:#ff6574;border-color:#723b48;border-radius:9px}
+.settings-grid{border-color:#30384d}.settings-grid>label{border-color:#30384d;color:#8790a3}.segmented{flex-wrap:wrap;gap:6px}.segmented button{background:#232a3c;color:#929bad;border-color:#3a4359;min-width:48px;border-radius:10px}.segmented button:first-child{border-radius:10px}.segmented button:last-child{border-radius:10px}.segmented button.active{background:linear-gradient(135deg,#765dff,#4c8fff);color:#fff}
+.toggle-row{border-color:#30384d}.toggle-row b{color:#eff2f7}.toggle-row small{color:#798397}
+.simulate-btn{background:linear-gradient(90deg,#ff3b4d,#ff6a3d);border-radius:14px;box-shadow:0 12px 32px rgba(255,59,77,.26)}.engine-note{color:#737d91}
+.engine-note a{color:#9aa8ff;text-decoration:none;border-bottom:1px solid rgba(154,168,255,.35)}
+.commentary-card,.panel{border-radius:18px;overflow:hidden}.next-btn{border-radius:0 0 18px 18px}.judge-card,.stats-table{border-radius:14px;overflow:hidden}
+.canvas-ring{height:330px;background:#07090e;isolation:isolate}
+.canvas-ring:after{background:linear-gradient(90deg,rgba(255,72,63,.12),transparent 34%,rgba(214,173,100,.13) 50%,transparent 66%,rgba(85,168,255,.13)),repeating-linear-gradient(110deg,transparent 0 18px,rgba(255,255,255,.025) 19px 20px)}
+.fight-poster{position:absolute;inset:0;display:grid;grid-template-columns:1fr 230px 1fr;align-items:stretch;z-index:2;background:radial-gradient(circle at 50% 35%,rgba(214,173,100,.22),transparent 35%),linear-gradient(135deg,#101827 0%,#06080d 46%,#101827 100%)}
+.fight-poster:before{content:"";position:absolute;inset:16px;border:1px solid rgba(255,255,255,.11);box-shadow:inset 0 0 80px rgba(0,0,0,.45);z-index:1;pointer-events:none}
+.fight-poster:after{content:"FANTASY FIGHT NIGHT";position:absolute;left:50%;bottom:17px;transform:translateX(-50%);z-index:4;color:rgba(244,240,232,.45);font:800 9px "DM Mono";letter-spacing:3px;white-space:nowrap}
+.poster-bg-name{position:absolute;top:20px;bottom:20px;width:46%;z-index:0;font:900 clamp(72px,10vw,145px)/.78 "Barlow Condensed";letter-spacing:-4px;text-transform:uppercase;color:rgba(255,255,255,.035);overflow:hidden;display:flex;align-items:center}
+.poster-bg-red{left:18px;color:rgba(255,73,63,.085)}.poster-bg-blue{right:18px;justify-content:flex-end;color:rgba(85,168,255,.085);text-align:right}
+.poster-corner{position:relative;z-index:3;height:100%;display:flex;flex-direction:column;justify-content:flex-end;padding:30px 28px;color:#fff}
+.poster-corner img{position:absolute;top:22px;width:min(44%,190px);height:210px;object-fit:cover;object-position:top;border:2px solid rgba(255,255,255,.18);filter:grayscale(.1) contrast(1.07);box-shadow:0 24px 55px rgba(0,0,0,.55)}
+.poster-red img{left:28px;border-color:rgba(255,73,63,.45)}.poster-blue{align-items:flex-end;text-align:right}.poster-blue img{right:28px;border-color:rgba(85,168,255,.45)}
+.poster-corner small{font:800 10px "DM Mono";letter-spacing:2px;color:var(--red)}.poster-blue small{color:var(--blue)}
+.poster-corner b{font:900 clamp(40px,5vw,72px)/.8 "Barlow Condensed";letter-spacing:-1.6px;text-transform:uppercase;text-shadow:0 10px 35px #000;max-width:360px}
+.poster-corner span{margin-top:10px;max-width:310px;color:#aab2c4;font:800 10px Inter;letter-spacing:.5px;text-transform:uppercase}
+.poster-center{position:relative;z-index:4;align-self:center;justify-self:center;width:220px;min-height:245px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border-inline:1px solid rgba(255,255,255,.13)}
+.poster-center small{color:var(--gold);font:800 9px "DM Mono";letter-spacing:2.5px}.poster-center strong{font:900 88px/.8 "Barlow Condensed";letter-spacing:-3px;color:#f7efe2;text-shadow:0 0 35px rgba(214,173,100,.35)}
+.poster-center span{margin-top:8px;color:#fff;font:900 20px "Barlow Condensed";letter-spacing:1.5px}.poster-center em{margin-top:14px;padding:7px 14px;border:1px solid rgba(214,173,100,.5);border-radius:999px;color:var(--gold);font:900 10px "DM Mono";letter-spacing:1.5px;font-style:normal}.poster-center i{margin-top:12px;color:#777f91;font:800 8px "DM Mono";letter-spacing:1.5px;font-style:normal}
+.round-watermark{z-index:5;right:24px;top:-26px;color:rgba(255,255,255,.04)}
+@media(max-width:760px){.canvas-ring{height:420px}.fight-poster{grid-template-columns:1fr;grid-template-rows:1fr 118px 1fr}.poster-center{width:100%;min-height:118px;border:0;border-block:1px solid rgba(255,255,255,.12)}.poster-center strong{font-size:58px}.poster-corner{padding:22px}.poster-corner img{width:105px;height:125px}.poster-blue img{right:22px}.poster-red img{left:22px}.poster-corner b{font-size:40px}.fight-poster:after{bottom:9px}}
+dialog{border-radius:20px}
+.data-panel{max-width:1132px;margin:22px auto 90px;background:#181d2a;border:1px solid #30384d;border-radius:22px;box-shadow:0 24px 70px rgba(0,0,0,.22);overflow:hidden}
+.research-desk{max-width:1132px;margin:22px auto 18px;background:#181d2a;border:1px solid #30384d;border-radius:18px;box-shadow:0 18px 42px rgba(0,0,0,.18);overflow:hidden;color:#f4f6fb}
+.desk-details{display:block}.desk-details summary{list-style:none}.desk-details summary::-webkit-details-marker{display:none}
+.desk-compact{min-height:102px;padding:18px 20px;display:grid;grid-template-columns:220px minmax(0,1fr) 230px;gap:22px;align-items:center;cursor:pointer;background:linear-gradient(90deg,#202638,#171d2b);transition:.18s}
+.desk-compact:hover{background:linear-gradient(90deg,#242b3f,#192033)}.desk-compact-title small{display:block;color:#818a9e;font:800 8px Inter;letter-spacing:1.2px}.desk-compact-title h2{margin:4px 0 0;color:#fff;font:900 18px Inter;letter-spacing:-.3px}
+.desk-compact p{margin:0;color:#c8cfdd;font:700 13px/1.48 Inter;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.desk-mismatch{margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}.desk-mismatch strong{padding:5px 7px;border-radius:7px;background:rgba(255,89,105,.14);color:#ff6977;font:900 8px "DM Mono";letter-spacing:1px}.desk-mismatch span{color:#ffd36a;font:800 9px Inter;letter-spacing:.3px}.desk-mismatch.full{margin:2px 0 2px}
+.desk-compact-meta{display:grid;grid-template-columns:1fr;gap:9px;min-width:0}.desk-compact-meta b{display:none}.desk-compact-meta span{display:block;text-align:center;padding:9px 12px;border:1px solid rgba(214,173,100,.35);border-radius:999px;color:var(--gold);background:rgba(214,173,100,.08);font:900 9px "DM Mono";letter-spacing:1px}.desk-compact-meta em{display:block;text-align:center;padding:12px 14px;border-radius:999px;background:#111722;color:#d9deea;font:900 10px Inter;letter-spacing:1px;font-style:normal;box-shadow:inset 0 0 0 1px rgba(255,255,255,.04)}
+.desk-details[open] .desk-compact{border-bottom:1px solid #30384d}.desk-details[open] .desk-compact-meta em{color:#fff;background:#30384d}.desk-details[open] .desk-compact-meta em{font-size:0}.desk-details[open] .desk-compact-meta em:after{content:"HIDE FULL DESK ↑";font-size:8px}
+.desk-body{padding:16px;display:grid;gap:14px}
+.desk-summary{display:grid;gap:10px;padding:16px;border:1px solid #30384d;border-radius:16px;background:radial-gradient(circle at 0 0,rgba(123,97,255,.18),transparent 35%),#151a27}
+.desk-summary>b{color:#ff5969;font:900 9px "DM Mono";letter-spacing:1.4px}.desk-summary p{margin:0;color:#d8deea;font:700 14px/1.55 Inter}.desk-summary ol{margin:0;padding-left:18px;color:#9fa8ba;font:600 11px/1.55 Inter}.desk-summary li+li{margin-top:4px}
+.desk-fighters{display:grid;grid-template-columns:1fr 1fr;gap:14px}.desk-fighter{position:relative;padding:16px;border:1px solid #30384d;border-radius:16px;background:#151a27;overflow:hidden}.desk-fighter:before{content:"";position:absolute;inset:0;opacity:.16;pointer-events:none}.desk-fighter.red:before{background:radial-gradient(circle at 0 0,var(--red),transparent 45%)}.desk-fighter.blue:before{background:radial-gradient(circle at 100% 0,var(--blue),transparent 45%)}
+.desk-fighter small{position:relative;color:#7e889b;font:800 8px Inter;letter-spacing:1px}.desk-fighter h3{position:relative;margin:5px 0 0;color:#fff;font:900 30px/.9 "Barlow Condensed";text-transform:uppercase}.desk-fighter p{position:relative;margin:6px 0 10px;color:#9fa8ba;font:800 10px Inter;text-transform:uppercase;letter-spacing:.4px}
+.desk-tags{position:relative;display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}.desk-tags span{padding:5px 7px;border-radius:999px;background:#252d42;color:#b7c1d8;font:800 8px Inter}
+.desk-fighter ul{position:relative;margin:0;padding-left:16px;color:#aeb7c8;font:600 11px/1.55 Inter}.desk-fighter li+li{margin-top:3px}
+.desk-sources{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.desk-source{padding:12px;border:1px solid #30384d;border-radius:13px;background:#121722}.desk-source.active{border-color:rgba(54,206,134,.3)}.desk-source.gap{border-color:rgba(255,191,54,.28)}.desk-source.scouting{border-color:rgba(76,143,255,.3)}
+.desk-source small,.desk-source b,.desk-source span{display:block}.desk-source small{color:#778196;font:800 7px Inter;letter-spacing:.8px}.desk-source b{margin-top:5px;color:#fff;font:900 9px "DM Mono";letter-spacing:.8px}.desk-source.active b{color:#36ce86}.desk-source.gap b{color:#ffd36a}.desk-source.scouting b{color:#62aaff}.desk-source span{margin-top:7px;color:#919caf;font:600 9px/1.45 Inter}
+.desk-gaps{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:12px;border:1px dashed #3c465e;border-radius:13px;background:#111722}.desk-gaps small{color:#778196;font:900 8px Inter;letter-spacing:1px;margin-right:4px}.desk-gaps span{padding:6px 8px;border-radius:9px;background:#22293a;color:#aab4c8;font:700 9px Inter}
+.data-heading{height:72px;padding:0 20px;display:flex;align-items:center;gap:13px;background:linear-gradient(90deg,#202638,#1a1f2d);border-bottom:1px solid #30384d}
+.data-icon{width:36px;height:36px;display:grid;place-items:center;border-radius:11px;background:linear-gradient(145deg,#765dff,#4c8fff);font-size:20px;box-shadow:0 8px 22px rgba(91,108,255,.25)}
+.data-heading small{display:block;color:#818a9e;font:700 8px Inter;letter-spacing:1px}.data-heading h2{margin:3px 0 0;color:#fff;font:800 17px Inter}.data-heading>span{margin-left:auto;color:#8d97aa;background:#121722;border:1px solid #30384d;border-radius:20px;padding:6px 10px;font:800 8px Inter}
+.source-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:16px}
+.source-card{display:grid;grid-template-columns:48px 1fr auto;gap:13px;align-items:center;padding:16px;border:1px solid #30384d;border-radius:15px;background:#202638;color:#fff;text-decoration:none;transition:.2s}
+.source-card:hover{transform:translateY(-2px);border-color:#56617c;background:#242b3e}.source-logo{width:48px;height:48px;display:grid;place-items:center;border-radius:13px;font:900 18px Inter}.ring-logo{background:#b92335;color:#fff;font-family:serif;font-style:italic}.boxrec-logo{background:#202020;color:#f7c929;border:1px solid #50471d;font-size:14px}
+.source-card small{display:block;color:#7f899d;font:700 8px Inter;letter-spacing:.8px}.source-card b{display:block;margin:4px 0;font:800 13px Inter}.source-card p{margin:0;color:#9ca5b7;font-size:10px;line-height:1.45}.source-card>span{color:#69748a;font-size:18px}
+.gems-logo{background:linear-gradient(145deg,#765dff,#4c8fff);color:#fff;font-size:13px}
+.source-note{margin:0;padding:0 17px 16px;color:#687287;font:500 9px/1.5 Inter}
+.division-filters{display:flex;gap:7px;overflow-x:auto;padding:0 25px 16px;scrollbar-width:none}.division-filters::-webkit-scrollbar{display:none}.division-filters button{flex:none;border:1px solid #343c50;border-radius:20px;background:#171c29;color:#8e97aa;padding:7px 11px;font:700 8px Inter;white-space:nowrap;cursor:pointer}.division-filters button.active{color:#fff;border-color:#6e67ff;background:linear-gradient(135deg,#765dff,#4c8fff)}
+@media(max-width:760px){.matchup-shell,.settings-panel{border-radius:16px}.bottom-nav{background:#181d2a;border-color:#30384d}.bottom-nav button{color:#8992a5}.bottom-nav button.active{color:#ff5969}}
+@media(max-width:900px){.source-grid{grid-template-columns:1fr}}
+@media(max-width:900px){.desk-sources{grid-template-columns:1fr 1fr}}
+@media(max-width:900px){.desk-compact{grid-template-columns:1fr;gap:10px}.desk-compact-meta{justify-content:flex-start;min-width:0}}
+@media(max-width:760px){.version-scout{grid-template-columns:1fr 1fr}.research-desk{margin:14px 12px;border-radius:16px}.desk-compact{padding:14px;min-height:unset}.desk-fighters{grid-template-columns:1fr}.desk-sources{grid-template-columns:1fr}.data-panel{margin:14px 12px 84px;border-radius:16px}.data-heading{height:64px}}
+
+.play-by-play-toggle{width:100%;padding:18px 22px;border:1px solid #3a4359;border-radius:14px;background:#202638;color:#f2f4f8;font:800 14px "Barlow Condensed";letter-spacing:1.5px;cursor:pointer;display:flex;justify-content:center;gap:18px}
+.postfight-rounds{text-align:left;margin:12px 0 30px}
+.round-review{border:1px solid #30384d;border-radius:13px;background:#151a27;margin-bottom:8px;overflow:hidden}
+.round-review summary{list-style:none;cursor:pointer;padding:16px 18px;display:grid;grid-template-columns:90px 1fr auto;align-items:center;gap:16px}
+.round-review summary::-webkit-details-marker{display:none}
+.round-review summary small{font:700 9px "DM Mono";color:#ff5969;letter-spacing:1px}
+.round-review summary strong{font:800 19px "Barlow Condensed"}
+.round-review summary span{font:700 15px "DM Mono";color:#ddd}.round-review summary span b:first-child{color:var(--red)}.round-review summary span b:last-child{color:var(--blue)}
+.round-review-body{border-top:1px solid #30384d;padding:10px 18px 18px}
+.round-review-meta{display:flex;flex-wrap:wrap;gap:8px;margin:5px 0 12px}
+.round-review-meta b{padding:6px 9px;border-radius:7px;background:#252d42;color:#aeb9d2;font:700 8px "DM Mono";letter-spacing:.7px}
+.round-review-meta .event{background:#4a242f;color:#ffb0b8}
+.round-review-body p{margin:0;padding:10px 0;border-top:1px solid #292f40;color:#aab2c2;font-size:12px;line-height:1.55}.round-review-body p:first-of-type{border-top:0}
+@media(max-width:600px){.round-review summary{grid-template-columns:65px 1fr}.round-review summary span{grid-column:1/-1}}
