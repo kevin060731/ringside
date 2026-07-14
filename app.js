@@ -150,19 +150,22 @@ function renderResearchDesk(){
   </div>`;
  }).join("");
  const keyTags=[...new Set([...(researchDesk.fighters.a.tags||[]),...(researchDesk.fighters.b.tags||[])])].slice(0,4);
+ const quickKeys=researchDesk.quickKeys?.length?researchDesk.quickKeys:researchDesk.scoutingQuestions.slice(0,3);
  panel.innerHTML=`<details class="desk-details">
   <summary class="desk-compact">
    <div class="desk-compact-title">
     <small>RINGSIDE RESEARCH DESK</small>
-    <h2>${researchDesk.verifiedFight?"VERIFIED FIGHT BRIEF":"SCOUTING BRIEF"}</h2>
+    <h2>${researchDesk.verifiedFight?"VERIFIED KEYS":"KEYS TO THE FIGHT"}</h2>
    </div>
-   <p>${researchDesk.styleClash.summary}</p>
-   ${researchDesk.mismatch?.type&&!["competitive","lean"].includes(researchDesk.mismatch.type)?`<div class="desk-mismatch"><strong>MISMATCH WATCH</strong><span>${researchDesk.mismatch.type.toUpperCase()} · ${researchDesk.mismatch.reasons.join(" · ")}</span></div>`:""}
+   <div class="desk-key-list">
+    ${quickKeys.map((key,i)=>`<div><b>${String(i+1).padStart(2,"0")}</b><span>${key}</span></div>`).join("")}
+   </div>
    <div class="desk-compact-meta">
     ${keyTags.map(tag=>`<b>${tag}</b>`).join("")}
     <span>${researchDesk.confidence}% CONFIDENCE</span>
-    <em>OPEN FULL DESK ↓</em>
+    <em>FULL REPORT ↓</em>
    </div>
+   ${researchDesk.mismatch?.type&&!["competitive","lean"].includes(researchDesk.mismatch.type)?`<div class="desk-mismatch"><strong>MISMATCH WATCH</strong><span>${researchDesk.mismatch.type.toUpperCase()} · ${researchDesk.mismatch.reasons.join(" · ")}</span></div>`:""}
   </summary>
   <div class="desk-body">
    <div class="desk-summary">

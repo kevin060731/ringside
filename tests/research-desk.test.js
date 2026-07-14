@@ -13,12 +13,14 @@ const robinson={id:"robinson",year:1951,label:"1951 · PRIME",name:"Sugar Ray Ro
 
 test("research desk creates a structured scouting brief without picking a fantasy winner",()=>{
  const desk=BOXING_RESEARCH_DESK.create(crawford,shakur,{rounds:12,weight:"Welterweight"});
- assert.equal(desk.schemaVersion,1);
+ assert.equal(desk.schemaVersion,2);
  assert.equal(desk.mode,"local-research-cache");
  assert.equal(desk.futureMode,"openai-research-desk-ready");
  assert.equal(desk.verifiedFight,null);
  assert.ok(desk.confidence>=40&&desk.confidence<=100);
  assert.match(desk.styleClash.summary,/Crawford|Stevenson/);
+ assert.ok(desk.quickKeys.length>=3&&desk.quickKeys.length<=4);
+ assert.ok(desk.quickKeys.every(key=>key.length<180));
  assert.ok(desk.scoutingQuestions.length>=3);
  assert.ok(desk.mismatch);
  assert.ok(Number.isFinite(desk.engineHints.preFightProbabilityA));

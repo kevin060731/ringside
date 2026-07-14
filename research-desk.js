@@ -1,5 +1,5 @@
 (function(global){
-const cachePrefix="ringside.researchDesk.v3.";
+const cachePrefix="ringside.researchDesk.v4.";
 const browserStorage=()=>{
  try{return typeof window!=="undefined"&&window.localStorage?window.localStorage:null}catch{return null}
 };
@@ -193,6 +193,23 @@ function questions(a,b,record,settings={}){
   edge.type==="competitive"?`This is close enough that one tactical layer can flip the card: stance geometry, exit ownership, and late-round stamina matter more than the headline ratings.`:`Mismatch watch: if ${underdog.last} cannot change the first reaction by round three, the simulation should start showing a widening probability and visible tactical debt.`
  ];
 }
+function quickKeys(a,b,record,settings={}){
+ const edge=matchupEdge(a,b,settings),clash=styleClash(a,b,settings),open=(a.stance==="Southpaw")!==(b.stance==="Southpaw");
+ if(record)return [
+  `Verified result: replay the real ${record.method}, cards and fight events where available.`,
+  `Archive lens: explain why the official result happened instead of inventing a new winner.`,
+  `Public reaction: surface dispute, boredom, excitement or consensus notes when the archive has them.`
+ ];
+ const favorite=edge.favorite===a.id?a:b,underdog=favorite===a?b:a;
+ const keys=[
+  `${open?"Open-stance rear-hand lane":"Closed-stance jab lane"}: whoever wins the lead-hand/foot position controls first clean access.`,
+  `${favorite.last}'s edge: make the stronger rating profile repeat without rushing into counters.`,
+  `${underdog.last}'s path: interrupt rhythm early and force exchanges where the favorite's advantage is least comfortable.`
+ ];
+ if(edge.type!=="competitive"&&edge.type!=="lean")keys.push(`Mismatch watch: ${underdog.last} needs a visible answer by round three or the probability should widen.`);
+ else keys.push(`Swing factor: ${clash.contrast[0]||"ring geography"} may matter more than the headline ratings.`);
+ return keys.slice(0,4);
+}
 function dataGaps(a,b,record){
  const gaps=[];
  if(!record)gaps.push("No verified head-to-head result in local cache.");
@@ -208,12 +225,12 @@ function confidence(sources){
 }
 function create(a,b,settings={}){
  const key=keyFor(a,b,settings),cached=safeStorage.get(key);
- if(cached?.schemaVersion===1)return cached;
+ if(cached?.schemaVersion===2)return cached;
  const record=global.BOXING_FIGHT_HISTORY?.find?.(a,b)||null;
  const sources=sourceCards(a,b,record);
  const edge=matchupEdge(a,b,settings);
  const desk={
-  schemaVersion:1,
+  schemaVersion:2,
   mode:"local-research-cache",
   futureMode:"openai-research-desk-ready",
   generatedAt:new Date().toISOString(),
@@ -224,6 +241,7 @@ function create(a,b,settings={}){
   verifiedFight:record?{id:record.id,date:record.date,method:record.method,winner:record.winner,hasScorecards:!!record.scorecards,hasStats:!!record.stats}:null,
   fighters:{a:fighterCard(a,b),b:fighterCard(b,a)},
   styleClash:styleClash(a,b,settings),
+  quickKeys:quickKeys(a,b,record,settings),
   scoutingQuestions:questions(a,b,record,settings),
   dataGaps:dataGaps(a,b,record),
   engineHints:{
