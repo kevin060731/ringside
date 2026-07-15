@@ -218,6 +218,8 @@ function renderLive(){
  const staminaA=last?.staminaA??100,staminaB=last?.staminaB??100,healthA=Math.max(10,100-(last?.damageA??0)*10),healthB=Math.max(10,100-(last?.damageB??0)*10);
  $("#condition-bars").innerHTML=[["a",active("a").last,staminaA,healthA],["b",active("b").last,staminaB,healthB]].map(x=>`<div class="condition-row"><div><span>${x[1].toUpperCase()}</span><span>${Math.round(x[2])}% STAMINA</span></div><div class="meter"><span style="width:${Math.min(x[2],x[3])}%;background:${x[0]==="a"?"var(--red)":"var(--blue)"}"></span></div></div>`).join("");
  renderFightPoster(last);
+ const prevButton=$("#prev-round");
+ if(prevButton){prevButton.disabled=current===0;prevButton.querySelector("span").textContent=current>1?`BACK TO ROUND ${current-1}`:"PREVIOUS ROUND"}
  if(!last){$("#round-label").textContent=`ROUND 1 OF ${scheduled}`;$("#round-watermark").textContent="01";$("#round-kicker").textContent="TALE OF THE TAPE";$("#round-headline").textContent="THE FIGHT AWAITS";$("#commentary-lines").innerHTML=`<div class="comment-line"><b>READY</b><span>The officials are in position. Both fighters are awaiting the opening bell.</span></div>`;$("#next-round span").textContent="BEGIN ROUND 1";return}
  const report=last.report||last.lines,labels=report.length>=5?["OPENING 0:00–1:00","MIDDLE 1:00–2:00","CLOSING 2:00–3:00","POSITIONAL MAP","CORNER READ"]:["POSITION","MECHANICS","ADJUSTMENT"];
  $("#round-label").textContent=`ROUND ${last.number} OF ${scheduled}`;$("#round-watermark").textContent=String(last.number).padStart(2,"0");$("#round-kicker").textContent=`ROUND ${last.number} · ${last.knockA||last.knockB?"KNOCKDOWN":"FILM ROOM ANALYSIS"}`;$("#round-headline").textContent=last.headline;$("#commentary-lines").innerHTML=report.map((l,i)=>`<div class="comment-line report-line"><b>${labels[i]||String(i+1).padStart(2,"0")}</b><span>${l}</span></div>`).join("");
@@ -284,6 +286,7 @@ $("#fighter-grid").onclick=e=>{const btn=e.target.closest("[data-id]");if(!btn)r
 $("#division-filters").onclick=e=>{const btn=e.target.closest("[data-division]");if(!btn)return;archiveDivision=btn.dataset.division;renderArchive($("#fighter-search").value)};
 $("#fighter-search").oninput=e=>renderArchive(e.target.value);$("#close-picker").onclick=()=>$("#picker").close();$("#simulate").onclick=setupFight;
 $("#next-round").onclick=()=>{if(current>=fight.rounds.length||fight.rounds[current-1]?.stoppage)showResults();else{current++;renderLive()}};
+$("#prev-round").onclick=()=>{if(!fight||current<=0)return;current--;renderLive()};
 $("#new-fight").onclick=()=>location.reload();$("#run-again").onclick=setupFight;
 $("#view-play-by-play").onclick=()=>{
  const archive=$("#postfight-rounds"),opening=archive.classList.contains("hidden");

@@ -8,9 +8,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,500;0,600;0,700;0,800;0,900;1,700&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=supabase-foundation-1" />
-  <link rel="stylesheet" href="dashboard.css?v=supabase-foundation-1" />
-  <link rel="stylesheet" href="playback.css?v=supabase-foundation-1" />
+  <link rel="stylesheet" href="styles.css?v=round-navigation-1" />
+  <link rel="stylesheet" href="dashboard.css?v=round-navigation-1" />
+  <link rel="stylesheet" href="playback.css?v=round-navigation-1" />
 </head>
 <body>
   <header class="topbar">
@@ -178,7 +178,10 @@
             <h2 id="round-headline">THE OPENING BELL</h2>
             <div id="commentary-lines"></div>
           </div>
-          <button class="next-btn" id="next-round"><span>BEGIN ROUND 1</span><b>→</b></button>
+          <div class="round-nav">
+            <button class="prev-btn" id="prev-round"><b>←</b><span>PREVIOUS ROUND</span></button>
+            <button class="next-btn" id="next-round"><span>BEGIN ROUND 1</span><b>→</b></button>
+          </div>
         </article>
         <aside>
           <div class="panel">
@@ -229,19 +232,19 @@
     <div class="division-filters" id="division-filters"></div>
     <div class="fighter-grid" id="fighter-grid"></div>
   </dialog>
-  <script src="supabase-config.js?v=supabase-foundation-1"></script>
-  <script src="supabase-client.js?v=supabase-foundation-1"></script>
-  <script src="fight-history.js?v=supabase-foundation-1"></script>
-  <script src="compubox-provider.js?v=supabase-foundation-1"></script>
-  <script src="engine.js?v=supabase-foundation-1"></script>
-  <script src="roster.js?v=supabase-foundation-1"></script>
-  <script src="roster-expanded.js?v=supabase-foundation-1"></script>
-  <script src="roster-active.js?v=supabase-foundation-1"></script>
-  <script src="roster-deep.js?v=supabase-foundation-1"></script>
-  <script src="roster-versions.js?v=supabase-foundation-1"></script>
-  <script src="boxing-gems-data.js?v=supabase-foundation-1"></script>
-  <script src="rummy-corner-data.js?v=supabase-foundation-1"></script>
-  <script src="research-desk.js?v=supabase-foundation-1"></script>
-  <script src="app.js?v=supabase-foundation-1"></script>
+  <script src="supabase-config.js?v=round-navigation-1"></script>
+  <script src="supabase-client.js?v=round-navigation-1"></script>
+  <script src="fight-history.js?v=round-navigation-1"></script>
+  <script src="compubox-provider.js?v=round-navigation-1"></script>
+  <script src="engine.js?v=round-navigation-1"></script>
+  <script src="roster.js?v=round-navigation-1"></script>
+  <script src="roster-expanded.js?v=round-navigation-1"></script>
+  <script src="roster-active.js?v=round-navigation-1"></script>
+  <script src="roster-deep.js?v=round-navigation-1"></script>
+  <script src="roster-versions.js?v=round-navigation-1"></script>
+  <script src="boxing-gems-data.js?v=round-navigation-1"></script>
+  <script src="rummy-corner-data.js?v=round-navigation-1"></script>
+  <script src="research-desk.js?v=round-navigation-1"></script>
+  <script src="app.js?v=round-navigation-1"></script>
 </body>
 </html>
