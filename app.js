@@ -251,6 +251,17 @@ function renderPostfightRounds(){
   </details>`;
  }).join("");
 }
+async function saveResultToSupabase(){
+ if(!window.RINGSIDE_SUPABASE?.isConfigured?.())return;
+ try{
+  const red=active("a"),blue=active("b");
+  const saved=await window.RINGSIDE_SUPABASE.saveFight({fight,red,blue,settings:fightSettings(),researchDesk});
+  const slug=saved?.data?.[0]?.share_slug;
+  if(slug)console.info(`RINGSIDE saved fight: ${slug}`);
+ }catch(error){
+  console.warn("RINGSIDE Supabase save skipped:",error.message||error);
+ }
+}
 function showResults(){
  $("#broadcast").classList.add("hidden");$("#results").classList.remove("hidden");const w=fight.winner==="draw"?null:active(fight.winner);
  $("#winner-name").textContent=w?.name||"DRAW";$("#decision").textContent=fight.historical?`${fight.decision} · ${fight.officialScorecards?"OFFICIAL REPLAY":"VERIFIED OUTCOME"}`:fight.decision;
@@ -264,6 +275,7 @@ function showResults(){
  $("#fan-consensus").innerHTML=consensus?`<div class="fan-consensus-head"><small>r/BOXING · FAN CONSENSUS</small><b>${consensus.label}</b></div><h3>${consensus.tone}</h3><p>${consensus.summary}</p><div class="fan-themes">${consensus.themes.map(t=>`<span>${t}</span>`).join("")}</div><div class="fan-sources">${consensus.sources.map(s=>`<a href="${s.url}" target="_blank" rel="noreferrer">${s.label} ↗</a>`).join("")}</div>`:"";
  const moments=fight.rounds.filter(r=>r.knockA||r.knockB||Math.abs(r.landedA-r.landedB)>8).slice(0,5);$("#highlights").innerHTML=(moments.length?moments:[fight.rounds[0],fight.rounds.at(-1)]).map(r=>`<div class="highlight"><b>ROUND ${r.number}</b>${r.headline}. ${r.lines[0]}</div>`).join("");window.scrollTo({top:0,behavior:"smooth"})
  renderPostfightRounds();$("#postfight-rounds").classList.add("hidden");$("#view-play-by-play").innerHTML="VIEW ROUND-BY-ROUND PLAY BY PLAY <b>↓</b>";
+ saveResultToSupabase();
 }
 document.querySelectorAll("[data-picker]").forEach(b=>b.onclick=()=>openPicker(b.dataset.picker));
 document.querySelectorAll("[data-rounds]").forEach(b=>b.onclick=()=>{scheduled=+b.dataset.rounds;document.querySelectorAll("[data-rounds]").forEach(x=>x.classList.toggle("active",x===b));renderResearchDesk()});
