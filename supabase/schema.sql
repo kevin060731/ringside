@@ -90,11 +90,29 @@ on public.verified_fights for select
 using (true);
 
 drop policy if exists "Public saved fights are readable" on public.saved_fights;
-create policy "Public saved fights are readable"
-on public.saved_fights for select
-using (is_public = true);
-
 drop policy if exists "Anyone can create public saved fights" on public.saved_fights;
-create policy "Anyone can create public saved fights"
+drop policy if exists "Users can read their saved fights" on public.saved_fights;
+create policy "Users can read their saved fights"
+on public.saved_fights for select
+using (auth.uid() = created_by);
+
+drop policy if exists "Users can create their saved fights" on public.saved_fights;
+create policy "Users can create their saved fights"
 on public.saved_fights for insert
-with check (is_public = true);
+with check (auth.uid() = created_by);
+
+create or replace function public.get_public_saved_fight(p_share_slug text)
+returns setof public.saved_fights
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select *
+  from public.saved_fights
+  where share_slug = p_share_slug
+    and is_public = true
+  limit 1;
+$$;
+
+grant execute on function public.get_public_saved_fight(text) to anon, authenticated;

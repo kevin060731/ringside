@@ -8,15 +8,15 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,500;0,600;0,700;0,800;0,900;1,700&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=saved-fights-polish-1" />
-  <link rel="stylesheet" href="dashboard.css?v=saved-fights-polish-1" />
-  <link rel="stylesheet" href="playback.css?v=saved-fights-polish-1" />
+  <link rel="stylesheet" href="styles.css?v=auth-vault-1" />
+  <link rel="stylesheet" href="dashboard.css?v=auth-vault-1" />
+  <link rel="stylesheet" href="playback.css?v=auth-vault-1" />
 </head>
 <body>
   <header class="topbar">
     <a class="brand" href="#"><span class="brand-mark">R</span><span>RING<span>SIDE</span></span></a>
     <nav class="utility-nav"><button data-view="home">FIGHT LAB</button><button>RANKINGS</button><button>NEWS</button></nav>
-    <div class="header-actions"><button class="search-btn" aria-label="Search">⌕</button><button class="avatar-btn" aria-label="Profile">KS</button></div>
+    <div class="header-actions"><button class="search-btn" aria-label="Search">⌕</button><button class="avatar-btn" id="auth-button" aria-label="Profile">SIGN IN</button></div>
   </header>
   <nav class="sport-nav">
     <button class="active" data-view="home">BOXING</button><button>MMA</button><button data-view="my-fights">MY FIGHTS</button><button data-view="archive">ARCHIVE</button>
@@ -139,7 +139,7 @@
         <div>
           <small>RINGSIDE VAULT</small>
           <h2>My Fights</h2>
-          <p>Saved simulations from Supabase. Reopen the exact result, study the play-by-play, or copy a share link.</p>
+          <p id="my-fights-copy">Sign in to see your own private fight vault. Share links still work for replaying specific fights.</p>
         </div>
         <div class="my-fights-tools">
           <input id="my-fights-search" placeholder="Search fighter, winner, method…" autocomplete="off">
@@ -259,19 +259,34 @@
     <div class="division-filters" id="division-filters"></div>
     <div class="fighter-grid" id="fighter-grid"></div>
   </dialog>
-  <script src="supabase-config.js?v=saved-fights-polish-1"></script>
-  <script src="supabase-client.js?v=saved-fights-polish-1"></script>
-  <script src="fight-history.js?v=saved-fights-polish-1"></script>
-  <script src="compubox-provider.js?v=saved-fights-polish-1"></script>
-  <script src="engine.js?v=saved-fights-polish-1"></script>
-  <script src="roster.js?v=saved-fights-polish-1"></script>
-  <script src="roster-expanded.js?v=saved-fights-polish-1"></script>
-  <script src="roster-active.js?v=saved-fights-polish-1"></script>
-  <script src="roster-deep.js?v=saved-fights-polish-1"></script>
-  <script src="roster-versions.js?v=saved-fights-polish-1"></script>
-  <script src="boxing-gems-data.js?v=saved-fights-polish-1"></script>
-  <script src="rummy-corner-data.js?v=saved-fights-polish-1"></script>
-  <script src="research-desk.js?v=saved-fights-polish-1"></script>
-  <script src="app.js?v=saved-fights-polish-1"></script>
+  <dialog id="auth-dialog" class="auth-dialog">
+    <form method="dialog" class="auth-card">
+      <button class="auth-close" id="close-auth" value="cancel" aria-label="Close">×</button>
+      <small>RINGSIDE PROFILE</small>
+      <h2>Your Fight Vault</h2>
+      <p id="auth-message">Sign in so My Fights only shows your saved simulations.</p>
+      <label>Email<input id="auth-email" type="email" autocomplete="email" placeholder="you@example.com"></label>
+      <label>Password<input id="auth-password" type="password" autocomplete="current-password" placeholder="At least 6 characters"></label>
+      <div class="auth-actions">
+        <button type="button" id="signin-button">SIGN IN</button>
+        <button type="button" id="signup-button">CREATE ACCOUNT</button>
+      </div>
+      <button type="button" id="signout-button" class="signout-button">SIGN OUT</button>
+    </form>
+  </dialog>
+  <script src="supabase-config.js?v=auth-vault-1"></script>
+  <script src="supabase-client.js?v=auth-vault-1"></script>
+  <script src="fight-history.js?v=auth-vault-1"></script>
+  <script src="compubox-provider.js?v=auth-vault-1"></script>
+  <script src="engine.js?v=auth-vault-1"></script>
+  <script src="roster.js?v=auth-vault-1"></script>
+  <script src="roster-expanded.js?v=auth-vault-1"></script>
+  <script src="roster-active.js?v=auth-vault-1"></script>
+  <script src="roster-deep.js?v=auth-vault-1"></script>
+  <script src="roster-versions.js?v=auth-vault-1"></script>
+  <script src="boxing-gems-data.js?v=auth-vault-1"></script>
+  <script src="rummy-corner-data.js?v=auth-vault-1"></script>
+  <script src="research-desk.js?v=auth-vault-1"></script>
+  <script src="app.js?v=auth-vault-1"></script>
 </body>
 </html>

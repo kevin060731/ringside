@@ -193,6 +193,24 @@ function setView(view="home"){
  if(view==="my-fights")loadMyFights();
  if(view==="archive")document.querySelector(".data-panel")?.scrollIntoView({behavior:"smooth",block:"start"});
 }
+function authUser(){return window.RINGSIDE_SUPABASE?.currentUser?.()||null}
+function userLabel(user){
+ const email=user?.email||"";
+ return email?email.split("@")[0].slice(0,10).toUpperCase():"PROFILE";
+}
+function renderAuthState(){
+ const user=authUser(),button=$("#auth-button"),copy=$("#my-fights-copy"),card=document.querySelector(".auth-card"),message=$("#auth-message");
+ if(button)button.textContent=user?userLabel(user):"SIGN IN";
+ if(copy)copy.textContent=user?`Signed in as ${user.email}. These saved fights belong to your profile.`:"Sign in to see your own private fight vault. Share links still work for replaying specific fights.";
+ card?.classList.toggle("signed-in",!!user);
+ if(message)message.textContent=user?`Signed in as ${user.email}. Your fight vault is now private to this profile.`:"Sign in so My Fights only shows your saved simulations.";
+}
+function openAuthDialog(message=""){
+ const dialog=$("#auth-dialog");
+ renderAuthState();
+ if(message)$("#auth-message").textContent=message;
+ dialog?.showModal();
+}
 function shareUrl(slug){
  const url=new URL(location.href);
  url.searchParams.set("fight",slug);
@@ -267,8 +285,10 @@ async function loadMyFights(){
  if(!status||!list)return;
  status.classList.remove("hidden");status.textContent="Loading saved fights…";list.innerHTML="";
  if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){status.textContent="Supabase is not connected yet, so My Fights cannot load.";return}
+ if(!authUser()){status.innerHTML=`Sign in to view your private fight vault. <button class="inline-auth" data-open-auth>Sign in</button>`;return}
  try{
   const result=await window.RINGSIDE_SUPABASE.listSavedFights(24);
+  if(result.authRequired){status.innerHTML=`${result.reason} <button class="inline-auth" data-open-auth>Sign in</button>`;return}
   savedFightRows=result.data||[];
   applyMyFightsFilter();
  }catch(error){
@@ -280,10 +300,11 @@ function setSaveStatus(state,row=null,message=""){
  if(!box)return;
  box.classList.remove("saved","error");
  const title=box.querySelector("b"),text=box.querySelector("span"),view=$("#view-saved-fight"),copy=$("#copy-share-link");
- if(state==="saving"){title.textContent="Saving fight…";text.textContent="Your fight is being added to My Fights.";view.disabled=true;copy.disabled=true;lastSavedFight=null;return}
- if(state==="saved"&&row){box.classList.add("saved");title.textContent="Fight saved";text.textContent=`Added to My Fights as ${row.share_slug}. Copy the replay link or open the vault.`;view.disabled=false;copy.disabled=false;lastSavedFight=row;return}
- if(state==="replay"){box.classList.add("saved");title.textContent="Saved replay";text.textContent=message||"You are viewing a fight from My Fights.";view.disabled=false;copy.disabled=!row?.share_slug;lastSavedFight=row;return}
- box.classList.add("error");title.textContent="Save unavailable";text.textContent=message||"The fight finished, but it could not be saved.";view.disabled=false;copy.disabled=true;lastSavedFight=null;
+ if(state==="saving"){title.textContent="Saving fight…";text.textContent="Your fight is being added to My Fights.";view.textContent="VIEW IN MY FIGHTS";view.disabled=true;copy.disabled=true;lastSavedFight=null;return}
+ if(state==="auth"){title.textContent="Sign in to save";text.textContent=message||"This fight is complete, but it needs a profile before it can go into My Fights.";view.textContent="SIGN IN TO SAVE";view.disabled=false;copy.disabled=true;lastSavedFight=null;return}
+ if(state==="saved"&&row){box.classList.add("saved");title.textContent="Fight saved";text.textContent=`Added to My Fights as ${row.share_slug}. Copy the replay link or open the vault.`;view.textContent="VIEW IN MY FIGHTS";view.disabled=false;copy.disabled=false;lastSavedFight=row;return}
+ if(state==="replay"){box.classList.add("saved");title.textContent="Saved replay";text.textContent=message||"You are viewing a fight from My Fights.";view.textContent="VIEW IN MY FIGHTS";view.disabled=false;copy.disabled=!row?.share_slug;lastSavedFight=row;return}
+ box.classList.add("error");title.textContent="Save unavailable";text.textContent=message||"The fight finished, but it could not be saved.";view.textContent="VIEW IN MY FIGHTS";view.disabled=false;copy.disabled=true;lastSavedFight=null;
 }
 async function copyText(text){
  if(navigator.clipboard?.writeText)return navigator.clipboard.writeText(text);
@@ -399,9 +420,11 @@ async function saveResultToSupabase(){
  if(replayingSavedFight)return;
  setSaveStatus("saving");
  if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){setSaveStatus("error",null,"Supabase is not connected yet, so this fight could not be saved.");return}
+ if(!authUser()){setSaveStatus("auth",null,"Sign in or create an account to save this fight to your private vault.");return}
  try{
   const red=active("a"),blue=active("b");
   const saved=await window.RINGSIDE_SUPABASE.saveFight({fight,red,blue,settings:fightSettings(),researchDesk});
+  if(saved?.authRequired){setSaveStatus("auth",null,saved.reason);return}
   const row=saved?.data?.[0];
   if(row?.share_slug){setSaveStatus("saved",row);console.info(`RINGSIDE saved fight: ${row.share_slug}`)}
   else setSaveStatus("error",null,"Supabase answered, but no share code came back.");
@@ -436,7 +459,7 @@ $("#prev-round").onclick=()=>{if(!fight||current<=0)return;current--;renderLive(
 $("#new-fight").onclick=()=>location.reload();$("#run-again").onclick=()=>{if(replayingSavedFight&&lastSavedFight)hydrateSavedMatchup(lastSavedFight);setupFight()};
 $("#refresh-my-fights").onclick=loadMyFights;
 $("#my-fights-search").oninput=applyMyFightsFilter;
-$("#view-saved-fight").onclick=()=>setView("my-fights");
+$("#view-saved-fight").onclick=()=>{if(!authUser())openAuthDialog("Sign in first, then this fight can be saved to your private vault.");else setView("my-fights")};
 $("#copy-share-link").onclick=async()=>{
  if(!lastSavedFight?.share_slug)return;
  await copyText(shareUrl(lastSavedFight.share_slug));
@@ -449,6 +472,21 @@ $("#my-fights-list").onclick=async e=>{
  if(run)await runSavedMatchup(run.dataset.runSaved);
  if(copy){await copyText(shareUrl(copy.dataset.copySaved));copy.textContent="COPIED";setTimeout(()=>copy.textContent="COPY LINK",1200)}
 };
+$("#my-fights").onclick=e=>{if(e.target.closest("[data-open-auth]"))openAuthDialog()};
+$("#auth-button").onclick=()=>openAuthDialog();
+$("#signin-button").onclick=async()=>{
+ try{await window.RINGSIDE_SUPABASE.signIn($("#auth-email").value,$("#auth-password").value);renderAuthState();$("#auth-dialog").close();if(fight&&!lastSavedFight&&!replayingSavedFight&&!$("#results").classList.contains("hidden"))saveResultToSupabase();loadMyFights()}
+ catch(error){$("#auth-message").textContent=error.message||"Could not sign in."}
+};
+$("#signup-button").onclick=async()=>{
+ try{
+  const data=await window.RINGSIDE_SUPABASE.signUp($("#auth-email").value,$("#auth-password").value);
+  renderAuthState();
+  if(data?.access_token){$("#auth-dialog").close();if(fight&&!lastSavedFight&&!replayingSavedFight&&!$("#results").classList.contains("hidden"))saveResultToSupabase();loadMyFights()}
+  else $("#auth-message").textContent="Account created. Check your email if Supabase asks you to confirm it, then sign in.";
+ }catch(error){$("#auth-message").textContent=error.message||"Could not create account."}
+};
+$("#signout-button").onclick=async()=>{await window.RINGSIDE_SUPABASE.signOut();savedFightRows=[];renderAuthState();$("#auth-dialog").close();loadMyFights()};
 document.querySelectorAll("[data-view]").forEach(button=>button.onclick=()=>setView(button.dataset.view));
 $("#view-play-by-play").onclick=()=>{
  const archive=$("#postfight-rounds"),opening=archive.classList.contains("hidden");
@@ -460,5 +498,6 @@ $("#weight").innerHTML=(window.WEIGHT_CLASSES||[]).map(d=>`<option>${d}</option>
 $("#weight").onchange=renderResearchDesk;
 ["ring","venue","championship","neutral","ruleset","environment","weighin","equipment"].forEach(id=>{const el=$(`#${id}`);if(el)el.onchange=renderResearchDesk});
 renderFighter("a");renderFighter("b");renderArchive();
+renderAuthState();
 const initialSlug=new URLSearchParams(location.search).get("fight");
 if(initialSlug)openSavedFight(initialSlug);
