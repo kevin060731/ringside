@@ -8,18 +8,18 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,500;0,600;0,700;0,800;0,900;1,700&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=round-navigation-1" />
-  <link rel="stylesheet" href="dashboard.css?v=round-navigation-1" />
-  <link rel="stylesheet" href="playback.css?v=round-navigation-1" />
+  <link rel="stylesheet" href="styles.css?v=saved-fights-1" />
+  <link rel="stylesheet" href="dashboard.css?v=saved-fights-1" />
+  <link rel="stylesheet" href="playback.css?v=saved-fights-1" />
 </head>
 <body>
   <header class="topbar">
     <a class="brand" href="#"><span class="brand-mark">R</span><span>RING<span>SIDE</span></span></a>
-    <nav class="utility-nav"><button>FIGHT LAB</button><button>RANKINGS</button><button>NEWS</button></nav>
+    <nav class="utility-nav"><button data-view="home">FIGHT LAB</button><button>RANKINGS</button><button>NEWS</button></nav>
     <div class="header-actions"><button class="search-btn" aria-label="Search">⌕</button><button class="avatar-btn" aria-label="Profile">KS</button></div>
   </header>
   <nav class="sport-nav">
-    <button class="active">BOXING</button><button>MMA</button><button>MY FIGHTS</button><button>ARCHIVE</button>
+    <button class="active" data-view="home">BOXING</button><button>MMA</button><button data-view="my-fights">MY FIGHTS</button><button data-view="archive">ARCHIVE</button>
   </nav>
 
   <main>
@@ -134,6 +134,19 @@
       <p class="source-note">Historical sources inform fighter versions and era context. Power, speed, defense, and other simulation attributes are RINGSIDE model ratings—not official BoxRec or Ring ratings.</p>
     </section>
 
+    <section class="my-fights hidden" id="my-fights">
+      <div class="my-fights-head">
+        <div>
+          <small>RINGSIDE VAULT</small>
+          <h2>My Fights</h2>
+          <p>Saved simulations from Supabase. Reopen the exact result, study the play-by-play, or copy a share link.</p>
+        </div>
+        <button id="refresh-my-fights">REFRESH</button>
+      </div>
+      <div class="my-fights-status" id="my-fights-status">Loading saved fights…</div>
+      <div class="my-fights-list" id="my-fights-list"></div>
+    </section>
+
     <section class="broadcast hidden" id="broadcast">
       <div class="broadcast-top">
         <button class="back-btn" id="new-fight">← NEW FIGHT</button>
@@ -209,6 +222,17 @@
       <div class="result-kicker">OFFICIAL RESULT</div>
       <h2 id="winner-name"></h2>
       <p id="decision"></p>
+      <section class="save-status" id="save-status">
+        <div>
+          <small>SUPABASE VAULT</small>
+          <b>Saving fight…</b>
+          <span>Your fight is being added to My Fights.</span>
+        </div>
+        <div class="save-actions">
+          <button id="view-saved-fight" disabled>VIEW IN MY FIGHTS</button>
+          <button id="copy-share-link" disabled>COPY SHARE LINK</button>
+        </div>
+      </section>
       <div class="official-cards" id="official-cards"></div>
       <div class="stats-table" id="stats-table"></div>
       <section class="fan-consensus hidden" id="fan-consensus"></section>
@@ -219,10 +243,10 @@
     </section>
   </main>
   <nav class="bottom-nav">
-    <button class="active"><b>⌂</b><span>Home</span></button>
+    <button class="active" data-view="home"><b>⌂</b><span>Home</span></button>
     <button><b>⚔</b><span>Matchup</span></button>
     <button><b>＋</b><span>Simulate</span></button>
-    <button><b>▤</b><span>Archive</span></button>
+    <button data-view="archive"><b>▤</b><span>Archive</span></button>
     <button><b>●</b><span>Profile</span></button>
   </nav>
 
@@ -232,19 +256,19 @@
     <div class="division-filters" id="division-filters"></div>
     <div class="fighter-grid" id="fighter-grid"></div>
   </dialog>
-  <script src="supabase-config.js?v=round-navigation-1"></script>
-  <script src="supabase-client.js?v=round-navigation-1"></script>
-  <script src="fight-history.js?v=round-navigation-1"></script>
-  <script src="compubox-provider.js?v=round-navigation-1"></script>
-  <script src="engine.js?v=round-navigation-1"></script>
-  <script src="roster.js?v=round-navigation-1"></script>
-  <script src="roster-expanded.js?v=round-navigation-1"></script>
-  <script src="roster-active.js?v=round-navigation-1"></script>
-  <script src="roster-deep.js?v=round-navigation-1"></script>
-  <script src="roster-versions.js?v=round-navigation-1"></script>
-  <script src="boxing-gems-data.js?v=round-navigation-1"></script>
-  <script src="rummy-corner-data.js?v=round-navigation-1"></script>
-  <script src="research-desk.js?v=round-navigation-1"></script>
-  <script src="app.js?v=round-navigation-1"></script>
+  <script src="supabase-config.js?v=saved-fights-1"></script>
+  <script src="supabase-client.js?v=saved-fights-1"></script>
+  <script src="fight-history.js?v=saved-fights-1"></script>
+  <script src="compubox-provider.js?v=saved-fights-1"></script>
+  <script src="engine.js?v=saved-fights-1"></script>
+  <script src="roster.js?v=saved-fights-1"></script>
+  <script src="roster-expanded.js?v=saved-fights-1"></script>
+  <script src="roster-active.js?v=saved-fights-1"></script>
+  <script src="roster-deep.js?v=saved-fights-1"></script>
+  <script src="roster-versions.js?v=saved-fights-1"></script>
+  <script src="boxing-gems-data.js?v=saved-fights-1"></script>
+  <script src="rummy-corner-data.js?v=saved-fights-1"></script>
+  <script src="research-desk.js?v=saved-fights-1"></script>
+  <script src="app.js?v=saved-fights-1"></script>
 </body>
 </html>

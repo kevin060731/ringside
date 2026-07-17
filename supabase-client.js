@@ -48,5 +48,16 @@ async function saveFight(payload){
  const body=summarizeFightPayload(payload);
  return request("saved_fights?select=id,share_slug,created_at",{method:"POST",body});
 }
-global.RINGSIDE_SUPABASE={isConfigured,saveFight};
+async function listSavedFights(limit=24){
+ if(!isConfigured())return {skipped:true,reason:"Supabase is not configured yet.",data:[]};
+ const safeLimit=Math.max(1,Math.min(50,Number(limit)||24));
+ return request(`saved_fights?select=id,share_slug,red_fighter_id,blue_fighter_id,red_version_label,blue_version_label,winner_fighter_id,decision,method,rounds_completed,is_historical,created_at,fight_data&order=created_at.desc&limit=${safeLimit}`);
+}
+async function getSavedFight(slug){
+ if(!isConfigured())return {skipped:true,reason:"Supabase is not configured yet.",data:null};
+ const safeSlug=encodeURIComponent(clean(slug));
+ const result=await request(`saved_fights?select=*&share_slug=eq.${safeSlug}&limit=1`);
+ return {data:result.data?.[0]||null};
+}
+global.RINGSIDE_SUPABASE={isConfigured,saveFight,listSavedFights,getSavedFight};
 })(typeof window!=="undefined"?window:globalThis);
