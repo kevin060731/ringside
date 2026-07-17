@@ -27,7 +27,7 @@ fighters.forEach(f=>{if(currentFighterIds.has(f.id)&&!window.ROSTER_VERSION_PACK
 fighters.forEach(f=>{f.gems=window.BOXING_GEMS_DATA?.profiles?.[f.name]||null});
 fighters.forEach(f=>{f.eraStudy=window.RUMMY_CORNER_DATA?.profiles?.[f.name]||null});
 fighters.forEach(f=>{f.compubox=window.COMPUBOX_DATA?.profileFor(f)||null});
-let selected={a:fighters[0],b:fighters[1]},versions={a:0,b:0},pickerSide="a",scheduled=12,fight=null,current=0,archiveDivision="All",researchDesk=null,lastSavedFight=null,replayingSavedFight=false;
+let selected={a:fighters[0],b:fighters[1]},versions={a:0,b:0},pickerSide="a",scheduled=12,fight=null,current=0,archiveDivision="All",researchDesk=null,lastSavedFight=null,replayingSavedFight=false,savedFightRows=[];
 const $=s=>document.querySelector(s);
 const fightLabSections=[".hero","#setup","#research-desk",".settings-panel",".data-panel"];
 const wikiAliases={"Saúl Álvarez":"Canelo Álvarez","Gennadiy Golovkin":"Gennady Golovkin","Jesse Rodriguez":"Jesse Rodríguez (boxer)","Oleksandr Usyk":"Oleksandr Usyk","Floyd Mayweather":"Floyd Mayweather Jr.","Julio César Chávez":"Julio César Chávez","Teófimo López":"Teófimo López"};
@@ -202,9 +202,17 @@ function formatDate(value){
  try{return new Intl.DateTimeFormat(undefined,{month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"}).format(new Date(value))}
  catch{return value||"Saved fight"}
 }
+function compactDate(value){
+ try{return new Intl.DateTimeFormat(undefined,{month:"short",day:"numeric"}).format(new Date(value))}
+ catch{return value||"Saved"}
+}
 function fightNameFromSaved(row){
  const data=row.fight_data||{},a=data.a?.last||row.red_fighter_id||"Red",b=data.b?.last||row.blue_fighter_id||"Blue";
  return `${a} vs ${b}`;
+}
+function savedFightSearchText(row){
+ const data=row.fight_data||{},a=data.a||{},b=data.b||{},winner=row.winner_fighter_id===(row.red_fighter_id||a.id)?a:row.winner_fighter_id===(row.blue_fighter_id||b.id)?b:null;
+ return [a.name,a.last,b.name,b.last,winner?.name,winner?.last,row.decision,row.method,row.red_version_label,row.blue_version_label,row.share_slug].filter(Boolean).join(" ").toLowerCase();
 }
 function renderMyFights(rows=[]){
  const status=$("#my-fights-status"),list=$("#my-fights-list");
@@ -213,24 +221,46 @@ function renderMyFights(rows=[]){
  list.innerHTML=rows.map(row=>{
   const data=row.fight_data||{},a=data.a||{},b=data.b||{},winner=row.winner_fighter_id===(row.red_fighter_id||a.id)?a:row.winner_fighter_id===(row.blue_fighter_id||b.id)?b:null;
   const winnerText=winner?.name||(data.winner==="draw"?"Draw":row.winner_fighter_id||"Result saved");
+  const totals=data.totals||{};
+  const score=data.judges?.map(j=>`${j.a}-${j.b}`).join(" · ")||"Cards stored";
+  const method=row.decision||row.method||data.decision||"Decision stored";
   return `<article class="saved-fight-card" data-slug="${row.share_slug}">
+   <div class="saved-fight-poster">
+    <img src="${a.img||""}" alt="${a.name||"Red corner"}">
+    <div>
+     <small>${row.is_historical?"VERIFIED REPLAY":"SAVED SIMULATION"}</small>
+     <b>${compactDate(row.created_at)}</b>
+    </div>
+    <img src="${b.img||""}" alt="${b.name||"Blue corner"}">
+   </div>
    <div class="saved-fight-main">
     <small>${formatDate(row.created_at)}</small>
     <h3>${a.last||row.red_fighter_id||"Red"} <span>vs</span> ${b.last||row.blue_fighter_id||"Blue"}</h3>
-    <p><span class="winner">${winnerText}</span> · ${row.decision||row.method||data.decision||"Decision stored"}</p>
+    <p><span class="winner">${winnerText}</span> · ${method}</p>
     <div class="saved-fight-meta">
      <span>${row.red_version_label||a.label||"Red version"}</span>
      <span>${row.blue_version_label||b.label||"Blue version"}</span>
      <span>${row.rounds_completed||data.rounds?.length||0} rounds</span>
-     ${row.is_historical?`<span>Verified replay</span>`:`<span>Simulation</span>`}
+     <span>${score}</span>
+     ${totals.kdA||totals.kdB?`<span>${totals.kdA||0}-${totals.kdB||0} knockdowns</span>`:""}
     </div>
    </div>
    <div class="saved-fight-actions">
     <button data-open-saved="${row.share_slug}">OPEN REPLAY</button>
+    <button data-run-saved="${row.share_slug}">RUN MATCHUP</button>
     <button data-copy-saved="${row.share_slug}">COPY LINK</button>
    </div>
   </article>`;
  }).join("");
+}
+function applyMyFightsFilter(){
+ const query=($("#my-fights-search")?.value||"").trim().toLowerCase();
+ const filtered=query?savedFightRows.filter(row=>savedFightSearchText(row).includes(query)):savedFightRows;
+ renderMyFights(filtered);
+ if(query&&filtered.length===0){
+  $("#my-fights-status").classList.remove("hidden");
+  $("#my-fights-status").textContent=`No saved fights match “${query}”.`;
+ }
 }
 async function loadMyFights(){
  const status=$("#my-fights-status"),list=$("#my-fights-list");
@@ -239,7 +269,8 @@ async function loadMyFights(){
  if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){status.textContent="Supabase is not connected yet, so My Fights cannot load.";return}
  try{
   const result=await window.RINGSIDE_SUPABASE.listSavedFights(24);
-  renderMyFights(result.data||[]);
+  savedFightRows=result.data||[];
+  applyMyFightsFilter();
  }catch(error){
   status.textContent=`Could not load saved fights: ${error.message||error}`;
  }
@@ -250,7 +281,7 @@ function setSaveStatus(state,row=null,message=""){
  box.classList.remove("saved","error");
  const title=box.querySelector("b"),text=box.querySelector("span"),view=$("#view-saved-fight"),copy=$("#copy-share-link");
  if(state==="saving"){title.textContent="Saving fight…";text.textContent="Your fight is being added to My Fights.";view.disabled=true;copy.disabled=true;lastSavedFight=null;return}
- if(state==="saved"&&row){box.classList.add("saved");title.textContent="Fight saved";text.textContent=`Added to My Fights as ${row.share_slug}.`;view.disabled=false;copy.disabled=false;lastSavedFight=row;return}
+ if(state==="saved"&&row){box.classList.add("saved");title.textContent="Fight saved";text.textContent=`Added to My Fights as ${row.share_slug}. Copy the replay link or open the vault.`;view.disabled=false;copy.disabled=false;lastSavedFight=row;return}
  if(state==="replay"){box.classList.add("saved");title.textContent="Saved replay";text.textContent=message||"You are viewing a fight from My Fights.";view.disabled=false;copy.disabled=!row?.share_slug;lastSavedFight=row;return}
  box.classList.add("error");title.textContent="Save unavailable";text.textContent=message||"The fight finished, but it could not be saved.";view.disabled=false;copy.disabled=true;lastSavedFight=null;
 }
@@ -270,6 +301,23 @@ function showSavedReplay(row){
  setSaveStatus("replay",row,`Loaded from My Fights: ${fightNameFromSaved(row)}.`);
  history.replaceState(null,"",shareUrl(row.share_slug));
 }
+function hydrateSavedMatchup(row){
+ const data=row?.fight_data||{},redId=row?.red_fighter_id||data.a?.id,blueId=row?.blue_fighter_id||data.b?.id;
+ const red=fighters.find(f=>f.id===redId),blue=fighters.find(f=>f.id===blueId);
+ if(red){selected.a=red;versions.a=Math.max(0,red.years.findIndex(v=>(v.label||"")===(row.red_version_label||data.a?.label)))}
+ if(blue){selected.b=blue;versions.b=Math.max(0,blue.years.findIndex(v=>(v.label||"")===(row.blue_version_label||data.b?.label)))}
+ scheduled=data.settings?.rounds||row.rounds_completed||scheduled;
+ replayingSavedFight=false;
+ renderFighter("a");renderFighter("b");renderResearchDesk();
+}
+async function runSavedMatchup(slug){
+ const result=await window.RINGSIDE_SUPABASE.getSavedFight(slug);
+ if(!result.data)return;
+ hydrateSavedMatchup(result.data);
+ history.replaceState(null,"",location.pathname);
+ setView("home");
+ document.querySelector("#setup")?.scrollIntoView({behavior:"smooth",block:"start"});
+}
 async function openSavedFight(slug){
  if(!window.RINGSIDE_SUPABASE?.isConfigured?.())return;
  const result=await window.RINGSIDE_SUPABASE.getSavedFight(slug);
@@ -286,6 +334,7 @@ function renderFightPoster(last=null){
  $("#poster-venue").textContent=($("#venue").value||"Neutral Arena").toUpperCase();
 }
 async function setupFight(){
+ replayingSavedFight=false;
  const button=$("#simulate"),a=active("a"),b=active("b");
  button.disabled=true;button.textContent="OPENING RESEARCH DESK…";
  await window.BOXING_FIGHT_HISTORY?.resolve(a,b);
@@ -362,7 +411,7 @@ async function saveResultToSupabase(){
  }
 }
 function showResults(){
- $("#broadcast").classList.add("hidden");$("#results").classList.remove("hidden");const w=fight.winner==="draw"?null:fight[fight.winner]||active(fight.winner);
+ $("#broadcast").classList.add("hidden");$("#results").classList.remove("hidden");$("#result-kicker").textContent=replayingSavedFight?"SAVED FIGHT REPLAY":"OFFICIAL RESULT";const w=fight.winner==="draw"?null:fight[fight.winner]||active(fight.winner);
  $("#winner-name").textContent=w?.name||"DRAW";$("#decision").textContent=fight.historical?`${fight.decision} · ${fight.officialScorecards?"OFFICIAL REPLAY":"VERIFIED OUTCOME"}`:fight.decision;
  $("#official-cards").innerHTML=fight.historical&&!fight.officialScorecards
   ?`<div class="judge-card"><small>OFFICIAL CARDS</small><b>NOT AVAILABLE</b></div>`
@@ -384,8 +433,9 @@ $("#division-filters").onclick=e=>{const btn=e.target.closest("[data-division]")
 $("#fighter-search").oninput=e=>renderArchive(e.target.value);$("#close-picker").onclick=()=>$("#picker").close();$("#simulate").onclick=setupFight;
 $("#next-round").onclick=()=>{if(current>=fight.rounds.length||fight.rounds[current-1]?.stoppage)showResults();else{current++;renderLive()}};
 $("#prev-round").onclick=()=>{if(!fight||current<=0)return;current--;renderLive()};
-$("#new-fight").onclick=()=>location.reload();$("#run-again").onclick=setupFight;
+$("#new-fight").onclick=()=>location.reload();$("#run-again").onclick=()=>{if(replayingSavedFight&&lastSavedFight)hydrateSavedMatchup(lastSavedFight);setupFight()};
 $("#refresh-my-fights").onclick=loadMyFights;
+$("#my-fights-search").oninput=applyMyFightsFilter;
 $("#view-saved-fight").onclick=()=>setView("my-fights");
 $("#copy-share-link").onclick=async()=>{
  if(!lastSavedFight?.share_slug)return;
@@ -394,8 +444,9 @@ $("#copy-share-link").onclick=async()=>{
  setTimeout(()=>$("#copy-share-link").textContent="COPY SHARE LINK",1200);
 };
 $("#my-fights-list").onclick=async e=>{
- const open=e.target.closest("[data-open-saved]"),copy=e.target.closest("[data-copy-saved]");
+ const open=e.target.closest("[data-open-saved]"),copy=e.target.closest("[data-copy-saved]"),run=e.target.closest("[data-run-saved]");
  if(open)await openSavedFight(open.dataset.openSaved);
+ if(run)await runSavedMatchup(run.dataset.runSaved);
  if(copy){await copyText(shareUrl(copy.dataset.copySaved));copy.textContent="COPIED";setTimeout(()=>copy.textContent="COPY LINK",1200)}
 };
 document.querySelectorAll("[data-view]").forEach(button=>button.onclick=()=>setView(button.dataset.view));

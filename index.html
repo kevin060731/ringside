@@ -8,9 +8,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,500;0,600;0,700;0,800;0,900;1,700&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=saved-fights-1" />
-  <link rel="stylesheet" href="dashboard.css?v=saved-fights-1" />
-  <link rel="stylesheet" href="playback.css?v=saved-fights-1" />
+  <link rel="stylesheet" href="styles.css?v=saved-fights-polish-1" />
+  <link rel="stylesheet" href="dashboard.css?v=saved-fights-polish-1" />
+  <link rel="stylesheet" href="playback.css?v=saved-fights-polish-1" />
 </head>
 <body>
   <header class="topbar">
@@ -141,7 +141,10 @@
           <h2>My Fights</h2>
           <p>Saved simulations from Supabase. Reopen the exact result, study the play-by-play, or copy a share link.</p>
         </div>
-        <button id="refresh-my-fights">REFRESH</button>
+        <div class="my-fights-tools">
+          <input id="my-fights-search" placeholder="Search fighter, winner, method…" autocomplete="off">
+          <button id="refresh-my-fights">REFRESH</button>
+        </div>
       </div>
       <div class="my-fights-status" id="my-fights-status">Loading saved fights…</div>
       <div class="my-fights-list" id="my-fights-list"></div>
@@ -219,7 +222,7 @@
 
     <section class="results hidden" id="results">
       <div class="result-glow"></div>
-      <div class="result-kicker">OFFICIAL RESULT</div>
+      <div class="result-kicker" id="result-kicker">OFFICIAL RESULT</div>
       <h2 id="winner-name"></h2>
       <p id="decision"></p>
       <section class="save-status" id="save-status">
@@ -256,19 +259,19 @@
     <div class="division-filters" id="division-filters"></div>
     <div class="fighter-grid" id="fighter-grid"></div>
   </dialog>
-  <script src="supabase-config.js?v=saved-fights-1"></script>
-  <script src="supabase-client.js?v=saved-fights-1"></script>
-  <script src="fight-history.js?v=saved-fights-1"></script>
-  <script src="compubox-provider.js?v=saved-fights-1"></script>
-  <script src="engine.js?v=saved-fights-1"></script>
-  <script src="roster.js?v=saved-fights-1"></script>
-  <script src="roster-expanded.js?v=saved-fights-1"></script>
-  <script src="roster-active.js?v=saved-fights-1"></script>
-  <script src="roster-deep.js?v=saved-fights-1"></script>
-  <script src="roster-versions.js?v=saved-fights-1"></script>
-  <script src="boxing-gems-data.js?v=saved-fights-1"></script>
-  <script src="rummy-corner-data.js?v=saved-fights-1"></script>
-  <script src="research-desk.js?v=saved-fights-1"></script>
-  <script src="app.js?v=saved-fights-1"></script>
+  <script src="supabase-config.js?v=saved-fights-polish-1"></script>
+  <script src="supabase-client.js?v=saved-fights-polish-1"></script>
+  <script src="fight-history.js?v=saved-fights-polish-1"></script>
+  <script src="compubox-provider.js?v=saved-fights-polish-1"></script>
+  <script src="engine.js?v=saved-fights-polish-1"></script>
+  <script src="roster.js?v=saved-fights-polish-1"></script>
+  <script src="roster-expanded.js?v=saved-fights-polish-1"></script>
+  <script src="roster-active.js?v=saved-fights-polish-1"></script>
+  <script src="roster-deep.js?v=saved-fights-polish-1"></script>
+  <script src="roster-versions.js?v=saved-fights-polish-1"></script>
+  <script src="boxing-gems-data.js?v=saved-fights-polish-1"></script>
+  <script src="rummy-corner-data.js?v=saved-fights-polish-1"></script>
+  <script src="research-desk.js?v=saved-fights-polish-1"></script>
+  <script src="app.js?v=saved-fights-polish-1"></script>
 </body>
 </html>
