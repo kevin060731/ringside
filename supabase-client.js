@@ -112,5 +112,11 @@ async function getSavedFight(slug){
  const result=await request("rpc/get_public_saved_fight",{method:"POST",body:{p_share_slug:clean(slug)}});
  return {data:result.data?.[0]||null};
 }
-global.RINGSIDE_SUPABASE={isConfigured,getSession,currentUser,signUp,signIn,signOut,saveFight,listSavedFights,getSavedFight};
+async function loadRoster(){
+ if(!isConfigured())return {skipped:true,reason:"Supabase is not configured yet.",data:{fighters:[],versions:[]}};
+ const roster=await request("fighters?select=id,name,last_name,country,stance,primary_division,image_url,active,model_data,updated_at&order=updated_at.desc&limit=1000");
+ const versions=await request("fighter_versions?select=fighter_id,label,year,division,weight_lbs,ratings,best_performance,source_notes,is_default,updated_at&order=fighter_id.asc,is_default.desc,year.desc&limit=3000");
+ return {data:{fighters:roster.data||[],versions:versions.data||[]}};
+}
+global.RINGSIDE_SUPABASE={isConfigured,getSession,currentUser,signUp,signIn,signOut,saveFight,listSavedFights,getSavedFight,loadRoster};
 })(typeof window!=="undefined"?window:globalThis);

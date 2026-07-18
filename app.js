@@ -24,9 +24,12 @@ if(window.ROSTER_VERSION_PACK){
  });
 }
 fighters.forEach(f=>{if(currentFighterIds.has(f.id)&&!window.ROSTER_VERSION_PACK?.[f.id]&&!f.years.some(v=>v.year===2026)){f.active=true;f.updated="2026-07-08";f.years.unshift({...f.years[0],year:2026,label:"CURRENT · JUL 2026"})}});
-fighters.forEach(f=>{f.gems=window.BOXING_GEMS_DATA?.profiles?.[f.name]||null});
-fighters.forEach(f=>{f.eraStudy=window.RUMMY_CORNER_DATA?.profiles?.[f.name]||null});
-fighters.forEach(f=>{f.compubox=window.COMPUBOX_DATA?.profileFor(f)||null});
+function decorateRoster(){
+ fighters.forEach(f=>{f.gems=window.BOXING_GEMS_DATA?.profiles?.[f.name]||f.gems||null});
+ fighters.forEach(f=>{f.eraStudy=window.RUMMY_CORNER_DATA?.profiles?.[f.name]||f.eraStudy||null});
+ fighters.forEach(f=>{f.compubox=window.COMPUBOX_DATA?.profileFor(f)||f.compubox||null});
+ fighters.forEach(f=>f.years.forEach(v=>{if(!v.weight)v.weight=divisionWeightsLb[v.division||f.division]||160}));
+}
 let selected={a:fighters[0],b:fighters[1]},versions={a:0,b:0},pickerSide="a",scheduled=12,fight=null,current=0,archiveDivision="All",researchDesk=null,lastSavedFight=null,replayingSavedFight=false,savedFightRows=[];
 const $=s=>document.querySelector(s);
 const fightLabSections=[".hero","#setup","#research-desk",".settings-panel",".data-panel"];
@@ -46,8 +49,8 @@ async function loadPortrait(f,img){
 }
 const portraitObserver=new IntersectionObserver(entries=>entries.forEach(entry=>{if(!entry.isIntersecting)return;const f=fighters.find(x=>x.id===entry.target.dataset.fighter);if(f)loadPortrait(f,entry.target);portraitObserver.unobserve(entry.target)}),{rootMargin:"180px"});
 const divisionLimits={"Heavyweight":"200+ lb","Cruiserweight":"200 lb","Light Heavyweight":"175 lb","Super Middleweight":"168 lb","Middleweight":"160 lb","Junior Middleweight":"154 lb","Welterweight":"147 lb","Junior Welterweight":"140 lb","Lightweight":"135 lb","Junior Lightweight":"130 lb","Featherweight":"126 lb","Junior Featherweight":"122 lb","Bantamweight":"118 lb","Junior Bantamweight":"115 lb","Flyweight":"112 lb","Junior Flyweight":"108 lb","Strawweight":"105 lb"};
-const divisionWeightsLb={Heavyweight:224,Cruiserweight:200,"Light Heavyweight":175,"Super Middleweight":168,Middleweight:160,"Junior Middleweight":154,Welterweight:147,"Junior Welterweight":140,Lightweight:135,"Junior Lightweight":130,Featherweight:126,"Junior Featherweight":122,Bantamweight:118,"Junior Bantamweight":115,Flyweight:112,"Junior Flyweight":108,Strawweight:105};
-fighters.forEach(f=>f.years.forEach(v=>{if(!v.weight)v.weight=divisionWeightsLb[v.division||f.division]||160}));
+const divisionWeightsLb={Heavyweight:224,Cruiserweight:200,"Light Heavyweight":175,"Super Middleweight":168,"Middleweight":160,"Junior Middleweight":154,Welterweight:147,"Junior Welterweight":140,Lightweight:135,"Junior Lightweight":130,Featherweight:126,"Junior Featherweight":122,Bantamweight:118,"Junior Bantamweight":115,Flyweight:112,"Junior Flyweight":108,Strawweight:105};
+decorateRoster();
 const bioJobs=new Map();
 const boxrecPhysicals={tyson:{height_cm:178,reach_cm:180},usyk:{height_cm:191,reach_cm:198}};
 const shortMeasure=s=>{const clean=(s||"").replace(/\[[^\]]+\]/g,"").trim();return clean.match(/\d+\s*ft\s*\d+(?:[+.]\d+)?\s*in/i)?.[0]||clean.match(/\d+(?:\.\d+)?\s*in/i)?.[0]||clean.split("(")[0].trim()||"—"};
@@ -76,6 +79,28 @@ async function loadBio(f,side){
   return {height,reach,record:wins&&losses?`${wins}-${losses}${draws&&draws!=="0"?`-${draws}`:""}`:"—",source};
  }).catch(()=>({})));
  const bio=await bioJobs.get(f.id);if(selected[side].id===f.id)drawBio(side,active(side),bio);
+}
+async function syncRosterFromSupabase(){
+ if(!window.RINGSIDE_SUPABASE?.loadRoster||!window.RINGSIDE_ROSTER_SYNC?.mergeRoster)return;
+ const previous={a:{id:selected.a.id,label:active("a").label},b:{id:selected.b.id,label:active("b").label}};
+ try{
+  const result=await window.RINGSIDE_SUPABASE.loadRoster();
+  const rows=result?.data?.fighters||[];
+  if(!rows.length)return;
+  const summary=window.RINGSIDE_ROSTER_SYNC.mergeRoster(fighters,result.data);
+  decorateRoster();
+  for(const side of ["a","b"]){
+   selected[side]=fighters.find(f=>f.id===previous[side].id)||selected[side];
+   const sameVersion=selected[side].years.findIndex(v=>(v.label||"")===previous[side].label);
+   versions[side]=sameVersion>=0?sameVersion:Math.min(versions[side],selected[side].years.length-1);
+  }
+  renderFighter("a");renderFighter("b");renderArchive($("#fighter-search")?.value||"");
+  const chip=document.querySelector(".season-chip b");
+  if(chip)chip.textContent=`Supabase synced · ${new Intl.DateTimeFormat(undefined,{month:"short",day:"numeric",year:"numeric"}).format(new Date())}`;
+  console.info(`RINGSIDE roster sync: ${summary.updated} updated, ${summary.added} added`);
+ }catch(error){
+  console.warn("RINGSIDE roster sync skipped:",error.message||error);
+ }
 }
 function active(side){return {...selected[side],...selected[side].years[versions[side]]}}
 function versionProfile(f,v){
@@ -499,5 +524,6 @@ $("#weight").onchange=renderResearchDesk;
 ["ring","venue","championship","neutral","ruleset","environment","weighin","equipment"].forEach(id=>{const el=$(`#${id}`);if(el)el.onchange=renderResearchDesk});
 renderFighter("a");renderFighter("b");renderArchive();
 renderAuthState();
+syncRosterFromSupabase();
 const initialSlug=new URLSearchParams(location.search).get("fight");
 if(initialSlug)openSavedFight(initialSlug);

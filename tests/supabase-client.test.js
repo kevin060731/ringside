@@ -77,3 +77,20 @@ test("Supabase client lists private fights and fetches public share replays",asy
  assert.equal(replayRequest.options.method,"POST");
  assert.deepEqual(JSON.parse(replayRequest.options.body),{p_share_slug:"abc123"});
 });
+
+test("Supabase client can load roster sync rows",async()=>{
+ const requests=[];
+ const context=loadClient(async(url,options)=>{
+  requests.push({url,options});
+  if(String(url).includes("fighter_versions")){
+   return {ok:true,text:async()=>JSON.stringify([{fighter_id:"ennis",label:"2026 · 154-LB CAMPAIGN",year:2026}])};
+  }
+  return {ok:true,text:async()=>JSON.stringify([{id:"ennis",name:"Jaron Ennis",primary_division:"Junior Middleweight"}])};
+ });
+ const result=await context.RINGSIDE_SUPABASE.loadRoster();
+ assert.equal(result.data.fighters[0].id,"ennis");
+ assert.equal(result.data.versions[0].fighter_id,"ennis");
+ assert.match(requests[0].url,/fighters\?select=/);
+ assert.match(requests[1].url,/fighter_versions\?select=/);
+ assert.equal(requests[0].options.headers.Authorization,`Bearer ${context.RINGSIDE_SUPABASE_CONFIG.anonKey}`);
+});
