@@ -53,6 +53,7 @@ function normalizeFighter(row={},versionRows=[]){
    synced:true
   });
  }
+ const syncedImage=clean(row.image_url)||model.img||model.image||model.imageUrl||model.image_url||"";
  return {
   ...model,
   id,
@@ -65,7 +66,9 @@ function normalizeFighter(row={},versionRows=[]){
   wiki:model.wiki||name,
   active:Boolean(row.active||model.active),
   updated:row.updated_at||model.updated||null,
-  img:clean(row.image_url)||model.img||model.image||model.imageUrl||model.image_url||"https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?auto=format&fit=crop&w=500&q=85",
+  img:syncedImage||"https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?auto=format&fit=crop&w=500&q=85",
+  portrait:syncedImage||model.portrait||null,
+  syncedImage:!!syncedImage,
   years
  };
 }

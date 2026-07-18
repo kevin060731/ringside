@@ -29,6 +29,8 @@ test("roster sync updates existing fighters and adds new Supabase fighters",()=>
  const ennis=local.find(f=>f.id==="ennis");
  assert.equal(ennis.division,"Junior Middleweight");
  assert.equal(ennis.img,"boots.jpg");
+ assert.equal(ennis.portrait,"boots.jpg");
+ assert.equal(ennis.syncedImage,true);
  assert.equal(ennis.years[0].weight,154);
  assert.equal(ennis.years[0].power,93);
  assert.equal(ennis.years[0].sourceNotes.simulation.handRisk,2);

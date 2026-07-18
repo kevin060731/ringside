@@ -36,6 +36,7 @@ const fightLabSections=[".hero","#setup","#research-desk",".settings-panel",".da
 const wikiAliases={"Saúl Álvarez":"Canelo Álvarez","Gennadiy Golovkin":"Gennady Golovkin","Jesse Rodriguez":"Jesse Rodríguez (boxer)","Oleksandr Usyk":"Oleksandr Usyk","Floyd Mayweather":"Floyd Mayweather Jr.","Julio César Chávez":"Julio César Chávez","Teófimo López":"Teófimo López"};
 const portraitJobs=new Map();
 async function loadPortrait(f,img){
+ if(f.syncedImage&&f.img){img.src=f.img;return}
  if(f.portrait){img.src=f.portrait;return}
  if(!portraitJobs.has(f.id))portraitJobs.set(f.id,(async()=>{
   const title=f.wiki||wikiAliases[f.name]||f.name;
