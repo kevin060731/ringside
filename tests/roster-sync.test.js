@@ -11,7 +11,7 @@ function loadSync(){
 test("roster sync updates existing fighters and adds new Supabase fighters",()=>{
  const sync=loadSync();
  const local=[
-  {id:"ennis",name:"Jaron Ennis",last:"Ennis",nickname:"Boots",country:"USA",stance:"Orthodox",division:"Welterweight",img:"old.jpg",years:[{year:2024,label:"2024 · WELTER",weight:147,power:90,speed:94,chin:91,defense:91,iq:92,footwork:92,cardio:93,accuracy:93,aggression:88}]}
+  {id:"ennis",name:"Jaron Ennis",last:"Ennis",nickname:"Boots",country:"USA",stance:"Orthodox",division:"Welterweight",img:"old.jpg",years:[{year:2024,label:"2024 · WELTER",weight:147,power:90,speed:94,chin:91,defense:91,iq:92,footwork:92,cardio:93,accuracy:93,aggression:88},{year:2023,label:"2023 · VILLA FINISHER",weight:147,power:93}]}
  ];
  const summary=sync.mergeRoster(local,{
   fighters:[
@@ -34,7 +34,25 @@ test("roster sync updates existing fighters and adds new Supabase fighters",()=>
  assert.equal(ennis.years[0].weight,154);
  assert.equal(ennis.years[0].power,93);
  assert.equal(ennis.years[0].sourceNotes.simulation.handRisk,2);
+ assert.ok(ennis.years.some(version=>version.label==="2024 · WELTER"));
+ assert.ok(ennis.years.some(version=>version.label==="2023 · VILLA FINISHER"));
  assert.equal(local.find(f=>f.id==="newprospect").years[0].label,"CURRENT · SYNCED");
+});
+
+test("roster sync overrides matching versions without deleting other local versions",()=>{
+ const sync=loadSync();
+ const merged=sync.mergeVersions([
+  {year:2021,label:"2021 · 126/130-LB PURE BOXER",weight:130,power:78},
+  {year:2023,label:"2023 · 135-LB SHARPSHOOTER",weight:135,power:83},
+  {year:2026,label:"2026 · 140-LB TECHNICIAN",weight:140,power:82}
+ ],[
+  {year:2026,label:"2026 · 140-LB TECHNICIAN",weight:138,power:84,isDefault:true,synced:true}
+ ]);
+ assert.equal(merged.length,3);
+ assert.equal(merged[0].weight,138);
+ assert.equal(merged[0].power,84);
+ assert.ok(merged.some(version=>version.label==="2021 · 126/130-LB PURE BOXER"));
+ assert.ok(merged.some(version=>version.label==="2023 · 135-LB SHARPSHOOTER"));
 });
 
 test("roster sync can build versions from fighter model_data when version rows are absent",()=>{

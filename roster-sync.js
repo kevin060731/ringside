@@ -27,9 +27,22 @@ function normalizeVersion(row={},fallbackDivision="Welterweight"){
   ...ratings,
   bestPerformance:row.best_performance||notes.bestPerformance||notes.best_performance||null,
   sourceNotes:notes,
+  isDefault:!!row.is_default,
   synced:true,
   updated:row.updated_at||null
  };
+}
+function versionKey(version={}){
+ const label=clean(version.label).toLowerCase();
+ if(label)return `label:${label}`;
+ return `year:${Number(version.year)||""}:division:${clean(version.division).toLowerCase()}`;
+}
+function mergeVersions(localYears=[],syncedYears=[]){
+ if(!syncedYears.length)return localYears;
+ const syncedKeys=new Set(syncedYears.map(versionKey));
+ const preserved=localYears.filter(version=>!syncedKeys.has(versionKey(version)));
+ const orderedSynced=[...syncedYears].sort((a,b)=>(b.isDefault?1:0)-(a.isDefault?1:0)||(Number(b.year)||0)-(Number(a.year)||0));
+ return [...orderedSynced,...preserved];
 }
 function normalizeFighter(row={},versionRows=[]){
  const model=asObject(row.model_data);
@@ -90,7 +103,7 @@ function mergeRoster(localFighters=[],remote={fighters:[],versions:[]}){
   const existing=localFighters.find(f=>f.id===id);
   if(existing){
    const localYears=existing.years||[];
-   Object.assign(existing,synced,{years:synced.years.length?synced.years:localYears});
+   Object.assign(existing,synced,{years:mergeVersions(localYears,synced.years)});
    updated++;
   }else{
    localFighters.push(synced);
@@ -99,5 +112,5 @@ function mergeRoster(localFighters=[],remote={fighters:[],versions:[]}){
  }
  return {fighters:localFighters,added,updated,versions:versionCount};
 }
-global.RINGSIDE_ROSTER_SYNC={mergeRoster,normalizeFighter,normalizeVersion};
+global.RINGSIDE_ROSTER_SYNC={mergeRoster,normalizeFighter,normalizeVersion,mergeVersions};
 })(typeof window!=="undefined"?window:globalThis);
