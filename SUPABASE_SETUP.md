@@ -43,6 +43,23 @@ The anon key is designed to be used in browser apps. Security comes from the Row
 
 Commit and push the changed `supabase-config.js`. Vercel will redeploy.
 
+## 6. Enable the Roster Manager for your account
+
+The public app can read roster rows, but only approved roster admins can edit fighters from the browser.
+
+1. Sign in to RINGSIDE.
+2. Open the new **Roster** tab.
+3. Copy the User ID shown in the Roster Manager.
+4. In Supabase SQL Editor, run:
+
+```sql
+insert into public.roster_admins (user_id, note)
+values ('PASTE-YOUR-USER-ID-HERE', 'Kevin roster admin')
+on conflict (user_id) do update set note = excluded.note;
+```
+
+After that, reload the Roster tab. It should say **ADMIN ENABLED**.
+
 ## What this first version stores
 
 When configured, finished simulations are saved into `saved_fights` under the signed-in user with:
@@ -60,6 +77,18 @@ When configured, finished simulations are saved into `saved_fights` under the si
 Roster Sync lets Supabase override or add fighters after real fights happen. The app still ships with a local roster, but when it opens it checks Supabase tables first:
 
 Supabase `fighters` + `fighter_versions` → app roster merge → fighter card updates → simulator uses the new version data.
+
+## Roster Manager
+
+The Roster tab is the browser editor for this workflow:
+
+1. Pick a fighter.
+2. Pick a fighter version.
+3. Edit the image, division, fight weight, ratings, best performance, and simulation notes.
+4. Save it.
+5. Refresh the public app after Vercel/Supabase has the latest data.
+
+The **Sync Current App Roster to Supabase** button copies the full built-in app roster into Supabase. Use this when you want every fighter and version to become editable in Supabase. It replaces the Supabase version rows for those fighters with the current app versions, so avoid clicking it while you have unsaved manual version edits you still need to preserve somewhere else.
 
 ### Updating an existing fighter
 
@@ -133,8 +162,7 @@ If Supabase has fighter version rows for a fighter, those synced versions become
 
 Good next backend features:
 
-1. Admin fighter editor
-2. Verified fight history sync
-3. Community voting
-4. Supabase storage for fighter images
-5. Automated research queue for new real fights
+1. Verified fight history sync
+2. Community voting
+3. Supabase storage for fighter images
+4. Automated research queue for new real fights

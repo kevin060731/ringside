@@ -94,3 +94,56 @@ test("Supabase client can load roster sync rows",async()=>{
  assert.match(requests[1].url,/fighter_versions\?select=/);
  assert.equal(requests[0].options.headers.Authorization,`Bearer ${context.RINGSIDE_SUPABASE_CONFIG.anonKey}`);
 });
+
+test("Supabase client supports roster admin edits",async()=>{
+ const requests=[];
+ const context=loadClient(async(url,options)=>{
+  requests.push({url,options});
+  if(String(url).includes("/auth/v1/token")){
+   return {ok:true,text:async()=>JSON.stringify({access_token:"user-token",user:{id:"user-1",email:"kev@example.com"}})};
+  }
+  if(String(url).includes("roster_admins")){
+   return {ok:true,text:async()=>JSON.stringify([{user_id:"user-1"}])};
+  }
+  return {ok:true,text:async()=>JSON.stringify([{ok:true}])};
+ });
+ await context.RINGSIDE_SUPABASE.signIn("kev@example.com","secret123");
+ const admin=await context.RINGSIDE_SUPABASE.isRosterAdmin();
+ await context.RINGSIDE_SUPABASE.upsertFighter({id:"haney",name:"Devin Haney"});
+ await context.RINGSIDE_SUPABASE.replaceFighterVersion({fighter_id:"haney",label:"2026 · 147-LB CAMPAIGN",year:2026,division:"Welterweight",weight_lbs:147,ratings:{power:78},best_performance:null,source_notes:{source:"test"},is_default:true});
+ assert.equal(admin.data,true);
+ assert.match(requests.find(request=>String(request.url).includes("roster_admins")).url,/roster_admins\?select=user_id&user_id=eq\.user-1&limit=1/);
+ const fighterSave=requests.find(request=>String(request.url).includes("fighters?on_conflict=id"));
+ const versionDelete=requests.find(request=>String(request.url).includes("fighter_versions?fighter_id=eq.haney"));
+ const versionSave=requests.find(request=>String(request.url).endsWith("fighter_versions?select=fighter_id,label,year,division,weight_lbs,ratings,best_performance,source_notes,is_default"));
+ assert.equal(fighterSave.options.method,"POST");
+ assert.equal(fighterSave.options.headers.Prefer,"resolution=merge-duplicates,return=representation");
+ assert.equal(versionDelete.options.method,"DELETE");
+ assert.equal(versionSave.options.method,"POST");
+ assert.equal(JSON.parse(versionSave.options.body).fighter_id,"haney");
+});
+
+test("Supabase client can seed the current roster without deleting unrelated fighters",async()=>{
+ const requests=[];
+ const context=loadClient(async(url,options)=>{
+  requests.push({url,options});
+  if(String(url).includes("/auth/v1/token")){
+   return {ok:true,text:async()=>JSON.stringify({access_token:"user-token",user:{id:"user-1",email:"kev@example.com"}})};
+  }
+  return {ok:true,text:async()=>String(url).includes("return=minimal")?"":JSON.stringify([{ok:true}])};
+ });
+ await context.RINGSIDE_SUPABASE.signIn("kev@example.com","secret123");
+ const result=await context.RINGSIDE_SUPABASE.seedRoster([
+  {id:"ennis",name:"Jaron Ennis",last:"Ennis",country:"USA",stance:"Orthodox",division:"Junior Middleweight",img:"https://example.com/ennis.jpg",active:true,nickname:"Boots",years:[{label:"2026 · 154-LB CAMPAIGN",year:2026,division:"Junior Middleweight",weight:154,power:93,speed:95,chin:92,defense:93,iq:94,footwork:94,cardio:95,accuracy:94,aggression:90}]},
+  {id:"stevenson",name:"Shakur Stevenson",last:"Stevenson",country:"USA",stance:"Southpaw",division:"Junior Welterweight",img:"https://example.com/shakur.jpg",active:true,nickname:"Fearless",years:[{label:"2026 · 140-LB TECHNICIAN",year:2026,division:"Junior Welterweight",weight:138,power:82,speed:97,chin:92,defense:100,iq:99,footwork:99,cardio:96,accuracy:97,aggression:72}]}
+ ]);
+ assert.equal(result.data.fighterCount,2);
+ assert.equal(result.data.versionCount,2);
+ const deleteVersions=requests.find(request=>String(request.url).includes("fighter_versions?fighter_id=in."));
+ assert.match(deleteVersions.url,/fighter_versions\?fighter_id=in\.\("ennis","stevenson"\)/);
+ assert.equal(deleteVersions.options.method,"DELETE");
+ assert.equal(deleteVersions.options.headers.Prefer,"return=minimal");
+ const versionInsert=requests.at(-1);
+ assert.equal(versionInsert.options.method,"POST");
+ assert.equal(JSON.parse(versionInsert.options.body).length,2);
+});

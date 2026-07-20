@@ -8,18 +8,18 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,500;0,600;0,700;0,800;0,900;1,700&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=roster-sync-1" />
-  <link rel="stylesheet" href="dashboard.css?v=roster-sync-1" />
-  <link rel="stylesheet" href="playback.css?v=roster-sync-1" />
+  <link rel="stylesheet" href="styles.css?v=roster-manager-1" />
+  <link rel="stylesheet" href="dashboard.css?v=roster-manager-1" />
+  <link rel="stylesheet" href="playback.css?v=roster-manager-1" />
 </head>
 <body>
   <header class="topbar">
     <a class="brand" href="#"><span class="brand-mark">R</span><span>RING<span>SIDE</span></span></a>
-    <nav class="utility-nav"><button data-view="home">FIGHT LAB</button><button>RANKINGS</button><button>NEWS</button></nav>
+    <nav class="utility-nav"><button data-view="home">FIGHT LAB</button><button>RANKINGS</button><button>NEWS</button><button data-view="roster-manager">ROSTER</button></nav>
     <div class="header-actions"><button class="search-btn" aria-label="Search">⌕</button><button class="avatar-btn" id="auth-button" aria-label="Profile">SIGN IN</button></div>
   </header>
   <nav class="sport-nav">
-    <button class="active" data-view="home">BOXING</button><button>MMA</button><button data-view="my-fights">MY FIGHTS</button><button data-view="archive">ARCHIVE</button>
+    <button class="active" data-view="home">BOXING</button><button>MMA</button><button data-view="my-fights">MY FIGHTS</button><button data-view="roster-manager">ROSTER</button><button data-view="archive">ARCHIVE</button>
   </nav>
 
   <main>
@@ -150,6 +150,59 @@
       <div class="my-fights-list" id="my-fights-list"></div>
     </section>
 
+    <section class="roster-manager hidden" id="roster-manager">
+      <div class="roster-manager-head">
+        <div>
+          <small>RINGSIDE ADMIN</small>
+          <h2>Roster Manager</h2>
+          <p>Edit fighters and versions from the browser. Saved changes go to Supabase and sync into the public simulator.</p>
+        </div>
+        <div class="roster-admin-card">
+          <small>ADMIN STATUS</small>
+          <b id="roster-admin-status">Checking…</b>
+          <span id="roster-admin-user">Sign in to manage roster data.</span>
+        </div>
+      </div>
+      <div class="roster-tools">
+        <button id="seed-roster">SYNC CURRENT APP ROSTER TO SUPABASE</button>
+        <button id="reload-roster">RELOAD SUPABASE ROSTER</button>
+      </div>
+      <div class="roster-editor">
+        <div class="roster-picker-card">
+          <label>FIGHTER<select id="roster-fighter"></select></label>
+          <label>VERSION<select id="roster-version"></select></label>
+          <div class="roster-preview"><img id="roster-preview-img" alt=""><span><b id="roster-preview-name">Choose fighter</b><small id="roster-preview-meta">—</small></span></div>
+        </div>
+        <form class="roster-form" id="roster-form">
+          <div class="roster-form-grid">
+            <label>ID<input id="edit-id" readonly></label>
+            <label>Name<input id="edit-name"></label>
+            <label>Last Name<input id="edit-last"></label>
+            <label>Nickname<input id="edit-nickname"></label>
+            <label>Country<input id="edit-country"></label>
+            <label>Stance<select id="edit-stance"><option>Orthodox</option><option>Southpaw</option><option>Switch</option></select></label>
+            <label>Primary Division<select id="edit-primary-division"></select></label>
+            <label>Image URL<input id="edit-image"></label>
+            <label>Version Label<input id="edit-version-label"></label>
+            <label>Year<input id="edit-year" type="number"></label>
+            <label>Version Division<select id="edit-version-division"></select></label>
+            <label>Fight Weight<input id="edit-weight" type="number" step="0.1"></label>
+          </div>
+          <div class="ratings-editor" id="ratings-editor"></div>
+          <div class="roster-form-grid">
+            <label>Best Performance Opponent<input id="edit-best-opponent"></label>
+            <label>Best Performance Result<input id="edit-best-result"></label>
+          </div>
+          <label class="wide-label">Best Performance Note<textarea id="edit-best-note" rows="3"></textarea></label>
+          <label class="wide-label">Simulation Notes JSON<textarea id="edit-source-notes" rows="5"></textarea></label>
+          <div class="roster-save-row">
+            <button type="submit">SAVE THIS VERSION</button>
+            <span id="roster-save-status">Pick a fighter/version to edit.</span>
+          </div>
+        </form>
+      </div>
+    </section>
+
     <section class="broadcast hidden" id="broadcast">
       <div class="broadcast-top">
         <button class="back-btn" id="new-fight">← NEW FIGHT</button>
@@ -250,7 +303,7 @@
     <button><b>⚔</b><span>Matchup</span></button>
     <button><b>＋</b><span>Simulate</span></button>
     <button data-view="archive"><b>▤</b><span>Archive</span></button>
-    <button><b>●</b><span>Profile</span></button>
+    <button data-view="roster-manager"><b>✎</b><span>Roster</span></button>
   </nav>
 
   <dialog id="picker">
@@ -274,20 +327,20 @@
       <button type="button" id="signout-button" class="signout-button">SIGN OUT</button>
     </form>
   </dialog>
-  <script src="supabase-config.js?v=roster-sync-1"></script>
-  <script src="supabase-client.js?v=roster-sync-1"></script>
-  <script src="fight-history.js?v=roster-sync-1"></script>
-  <script src="compubox-provider.js?v=roster-sync-1"></script>
-  <script src="engine.js?v=roster-sync-1"></script>
-  <script src="roster.js?v=roster-sync-1"></script>
-  <script src="roster-expanded.js?v=roster-sync-1"></script>
-  <script src="roster-active.js?v=roster-sync-1"></script>
-  <script src="roster-deep.js?v=roster-sync-1"></script>
-  <script src="roster-versions.js?v=roster-sync-1"></script>
-  <script src="boxing-gems-data.js?v=roster-sync-1"></script>
-  <script src="rummy-corner-data.js?v=roster-sync-1"></script>
-  <script src="research-desk.js?v=roster-sync-1"></script>
-  <script src="roster-sync.js?v=roster-sync-1"></script>
-  <script src="app.js?v=roster-sync-1"></script>
+  <script src="supabase-config.js?v=roster-manager-1"></script>
+  <script src="supabase-client.js?v=roster-manager-1"></script>
+  <script src="fight-history.js?v=roster-manager-1"></script>
+  <script src="compubox-provider.js?v=roster-manager-1"></script>
+  <script src="engine.js?v=roster-manager-1"></script>
+  <script src="roster.js?v=roster-manager-1"></script>
+  <script src="roster-expanded.js?v=roster-manager-1"></script>
+  <script src="roster-active.js?v=roster-manager-1"></script>
+  <script src="roster-deep.js?v=roster-manager-1"></script>
+  <script src="roster-versions.js?v=roster-manager-1"></script>
+  <script src="boxing-gems-data.js?v=roster-manager-1"></script>
+  <script src="rummy-corner-data.js?v=roster-manager-1"></script>
+  <script src="research-desk.js?v=roster-manager-1"></script>
+  <script src="roster-sync.js?v=roster-manager-1"></script>
+  <script src="app.js?v=roster-manager-1"></script>
 </body>
 </html>

@@ -47,6 +47,12 @@ create table if not exists public.verified_fights (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists public.roster_admins (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  note text,
+  created_at timestamptz not null default now()
+);
+
 create table if not exists public.saved_fights (
   id uuid primary key default gen_random_uuid(),
   share_slug text not null unique default lower(substr(replace(gen_random_uuid()::text,'-',''),1,10)),
@@ -72,6 +78,7 @@ create table if not exists public.saved_fights (
 alter table public.fighters enable row level security;
 alter table public.fighter_versions enable row level security;
 alter table public.verified_fights enable row level security;
+alter table public.roster_admins enable row level security;
 alter table public.saved_fights enable row level security;
 
 drop policy if exists "Public fighters are readable" on public.fighters;
@@ -79,15 +86,32 @@ create policy "Public fighters are readable"
 on public.fighters for select
 using (true);
 
+drop policy if exists "Roster admins can manage fighters" on public.fighters;
+create policy "Roster admins can manage fighters"
+on public.fighters for all
+using (exists (select 1 from public.roster_admins admin where admin.user_id = auth.uid()))
+with check (exists (select 1 from public.roster_admins admin where admin.user_id = auth.uid()));
+
 drop policy if exists "Public fighter versions are readable" on public.fighter_versions;
 create policy "Public fighter versions are readable"
 on public.fighter_versions for select
 using (true);
 
+drop policy if exists "Roster admins can manage fighter versions" on public.fighter_versions;
+create policy "Roster admins can manage fighter versions"
+on public.fighter_versions for all
+using (exists (select 1 from public.roster_admins admin where admin.user_id = auth.uid()))
+with check (exists (select 1 from public.roster_admins admin where admin.user_id = auth.uid()));
+
 drop policy if exists "Public verified fights are readable" on public.verified_fights;
 create policy "Public verified fights are readable"
 on public.verified_fights for select
 using (true);
+
+drop policy if exists "Users can read their roster admin status" on public.roster_admins;
+create policy "Users can read their roster admin status"
+on public.roster_admins for select
+using (auth.uid() = user_id);
 
 drop policy if exists "Public saved fights are readable" on public.saved_fights;
 drop policy if exists "Anyone can create public saved fights" on public.saved_fights;

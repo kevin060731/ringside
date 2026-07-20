@@ -118,5 +118,50 @@ async function loadRoster(){
  const versions=await request("fighter_versions?select=fighter_id,label,year,division,weight_lbs,ratings,best_performance,source_notes,is_default,updated_at&order=fighter_id.asc,is_default.desc,year.desc&limit=3000");
  return {data:{fighters:roster.data||[],versions:versions.data||[]}};
 }
-global.RINGSIDE_SUPABASE={isConfigured,getSession,currentUser,signUp,signIn,signOut,saveFight,listSavedFights,getSavedFight,loadRoster};
+async function isRosterAdmin(){
+ const user=currentUser();
+ if(!user)return {authRequired:true,data:false,reason:"Sign in to edit the roster."};
+ const result=await request(`roster_admins?select=user_id&user_id=eq.${encodeURIComponent(user.id)}&limit=1`);
+ return {data:!!result.data?.length};
+}
+async function upsertFighter(row){
+ if(!currentUser())return {authRequired:true,reason:"Sign in to edit the roster."};
+ return request("fighters?on_conflict=id",{method:"POST",body:[row],headers:{Prefer:"resolution=merge-duplicates,return=representation"}});
+}
+async function replaceFighterVersion(row){
+ if(!currentUser())return {authRequired:true,reason:"Sign in to edit the roster."};
+ await request(`fighter_versions?fighter_id=eq.${encodeURIComponent(row.fighter_id)}&label=eq.${encodeURIComponent(row.label)}`,{method:"DELETE",headers:{Prefer:"return=minimal"}});
+ return request("fighter_versions?select=fighter_id,label,year,division,weight_lbs,ratings,best_performance,source_notes,is_default",{method:"POST",body:row});
+}
+async function seedRoster(localFighters=[]){
+ if(!currentUser())return {authRequired:true,reason:"Sign in to seed the roster."};
+ const fighterRows=localFighters.map(f=>({
+  id:f.id,
+  name:f.name,
+  last_name:f.last||null,
+  country:f.country||null,
+  stance:f.stance||null,
+  primary_division:f.division||null,
+  image_url:f.img||null,
+  active:!!f.active,
+  model_data:{nickname:f.nickname||"",wiki:f.wiki||f.name,updated:new Date().toISOString().slice(0,10)}
+ }));
+ const versionRows=localFighters.flatMap(f=>(f.years||[]).map((v,index)=>({
+  fighter_id:f.id,
+  label:v.label||`${v.year||"Current"} · VERSION`,
+  year:Number(v.year)||null,
+  division:v.division||f.division||null,
+  weight_lbs:Number(v.weight)||null,
+  ratings:{power:v.power,speed:v.speed,chin:v.chin,defense:v.defense,iq:v.iq,footwork:v.footwork,cardio:v.cardio,accuracy:v.accuracy,aggression:v.aggression},
+  best_performance:v.bestPerformance||null,
+  source_notes:{source:"seeded from RINGSIDE local roster"},
+  is_default:index===0
+ })));
+ const fighterIds=localFighters.map(f=>`"${String(f.id).replaceAll('"','\\"')}"`).join(",");
+ const savedFighters=await request("fighters?on_conflict=id",{method:"POST",body:fighterRows,headers:{Prefer:"resolution=merge-duplicates,return=representation"}});
+ if(fighterIds)await request(`fighter_versions?fighter_id=in.(${fighterIds})`,{method:"DELETE",headers:{Prefer:"return=minimal"}});
+ const savedVersions=versionRows.length?await request("fighter_versions",{method:"POST",body:versionRows,headers:{Prefer:"return=minimal"}}):{data:[]};
+ return {data:{fighters:savedFighters.data||[],versions:savedVersions.data||[],fighterCount:fighterRows.length,versionCount:versionRows.length}};
+}
+global.RINGSIDE_SUPABASE={isConfigured,getSession,currentUser,signUp,signIn,signOut,saveFight,listSavedFights,getSavedFight,loadRoster,isRosterAdmin,upsertFighter,replaceFighterVersion,seedRoster};
 })(typeof window!=="undefined"?window:globalThis);

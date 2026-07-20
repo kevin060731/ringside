@@ -30,7 +30,7 @@ function decorateRoster(){
  fighters.forEach(f=>{f.compubox=window.COMPUBOX_DATA?.profileFor(f)||f.compubox||null});
  fighters.forEach(f=>f.years.forEach(v=>{if(!v.weight)v.weight=divisionWeightsLb[v.division||f.division]||160}));
 }
-let selected={a:fighters[0],b:fighters[1]},versions={a:0,b:0},pickerSide="a",scheduled=12,fight=null,current=0,archiveDivision="All",researchDesk=null,lastSavedFight=null,replayingSavedFight=false,savedFightRows=[];
+let selected={a:fighters[0],b:fighters[1]},versions={a:0,b:0},pickerSide="a",scheduled=12,fight=null,current=0,archiveDivision="All",researchDesk=null,lastSavedFight=null,replayingSavedFight=false,savedFightRows=[],rosterAdmin=false;
 const $=s=>document.querySelector(s);
 const fightLabSections=[".hero","#setup","#research-desk",".settings-panel",".data-panel"];
 const wikiAliases={"Saúl Álvarez":"Canelo Álvarez","Gennadiy Golovkin":"Gennady Golovkin","Jesse Rodriguez":"Jesse Rodríguez (boxer)","Oleksandr Usyk":"Oleksandr Usyk","Floyd Mayweather":"Floyd Mayweather Jr.","Julio César Chávez":"Julio César Chávez","Teófimo López":"Teófimo López"};
@@ -96,6 +96,7 @@ async function syncRosterFromSupabase(){
    versions[side]=sameVersion>=0?sameVersion:Math.min(versions[side],selected[side].years.length-1);
   }
   renderFighter("a");renderFighter("b");renderArchive($("#fighter-search")?.value||"");
+  if(!$("#roster-manager")?.classList.contains("hidden"))renderRosterManager();
   const chip=document.querySelector(".season-chip b");
   if(chip)chip.textContent=`Supabase synced · ${new Intl.DateTimeFormat(undefined,{month:"short",day:"numeric",year:"numeric"}).format(new Date())}`;
   console.info(`RINGSIDE roster sync: ${summary.updated} updated, ${summary.added} added`);
@@ -213,10 +214,12 @@ function setView(view="home"){
  const showHome=view==="home"||view==="archive";
  fightLabSections.forEach(selector=>document.querySelector(selector)?.classList.toggle("hidden",!showHome));
  $("#my-fights")?.classList.toggle("hidden",view!=="my-fights");
+ $("#roster-manager")?.classList.toggle("hidden",view!=="roster-manager");
  $("#broadcast")?.classList.add("hidden");
  $("#results")?.classList.add("hidden");
  document.querySelectorAll("[data-view]").forEach(button=>button.classList.toggle("active",button.dataset.view===view||(view==="archive"&&button.dataset.view==="home"&&button.closest(".bottom-nav"))));
  if(view==="my-fights")loadMyFights();
+ if(view==="roster-manager")renderRosterManager();
  if(view==="archive")document.querySelector(".data-panel")?.scrollIntoView({behavior:"smooth",block:"start"});
 }
 function authUser(){return window.RINGSIDE_SUPABASE?.currentUser?.()||null}
@@ -236,6 +239,127 @@ function openAuthDialog(message=""){
  renderAuthState();
  if(message)$("#auth-message").textContent=message;
  dialog?.showModal();
+}
+const ratingFields=["power","speed","chin","defense","iq","footwork","cardio","accuracy","aggression"];
+function rosterStatus(message,type=""){
+ const el=$("#roster-save-status");
+ if(!el)return;
+ el.textContent=message;
+ el.classList.toggle("ok",type==="ok");
+ el.classList.toggle("error",type==="error");
+}
+function fillDivisionOptions(){
+ const options=(window.WEIGHT_CLASSES||[]).map(d=>`<option>${d}</option>`).join("");
+ ["#edit-primary-division","#edit-version-division"].forEach(selector=>{const el=$(selector);if(el&&!el.innerHTML)el.innerHTML=options});
+}
+function rosterFighter(){return fighters.find(f=>f.id===$("#roster-fighter")?.value)||fighters[0]}
+function rosterVersionIndex(){return Math.max(0,Number($("#roster-version")?.value)||0)}
+function renderRosterPickers(){
+ const fighterSelect=$("#roster-fighter"),versionSelect=$("#roster-version");
+ if(!fighterSelect||!versionSelect)return;
+ const previous=fighterSelect.value;
+ fighterSelect.innerHTML=[...fighters].sort((a,b)=>a.name.localeCompare(b.name)).map(f=>`<option value="${f.id}">${f.name} · ${f.division}</option>`).join("");
+ if(previous&&fighters.some(f=>f.id===previous))fighterSelect.value=previous;
+ const f=rosterFighter();
+ versionSelect.innerHTML=(f.years||[]).map((v,i)=>`<option value="${i}">${v.label}</option>`).join("");
+}
+function fillRosterForm(){
+ fillDivisionOptions();
+ const f=rosterFighter(),v=f.years[rosterVersionIndex()]||f.years[0]||{};
+ $("#edit-id").value=f.id||"";
+ $("#edit-name").value=f.name||"";
+ $("#edit-last").value=f.last||"";
+ $("#edit-nickname").value=f.nickname||"";
+ $("#edit-country").value=f.country||"";
+ $("#edit-stance").value=f.stance||"Orthodox";
+ $("#edit-primary-division").value=f.division||"Welterweight";
+ $("#edit-image").value=(f.syncedImage||/^https?:\/\//.test(f.img||""))?f.img||"":"";
+ $("#edit-version-label").value=v.label||"";
+ $("#edit-year").value=v.year||new Date().getFullYear();
+ $("#edit-version-division").value=v.division||f.division||"Welterweight";
+ $("#edit-weight").value=v.weight||divisionWeightsLb[v.division||f.division]||"";
+ $("#edit-best-opponent").value=v.bestPerformance?.opponent||"";
+ $("#edit-best-result").value=v.bestPerformance?.result||"";
+ $("#edit-best-note").value=v.bestPerformance?.note||"";
+ $("#edit-source-notes").value=JSON.stringify(v.sourceNotes||{source:"manual roster manager",simulation:{}},null,2);
+ $("#ratings-editor").innerHTML=ratingFields.map(key=>`<label>${key.toUpperCase()}<input id="edit-rating-${key}" type="number" min="1" max="100" value="${Number(v[key])||80}"></label>`).join("");
+ $("#roster-preview-img").src=f.img||"";
+ $("#roster-preview-name").textContent=f.name||"Choose fighter";
+ $("#roster-preview-meta").textContent=`${f.id} · ${(v.label||"No version")} · ${v.weight?`${Math.round(v.weight)} lb`:""}`;
+}
+async function renderRosterManager(){
+ renderRosterPickers();
+ fillRosterForm();
+ const user=authUser(),status=$("#roster-admin-status"),meta=$("#roster-admin-user");
+ if(!user){if(status)status.textContent="SIGN IN REQUIRED";if(meta)meta.textContent="Sign in first. Then add your user ID to roster_admins.";rosterStatus("Sign in before editing the roster.","error");return}
+ if(meta)meta.textContent=`${user.email} · User ID: ${user.id}`;
+ try{
+  const result=await window.RINGSIDE_SUPABASE?.isRosterAdmin?.();
+  rosterAdmin=!!result?.data;
+  if(status)status.textContent=rosterAdmin?"ADMIN ENABLED":"NOT ADMIN YET";
+  rosterStatus(rosterAdmin?"Ready to edit roster data.":"Add this user ID to public.roster_admins in Supabase, then reload.","");
+ }catch(error){
+  rosterAdmin=false;
+  if(status)status.textContent="ADMIN CHECK FAILED";
+  rosterStatus(error.message||"Could not check roster admin status.","error");
+ }
+}
+function rosterPayload(){
+ const id=$("#edit-id").value.trim();
+ const ratings=Object.fromEntries(ratingFields.map(key=>[key,Number($(`#edit-rating-${key}`).value)||80]));
+ let sourceNotes={source:"manual roster manager",simulation:{}};
+ try{sourceNotes=JSON.parse($("#edit-source-notes").value||"{}")}catch{throw new Error("Simulation Notes JSON is not valid.")}
+ return {
+  fighter:{
+   id,
+   name:$("#edit-name").value.trim(),
+   last_name:$("#edit-last").value.trim(),
+   country:$("#edit-country").value.trim(),
+   stance:$("#edit-stance").value,
+   primary_division:$("#edit-primary-division").value,
+   image_url:$("#edit-image").value.trim()||null,
+   active:true,
+   model_data:{nickname:$("#edit-nickname").value.trim(),wiki:$("#edit-name").value.trim(),updated:new Date().toISOString().slice(0,10)}
+  },
+  version:{
+   fighter_id:id,
+   label:$("#edit-version-label").value.trim(),
+   year:Number($("#edit-year").value)||null,
+   division:$("#edit-version-division").value,
+   weight_lbs:Number($("#edit-weight").value)||null,
+   ratings,
+   best_performance:{opponent:$("#edit-best-opponent").value.trim(),result:$("#edit-best-result").value.trim(),note:$("#edit-best-note").value.trim()},
+   source_notes:sourceNotes,
+   is_default:true
+  }
+ };
+}
+async function saveRosterEdit(){
+ if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){rosterStatus("Supabase is not connected yet.","error");return}
+ if(!authUser()){openAuthDialog("Sign in before editing the roster.");return}
+ try{
+  rosterStatus("Saving roster update…");
+  const payload=rosterPayload();
+  await window.RINGSIDE_SUPABASE.upsertFighter(payload.fighter);
+  await window.RINGSIDE_SUPABASE.replaceFighterVersion(payload.version);
+  await syncRosterFromSupabase();
+  renderRosterPickers();$("#roster-fighter").value=payload.fighter.id;fillRosterForm();
+  rosterStatus("Saved. Refresh the public app to see this roster update everywhere.","ok");
+ }catch(error){
+  rosterStatus(error.message||"Could not save roster update.","error");
+ }
+}
+async function seedRosterToSupabase(){
+ if(!authUser()){openAuthDialog("Sign in before seeding the roster.");return}
+ try{
+  rosterStatus("Seeding current app roster to Supabase… this can take a moment.");
+  const result=await window.RINGSIDE_SUPABASE.seedRoster(fighters);
+  rosterStatus(`Seeded ${result.data.fighterCount} fighters and ${result.data.versionCount} versions to Supabase.`,"ok");
+  await syncRosterFromSupabase();
+  renderRosterPickers();fillRosterForm();
+ }catch(error){
+  rosterStatus(error.message||"Could not seed roster. Make sure your user ID is in public.roster_admins.","error");
+ }
 }
 function shareUrl(slug){
  const url=new URL(location.href);
@@ -501,18 +625,23 @@ $("#my-fights-list").onclick=async e=>{
 $("#my-fights").onclick=e=>{if(e.target.closest("[data-open-auth]"))openAuthDialog()};
 $("#auth-button").onclick=()=>openAuthDialog();
 $("#signin-button").onclick=async()=>{
- try{await window.RINGSIDE_SUPABASE.signIn($("#auth-email").value,$("#auth-password").value);renderAuthState();$("#auth-dialog").close();if(fight&&!lastSavedFight&&!replayingSavedFight&&!$("#results").classList.contains("hidden"))saveResultToSupabase();loadMyFights()}
+ try{await window.RINGSIDE_SUPABASE.signIn($("#auth-email").value,$("#auth-password").value);renderAuthState();$("#auth-dialog").close();if(fight&&!lastSavedFight&&!replayingSavedFight&&!$("#results").classList.contains("hidden"))saveResultToSupabase();loadMyFights();if(!$("#roster-manager")?.classList.contains("hidden"))renderRosterManager()}
  catch(error){$("#auth-message").textContent=error.message||"Could not sign in."}
 };
 $("#signup-button").onclick=async()=>{
  try{
   const data=await window.RINGSIDE_SUPABASE.signUp($("#auth-email").value,$("#auth-password").value);
   renderAuthState();
-  if(data?.access_token){$("#auth-dialog").close();if(fight&&!lastSavedFight&&!replayingSavedFight&&!$("#results").classList.contains("hidden"))saveResultToSupabase();loadMyFights()}
+  if(data?.access_token){$("#auth-dialog").close();if(fight&&!lastSavedFight&&!replayingSavedFight&&!$("#results").classList.contains("hidden"))saveResultToSupabase();loadMyFights();if(!$("#roster-manager")?.classList.contains("hidden"))renderRosterManager()}
   else $("#auth-message").textContent="Account created. Check your email if Supabase asks you to confirm it, then sign in.";
  }catch(error){$("#auth-message").textContent=error.message||"Could not create account."}
 };
-$("#signout-button").onclick=async()=>{await window.RINGSIDE_SUPABASE.signOut();savedFightRows=[];renderAuthState();$("#auth-dialog").close();loadMyFights()};
+$("#signout-button").onclick=async()=>{await window.RINGSIDE_SUPABASE.signOut();savedFightRows=[];renderAuthState();$("#auth-dialog").close();loadMyFights();if(!$("#roster-manager")?.classList.contains("hidden"))renderRosterManager()};
+$("#roster-fighter").onchange=()=>{renderRosterPickers();fillRosterForm()};
+$("#roster-version").onchange=fillRosterForm;
+$("#roster-form").onsubmit=e=>{e.preventDefault();saveRosterEdit()};
+$("#seed-roster").onclick=seedRosterToSupabase;
+$("#reload-roster").onclick=async()=>{rosterStatus("Reloading Supabase roster…");await syncRosterFromSupabase();renderRosterManager()};
 document.querySelectorAll("[data-view]").forEach(button=>button.onclick=()=>setView(button.dataset.view));
 $("#view-play-by-play").onclick=()=>{
  const archive=$("#postfight-rounds"),opening=archive.classList.contains("hidden");
