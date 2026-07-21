@@ -158,6 +158,26 @@ insert into public.fighter_versions (
 
 If Supabase has fighter version rows for a fighter, those synced versions become the source of truth for that fighter in the app.
 
+## Verified Fight History
+
+The app now has a `HISTORY` admin screen for fights that already happened. Use it to add or edit:
+
+- official winner and method
+- official scorecards
+- knockdowns, point deductions, and stoppage events
+- punch stats when available
+- r/Boxing/public consensus notes
+- sources and confidence level
+
+When a user selects two fighters who already fought, the app checks Supabase `verified_fights` before simulating. If it finds a verified record, the result follows the real fight instead of inventing a new winner.
+
+Use the data quality field honestly:
+
+- `official_replay`: official result, scorecards, and key events are entered
+- `enhanced_replay`: official result plus strong round/punch detail
+- `verified_outcome`: winner/method is verified, but exact round detail is incomplete
+- `scouted_reconstruction`: real outcome is known, but the round-by-round action is partly reconstructed
+
 ## What comes next
 
 Good next backend features:

@@ -35,6 +35,8 @@ create table if not exists public.verified_fights (
   red_fighter_id text references public.fighters(id),
   blue_fighter_id text references public.fighters(id),
   winner_fighter_id text references public.fighters(id),
+  division text,
+  venue text,
   method text,
   scheduled_rounds int,
   ended_round int,
@@ -42,10 +44,19 @@ create table if not exists public.verified_fights (
   events jsonb,
   stats jsonb,
   fan_consensus jsonb,
+  data_quality text not null default 'verified_outcome',
+  confidence numeric not null default 0.75,
+  source_notes jsonb not null default '{}'::jsonb,
   sources jsonb not null default '[]'::jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table public.verified_fights add column if not exists division text;
+alter table public.verified_fights add column if not exists venue text;
+alter table public.verified_fights add column if not exists data_quality text not null default 'verified_outcome';
+alter table public.verified_fights add column if not exists confidence numeric not null default 0.75;
+alter table public.verified_fights add column if not exists source_notes jsonb not null default '{}'::jsonb;
 
 create table if not exists public.roster_admins (
   user_id uuid primary key references auth.users(id) on delete cascade,
@@ -107,6 +118,12 @@ drop policy if exists "Public verified fights are readable" on public.verified_f
 create policy "Public verified fights are readable"
 on public.verified_fights for select
 using (true);
+
+drop policy if exists "Roster admins can manage verified fights" on public.verified_fights;
+create policy "Roster admins can manage verified fights"
+on public.verified_fights for all
+using (exists (select 1 from public.roster_admins admin where admin.user_id = auth.uid()))
+with check (exists (select 1 from public.roster_admins admin where admin.user_id = auth.uid()));
 
 drop policy if exists "Users can read their roster admin status" on public.roster_admins;
 create policy "Users can read their roster admin status"

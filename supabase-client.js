@@ -129,6 +129,10 @@ async function loadRoster(){
  const versions=await request("fighter_versions?select=fighter_id,label,year,division,weight_lbs,ratings,best_performance,source_notes,is_default,updated_at&order=fighter_id.asc,is_default.desc,year.desc&limit=3000");
  return {data:{fighters:roster.data||[],versions:versions.data||[]}};
 }
+async function loadVerifiedFights(){
+ if(!isConfigured())return {skipped:true,reason:"Supabase is not configured yet.",data:[]};
+ return request("verified_fights?select=id,fight_date,red_fighter_id,blue_fighter_id,winner_fighter_id,division,venue,method,scheduled_rounds,ended_round,scorecards,events,stats,fan_consensus,data_quality,confidence,source_notes,sources,updated_at&order=fight_date.desc&limit=1000");
+}
 async function isRosterAdmin(){
  const user=currentUser();
  if(!user)return {authRequired:true,data:false,reason:"Sign in to edit the roster."};
@@ -147,6 +151,14 @@ async function replaceFighterVersion(row){
 async function deleteFighterVersion({fighter_id,label}){
  if(!currentUser())return {authRequired:true,reason:"Sign in to edit the roster."};
  return request(`fighter_versions?fighter_id=eq.${encodeURIComponent(fighter_id)}&label=eq.${encodeURIComponent(label)}`,{method:"DELETE",headers:{Prefer:"return=minimal"}});
+}
+async function upsertVerifiedFight(row){
+ if(!currentUser())return {authRequired:true,reason:"Sign in to edit verified fight history."};
+ return request("verified_fights?on_conflict=id",{method:"POST",body:[row],headers:{Prefer:"resolution=merge-duplicates,return=representation"}});
+}
+async function deleteVerifiedFight(id){
+ if(!currentUser())return {authRequired:true,reason:"Sign in to edit verified fight history."};
+ return request(`verified_fights?id=eq.${encodeURIComponent(id)}`,{method:"DELETE",headers:{Prefer:"return=minimal"}});
 }
 async function seedRoster(localFighters=[]){
  if(!currentUser())return {authRequired:true,reason:"Sign in to seed the roster."};
@@ -178,5 +190,5 @@ async function seedRoster(localFighters=[]){
  const savedVersions=versionRows.length?await request("fighter_versions",{method:"POST",body:versionRows,headers:{Prefer:"return=minimal"}}):{data:[]};
  return {data:{fighters:savedFighters.data||[],versions:savedVersions.data||[],fighterCount:fighterRows.length,versionCount:versionRows.length}};
 }
-global.RINGSIDE_SUPABASE={isConfigured,getSession,currentUser,signUp,signIn,signOut,saveFight,listSavedFights,getSavedFight,loadRoster,isRosterAdmin,upsertFighter,replaceFighterVersion,deleteFighterVersion,seedRoster,refreshSession};
+global.RINGSIDE_SUPABASE={isConfigured,getSession,currentUser,signUp,signIn,signOut,saveFight,listSavedFights,getSavedFight,loadRoster,loadVerifiedFights,isRosterAdmin,upsertFighter,replaceFighterVersion,deleteFighterVersion,upsertVerifiedFight,deleteVerifiedFight,seedRoster,refreshSession};
 })(typeof window!=="undefined"?window:globalThis);

@@ -95,6 +95,19 @@ test("Supabase client can load roster sync rows",async()=>{
  assert.equal(requests[0].options.headers.Authorization,`Bearer ${context.RINGSIDE_SUPABASE_CONFIG.anonKey}`);
 });
 
+test("Supabase client can load verified fight history rows",async()=>{
+ const requests=[];
+ const context=loadClient(async(url,options)=>{
+  requests.push({url,options});
+  return {ok:true,text:async()=>JSON.stringify([{id:"haney-lomachenko-2023",red_fighter_id:"haney",blue_fighter_id:"lomachenko",data_quality:"official_replay"}])};
+ });
+ const result=await context.RINGSIDE_SUPABASE.loadVerifiedFights();
+ assert.equal(result.data[0].id,"haney-lomachenko-2023");
+ assert.match(requests[0].url,/verified_fights\?select=/);
+ assert.match(requests[0].url,/order=fight_date\.desc&limit=1000/);
+ assert.equal(requests[0].options.headers.Authorization,`Bearer ${context.RINGSIDE_SUPABASE_CONFIG.anonKey}`);
+});
+
 test("Supabase client supports roster admin edits",async()=>{
  const requests=[];
  const context=loadClient(async(url,options)=>{
@@ -124,6 +137,27 @@ test("Supabase client supports roster admin edits",async()=>{
  assert.equal(versionDeletes[1].options.method,"DELETE");
  assert.equal(versionSave.options.method,"POST");
  assert.equal(JSON.parse(versionSave.options.body).fighter_id,"haney");
+});
+
+test("Supabase client supports verified fight admin edits",async()=>{
+ const requests=[];
+ const context=loadClient(async(url,options)=>{
+  requests.push({url,options});
+  if(String(url).includes("/auth/v1/token")){
+   return {ok:true,text:async()=>JSON.stringify({access_token:"user-token",user:{id:"user-1",email:"kev@example.com"}})};
+  }
+  return {ok:true,text:async()=>JSON.stringify([{id:"davis-lopez-2026"}])};
+ });
+ await context.RINGSIDE_SUPABASE.signIn("kev@example.com","secret123");
+ await context.RINGSIDE_SUPABASE.upsertVerifiedFight({id:"davis-lopez-2026",red_fighter_id:"davis",blue_fighter_id:"lopez",method:"KO",data_quality:"verified_outcome"});
+ await context.RINGSIDE_SUPABASE.deleteVerifiedFight("davis-lopez-2026");
+ const save=requests.find(request=>String(request.url).includes("verified_fights?on_conflict=id"));
+ const del=requests.find(request=>String(request.url).includes("verified_fights?id=eq.davis-lopez-2026"));
+ assert.equal(save.options.method,"POST");
+ assert.equal(save.options.headers.Prefer,"resolution=merge-duplicates,return=representation");
+ assert.equal(JSON.parse(save.options.body)[0].red_fighter_id,"davis");
+ assert.equal(del.options.method,"DELETE");
+ assert.equal(del.options.headers.Prefer,"return=minimal");
 });
 
 test("Supabase client can seed the current roster without deleting unrelated fighters",async()=>{

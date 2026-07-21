@@ -415,11 +415,12 @@ function buildHistoricalFight(a,b,settings,record){
   const aStats=record.stats?.[a.id]||estimatedA,bStats=record.stats?.[b.id]||estimatedB;
   const isStoppage=/\b(KO|TKO|RTD|DQ|TECHNICAL KNOCKOUT|KNOCKOUT|RETIRE)/.test(record.method);
   if(isStoppage){if(aWon)bStats.knockdowns=Math.max(1,bStats.knockdowns||0);if(bWon)aStats.knockdowns=Math.max(1,aStats.knockdowns||0)}
-  const officialCards=record.scorecards?.map((card,i)=>{
+  const scorecardRows=Array.isArray(record.scorecards)?record.scorecards:[];
+  const officialCards=scorecardRows.length?scorecardRows.map((card,i)=>{
     const total=card.total||card;
     return {name:card.name||`JUDGE ${i+1}`,total:record.red===a.id?total:[total[1],total[0]],
       rounds:card.rounds?.map(scores=>record.red===a.id?scores:[scores[1],scores[0]])||null};
-  })||null;
+  }):null;
   const patternsA=[12,13,14,12,15,11,16,13,15,14,14,16];
   const patternsB=[7,6,7,5,6,8,5,6,4,6,5,7];
   const weightsA=Array.from({length:roundsCount},(_,i)=>patternsA[i%patternsA.length]);
@@ -516,7 +517,7 @@ function buildHistoricalFight(a,b,settings,record){
   const generatedCards=Array.from({length:3},(_,i)=>({name:`JUDGE ${i+1}`,a:scoreTotal(aRoundWins,bRoundWins),b:scoreTotal(bRoundWins,aRoundWins)}));
   return {
     a,b,settings:{...settings,rounds:roundsCount},rounds,seed:`historical:${record.id}`,
-    historical:true,officialStats:!!record.stats,officialScorecards:!!record.scorecards,event:record,sources:record.sources,
+    historical:true,officialStats:!!record.stats,officialScorecards:!!officialCards,historyQuality:global.BOXING_FIGHT_HISTORY?.dataQuality?.(record)||"verified_outcome",event:record,sources:record.sources,
     judges:officialCards?officialCards.map(card=>({name:card.name,a:card.total[0],b:card.total[1]})):generatedCards,
     winner:aWon?"a":bWon?"b":"draw",decision:record.method,
     totals:{thrownA:aStats.thrown,thrownB:bStats.thrown,landedA:aStats.landed,landedB:bStats.landed,

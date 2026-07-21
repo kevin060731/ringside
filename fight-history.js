@@ -166,6 +166,56 @@ const clean=s=>(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCa
   .replace(/\b(jr|sr|ii|iii|the)\b/g,"").replace(/[^a-z0-9]/g,"");
 const wikiAliases={"Saúl Álvarez":"Canelo Álvarez","Gennadiy Golovkin":"Gennady Golovkin","Floyd Mayweather":"Floyd Mayweather Jr.","Jesse Rodriguez":"Jesse Rodríguez (boxer)","Julio César Chávez":"Julio César Chávez"};
 function pageName(f){return f.wiki||wikiAliases[f.name]||f.name}
+function dataQuality(record={}){
+  if(record.dataQuality)return record.dataQuality;
+  if(record.scorecards&&record.stats&&record.roundNarrative)return "enhanced_replay";
+  if(record.scorecards||record.events?.length)return "official_replay";
+  if(record.verifiedOutcome)return "verified_outcome";
+  return "scouted_reconstruction";
+}
+function qualityLabel(record={}){
+  const labels={
+    official_replay:"OFFICIAL REPLAY",
+    enhanced_replay:"ENHANCED REPLAY",
+    verified_outcome:"VERIFIED OUTCOME",
+    scouted_reconstruction:"SCOUTED RECONSTRUCTION"
+  };
+  return labels[dataQuality(record)]||"VERIFIED OUTCOME";
+}
+function normalizeRemoteFight(row={}){
+  if(!row.id||!row.red_fighter_id||!row.blue_fighter_id)return null;
+  return {
+    id:row.id,
+    date:row.fight_date||row.date||"",
+    venue:row.venue||"",
+    division:row.division||"",
+    rounds:Number(row.scheduled_rounds||row.rounds||12),
+    endedRound:Number(row.ended_round||row.endedRound||row.scheduled_rounds||row.rounds||12),
+    red:row.red_fighter_id,
+    blue:row.blue_fighter_id,
+    winner:row.winner_fighter_id||null,
+    method:(row.method||"VERIFIED OUTCOME").toUpperCase(),
+    scorecards:row.scorecards||null,
+    events:Array.isArray(row.events)?row.events:[],
+    stats:row.stats||null,
+    fanConsensus:row.fan_consensus||row.fanConsensus||null,
+    sources:Array.isArray(row.sources)?row.sources:[],
+    sourceNotes:row.source_notes||{},
+    dataQuality:row.data_quality||row.dataQuality||"verified_outcome",
+    confidence:Number(row.confidence||0.75),
+    synced:true
+  };
+}
+function mergeVerifiedFights(rows=[]){
+  let added=0,updated=0;
+  rows.map(normalizeRemoteFight).filter(Boolean).forEach(remote=>{
+    const index=fights.findIndex(f=>f.id===remote.id);
+    if(index>=0){fights[index]={...fights[index],...remote};updated++}
+    else{fights.push(remote);added++}
+  });
+  fights.sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+  return {added,updated,total:fights.length};
+}
 function opponentMatches(cell,f){
   const names=[f.name,pageName(f),...(f.aliases||[])].map(clean);
   const text=clean(cell.textContent),title=clean(cell.querySelector("a")?.getAttribute("title"));
@@ -213,5 +263,5 @@ async function resolve(a,b){
   return found;
 }
 
-global.BOXING_FIGHT_HISTORY={fights,find,resolve};
+global.BOXING_FIGHT_HISTORY={fights,find,resolve,mergeVerifiedFights,dataQuality,qualityLabel};
 })(typeof window!=="undefined"?window:globalThis);

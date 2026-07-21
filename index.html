@@ -8,18 +8,18 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,500;0,600;0,700;0,800;0,900;1,700&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=roster-manager-2" />
-  <link rel="stylesheet" href="dashboard.css?v=roster-manager-2" />
-  <link rel="stylesheet" href="playback.css?v=roster-manager-2" />
+  <link rel="stylesheet" href="styles.css?v=verified-history-1" />
+  <link rel="stylesheet" href="dashboard.css?v=verified-history-1" />
+  <link rel="stylesheet" href="playback.css?v=verified-history-1" />
 </head>
 <body>
   <header class="topbar">
     <a class="brand" href="#"><span class="brand-mark">R</span><span>RING<span>SIDE</span></span></a>
-    <nav class="utility-nav"><button data-view="home">FIGHT LAB</button><button>RANKINGS</button><button>NEWS</button><button data-view="roster-manager">ROSTER</button></nav>
+    <nav class="utility-nav"><button data-view="home">FIGHT LAB</button><button>RANKINGS</button><button>NEWS</button><button data-view="roster-manager">ROSTER</button><button data-view="verified-manager">HISTORY</button></nav>
     <div class="header-actions"><button class="search-btn" aria-label="Search">⌕</button><button class="avatar-btn" id="auth-button" aria-label="Profile">SIGN IN</button></div>
   </header>
   <nav class="sport-nav">
-    <button class="active" data-view="home">BOXING</button><button>MMA</button><button data-view="my-fights">MY FIGHTS</button><button data-view="roster-manager">ROSTER</button><button data-view="archive">ARCHIVE</button>
+    <button class="active" data-view="home">BOXING</button><button>MMA</button><button data-view="my-fights">MY FIGHTS</button><button data-view="roster-manager">ROSTER</button><button data-view="verified-manager">HISTORY</button><button data-view="archive">ARCHIVE</button>
   </nav>
 
   <main>
@@ -204,6 +204,58 @@
       </div>
     </section>
 
+    <section class="roster-manager verified-manager hidden" id="verified-manager">
+      <div class="roster-manager-head">
+        <div>
+          <small>RINGSIDE ADMIN</small>
+          <h2>Fight History Manager</h2>
+          <p>Add real fight results with official scorecards, knockdowns, deductions, fan consensus, sources, and a confidence level. These records override normal simulations when the matchup already happened.</p>
+        </div>
+        <div class="roster-admin-card">
+          <small>ADMIN STATUS</small>
+          <b id="history-admin-status">Checking…</b>
+          <span id="history-admin-user">Sign in to manage verified fight history.</span>
+        </div>
+      </div>
+      <div class="roster-tools">
+        <button id="reload-verified-fights">RELOAD VERIFIED HISTORY</button>
+      </div>
+      <div class="roster-editor">
+        <div class="roster-picker-card">
+          <label>FIGHT RECORD<select id="history-fight"></select></label>
+          <div class="roster-preview history-preview"><span><b id="history-preview-name">Choose fight</b><small id="history-preview-meta">—</small></span></div>
+          <p class="json-help">Use <b>official_replay</b> for full official cards/events, <b>verified_outcome</b> when only winner/method is verified, and <b>scouted_reconstruction</b> when the exact round detail is incomplete.</p>
+        </div>
+        <form class="roster-form" id="history-form">
+          <div class="roster-form-grid">
+            <label>Fight ID<input id="history-id"></label>
+            <label>Date<input id="history-date" type="date"></label>
+            <label>Division<input id="history-division"></label>
+            <label>Red Fighter<select id="history-red"></select></label>
+            <label>Blue Fighter<select id="history-blue"></select></label>
+            <label>Winner<select id="history-winner"></select></label>
+            <label>Method<input id="history-method" placeholder="UNANIMOUS DECISION"></label>
+            <label>Scheduled Rounds<input id="history-scheduled" type="number" min="1" max="45"></label>
+            <label>Ended Round<input id="history-ended" type="number" min="1" max="45"></label>
+            <label>Venue<input id="history-venue"></label>
+            <label>Data Quality<select id="history-quality"><option value="official_replay">official_replay</option><option value="enhanced_replay">enhanced_replay</option><option value="verified_outcome">verified_outcome</option><option value="scouted_reconstruction">scouted_reconstruction</option></select></label>
+            <label>Confidence %<input id="history-confidence" type="number" min="1" max="100"></label>
+          </div>
+          <label class="wide-label">Scorecards JSON<textarea id="history-scorecards" rows="5"></textarea></label>
+          <label class="wide-label">Events JSON — knockdowns, deductions, stoppages<textarea id="history-events" rows="5"></textarea></label>
+          <label class="wide-label">Punch Stats JSON<textarea id="history-stats" rows="5"></textarea></label>
+          <label class="wide-label">Fan Consensus JSON<textarea id="history-fan-consensus" rows="6"></textarea></label>
+          <label class="wide-label">Sources JSON<textarea id="history-sources" rows="4"></textarea></label>
+          <label class="wide-label">Source Notes JSON<textarea id="history-source-notes" rows="4"></textarea></label>
+          <div class="roster-save-row">
+            <button type="submit">SAVE VERIFIED FIGHT</button>
+            <button type="button" id="delete-verified-fight" class="danger-button">DELETE VERIFIED FIGHT</button>
+            <span id="history-save-status">Pick a fight record to edit.</span>
+          </div>
+        </form>
+      </div>
+    </section>
+
     <section class="broadcast hidden" id="broadcast">
       <div class="broadcast-top">
         <button class="back-btn" id="new-fight">← NEW FIGHT</button>
@@ -305,6 +357,7 @@
     <button><b>＋</b><span>Simulate</span></button>
     <button data-view="archive"><b>▤</b><span>Archive</span></button>
     <button data-view="roster-manager"><b>✎</b><span>Roster</span></button>
+    <button data-view="verified-manager"><b>✓</b><span>History</span></button>
   </nav>
 
   <dialog id="picker">
@@ -328,20 +381,20 @@
       <button type="button" id="signout-button" class="signout-button">SIGN OUT</button>
     </form>
   </dialog>
-  <script src="supabase-config.js?v=roster-manager-2"></script>
-  <script src="supabase-client.js?v=roster-manager-2"></script>
-  <script src="fight-history.js?v=roster-manager-2"></script>
-  <script src="compubox-provider.js?v=roster-manager-2"></script>
-  <script src="engine.js?v=roster-manager-2"></script>
-  <script src="roster.js?v=roster-manager-2"></script>
-  <script src="roster-expanded.js?v=roster-manager-2"></script>
-  <script src="roster-active.js?v=roster-manager-2"></script>
-  <script src="roster-deep.js?v=roster-manager-2"></script>
-  <script src="roster-versions.js?v=roster-manager-2"></script>
-  <script src="boxing-gems-data.js?v=roster-manager-2"></script>
-  <script src="rummy-corner-data.js?v=roster-manager-2"></script>
-  <script src="research-desk.js?v=roster-manager-2"></script>
-  <script src="roster-sync.js?v=roster-manager-2"></script>
-  <script src="app.js?v=roster-manager-2"></script>
+  <script src="supabase-config.js?v=verified-history-1"></script>
+  <script src="supabase-client.js?v=verified-history-1"></script>
+  <script src="fight-history.js?v=verified-history-1"></script>
+  <script src="compubox-provider.js?v=verified-history-1"></script>
+  <script src="engine.js?v=verified-history-1"></script>
+  <script src="roster.js?v=verified-history-1"></script>
+  <script src="roster-expanded.js?v=verified-history-1"></script>
+  <script src="roster-active.js?v=verified-history-1"></script>
+  <script src="roster-deep.js?v=verified-history-1"></script>
+  <script src="roster-versions.js?v=verified-history-1"></script>
+  <script src="boxing-gems-data.js?v=verified-history-1"></script>
+  <script src="rummy-corner-data.js?v=verified-history-1"></script>
+  <script src="research-desk.js?v=verified-history-1"></script>
+  <script src="roster-sync.js?v=verified-history-1"></script>
+  <script src="app.js?v=verified-history-1"></script>
 </body>
 </html>

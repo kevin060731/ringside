@@ -30,7 +30,7 @@ function decorateRoster(){
  fighters.forEach(f=>{f.compubox=window.COMPUBOX_DATA?.profileFor(f)||f.compubox||null});
  fighters.forEach(f=>f.years.forEach(v=>{if(!v.weight)v.weight=divisionWeightsLb[v.division||f.division]||160}));
 }
-let selected={a:fighters[0],b:fighters[1]},versions={a:0,b:0},pickerSide="a",scheduled=12,fight=null,current=0,archiveDivision="All",researchDesk=null,lastSavedFight=null,replayingSavedFight=false,savedFightRows=[],rosterAdmin=false;
+let selected={a:fighters[0],b:fighters[1]},versions={a:0,b:0},pickerSide="a",scheduled=12,fight=null,current=0,archiveDivision="All",researchDesk=null,lastSavedFight=null,replayingSavedFight=false,savedFightRows=[],rosterAdmin=false,verifiedFightRows=[],verifiedFightSyncPromise=null;
 const $=s=>document.querySelector(s);
 const fightLabSections=[".hero","#setup","#research-desk",".settings-panel",".data-panel"];
 const wikiAliases={"Saúl Álvarez":"Canelo Álvarez","Gennadiy Golovkin":"Gennady Golovkin","Jesse Rodriguez":"Jesse Rodríguez (boxer)","Oleksandr Usyk":"Oleksandr Usyk","Floyd Mayweather":"Floyd Mayweather Jr.","Julio César Chávez":"Julio César Chávez","Teófimo López":"Teófimo López"};
@@ -103,6 +103,27 @@ async function syncRosterFromSupabase(){
  }catch(error){
   console.warn("RINGSIDE roster sync skipped:",error.message||error);
  }
+}
+async function syncVerifiedFightsFromSupabase(force=false){
+ if(!window.RINGSIDE_SUPABASE?.loadVerifiedFights||!window.BOXING_FIGHT_HISTORY?.mergeVerifiedFights)return;
+ if(verifiedFightSyncPromise&&!force)return verifiedFightSyncPromise;
+ verifiedFightSyncPromise=(async()=>{
+  try{
+   const result=await window.RINGSIDE_SUPABASE.loadVerifiedFights();
+   verifiedFightRows=result?.data||[];
+   if(verifiedFightRows.length){
+    const summary=window.BOXING_FIGHT_HISTORY.mergeVerifiedFights(verifiedFightRows);
+    console.info(`RINGSIDE verified fight sync: ${summary.updated} updated, ${summary.added} added`);
+   }
+   return verifiedFightRows;
+  }catch(error){
+   console.warn("RINGSIDE verified fight sync skipped:",error.message||error);
+   return verifiedFightRows;
+  }finally{
+   if(force)verifiedFightSyncPromise=null;
+  }
+ })();
+ return verifiedFightSyncPromise;
 }
 function active(side){return {...selected[side],...selected[side].years[versions[side]]}}
 function versionProfile(f,v){
@@ -215,11 +236,13 @@ function setView(view="home"){
  fightLabSections.forEach(selector=>document.querySelector(selector)?.classList.toggle("hidden",!showHome));
  $("#my-fights")?.classList.toggle("hidden",view!=="my-fights");
  $("#roster-manager")?.classList.toggle("hidden",view!=="roster-manager");
+ $("#verified-manager")?.classList.toggle("hidden",view!=="verified-manager");
  $("#broadcast")?.classList.add("hidden");
  $("#results")?.classList.add("hidden");
  document.querySelectorAll("[data-view]").forEach(button=>button.classList.toggle("active",button.dataset.view===view||(view==="archive"&&button.dataset.view==="home"&&button.closest(".bottom-nav"))));
  if(view==="my-fights")loadMyFights();
  if(view==="roster-manager")renderRosterManager();
+ if(view==="verified-manager")renderVerifiedManager();
  if(view==="archive")document.querySelector(".data-panel")?.scrollIntoView({behavior:"smooth",block:"start"});
 }
 function authUser(){return window.RINGSIDE_SUPABASE?.currentUser?.()||null}
@@ -382,6 +405,136 @@ async function seedRosterToSupabase(){
   rosterStatus(error.message||"Could not seed roster. Make sure your user ID is in public.roster_admins.","error");
  }
 }
+function verifiedStatus(message,type=""){
+ const el=$("#history-save-status");
+ if(!el)return;
+ el.textContent=message;
+ el.classList.toggle("ok",type==="ok");
+ el.classList.toggle("error",type==="error");
+}
+function jsonText(value,fallback){
+ return JSON.stringify(value??fallback,null,2);
+}
+function parseJsonField(selector,fallback){
+ const raw=$(selector)?.value?.trim();
+ if(!raw)return fallback;
+ try{return JSON.parse(raw)}catch{throw new Error(`${selector.replace("#","")} has invalid JSON.`)}
+}
+function verifiedFightList(){
+ return [...(window.BOXING_FIGHT_HISTORY?.fights||[])].sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+}
+function fighterOptions(selectedId=""){
+ return [...fighters].sort((a,b)=>a.name.localeCompare(b.name)).map(f=>`<option value="${f.id}" ${f.id===selectedId?"selected":""}>${f.name} · ${f.division}</option>`).join("");
+}
+function renderVerifiedPickers(selectedId=""){
+ const select=$("#history-fight");
+ if(!select)return;
+ const rows=verifiedFightList();
+ select.innerHTML=`<option value="__new">+ New verified fight from current matchup</option>`+rows.map(record=>{
+  const red=fighters.find(f=>f.id===record.red),blue=fighters.find(f=>f.id===record.blue);
+  return `<option value="${record.id}" ${record.id===selectedId?"selected":""}>${record.date||"No date"} · ${red?.last||record.red} vs ${blue?.last||record.blue} · ${record.method}</option>`;
+ }).join("");
+}
+function fillVerifiedForm(record=null){
+ const a=active("a"),b=active("b"),today=new Date().toISOString().slice(0,10);
+ const isNew=!record;
+ const redId=record?.red||a.id,blueId=record?.blue||b.id,winnerId=record?.winner||redId;
+ $("#history-red").innerHTML=fighterOptions(redId);
+ $("#history-blue").innerHTML=fighterOptions(blueId);
+ $("#history-winner").innerHTML=`<option value="">DRAW / NO WINNER</option>${fighterOptions(winnerId)}`;
+ $("#history-id").value=record?.id||`${redId}-${blueId}-${today.slice(0,4)}`;
+ $("#history-date").value=record?.date||today;
+ $("#history-division").value=record?.division||$("#weight")?.value||a.division||b.division||"Welterweight";
+ $("#history-venue").value=record?.venue||$("#venue")?.value||"";
+ $("#history-method").value=record?.method||"UNANIMOUS DECISION";
+ $("#history-scheduled").value=record?.rounds||scheduled||12;
+ $("#history-ended").value=record?.endedRound||record?.rounds||scheduled||12;
+ $("#history-quality").value=record?(window.BOXING_FIGHT_HISTORY?.dataQuality?.(record)||"verified_outcome"):"verified_outcome";
+ $("#history-confidence").value=Math.round((record?.confidence??0.75)*100);
+ $("#history-scorecards").value=jsonText(record?.scorecards,null);
+ $("#history-events").value=jsonText(record?.events,[]);
+ $("#history-stats").value=jsonText(record?.stats,null);
+ $("#history-fan-consensus").value=jsonText(record?.fanConsensus,null);
+ $("#history-sources").value=jsonText(record?.sources,[]);
+ $("#history-source-notes").value=jsonText(record?.sourceNotes||{source:"manual verified history manager"}, {});
+ $("#history-preview-name").textContent=isNew?"New verified fight":`${fighters.find(f=>f.id===redId)?.last||redId} vs ${fighters.find(f=>f.id===blueId)?.last||blueId}`;
+ $("#history-preview-meta").textContent=isNew?"Fill in the official result details, then save.":`${record.date||"No date"} · ${window.BOXING_FIGHT_HISTORY?.qualityLabel?.(record)||"VERIFIED OUTCOME"}`;
+}
+async function renderVerifiedManager(){
+ renderVerifiedPickers($("#history-fight")?.value);
+ const selectedId=$("#history-fight")?.value;
+ fillVerifiedForm(selectedId&&selectedId!=="__new"?verifiedFightList().find(f=>f.id===selectedId):null);
+ const user=authUser(),status=$("#history-admin-status"),meta=$("#history-admin-user");
+ if(!user){if(status)status.textContent="SIGN IN REQUIRED";if(meta)meta.textContent="Sign in first. History editing uses the same admin access as roster editing.";verifiedStatus("Sign in before editing verified fight history.","error");return}
+ if(meta)meta.textContent=`${user.email} · User ID: ${user.id}`;
+ try{
+  const result=await window.RINGSIDE_SUPABASE?.isRosterAdmin?.();
+  rosterAdmin=!!result?.data;
+  if(status)status.textContent=rosterAdmin?"ADMIN ENABLED":"NOT ADMIN YET";
+  verifiedStatus(rosterAdmin?"Ready to edit verified fight history.":"Add this user ID to public.roster_admins in Supabase, then reload.","");
+ }catch(error){
+  rosterAdmin=false;
+  if(status)status.textContent="ADMIN CHECK FAILED";
+  verifiedStatus(error.message||"Could not check admin status.","error");
+ }
+}
+function verifiedPayload(){
+ const id=$("#history-id").value.trim();
+ if(!id)throw new Error("Fight ID is required.");
+ return {
+  id,
+  fight_date:$("#history-date").value||null,
+  red_fighter_id:$("#history-red").value,
+  blue_fighter_id:$("#history-blue").value,
+  winner_fighter_id:$("#history-winner").value||null,
+  division:$("#history-division").value.trim()||null,
+  venue:$("#history-venue").value.trim()||null,
+  method:$("#history-method").value.trim().toUpperCase()||"VERIFIED OUTCOME",
+  scheduled_rounds:Number($("#history-scheduled").value)||null,
+  ended_round:Number($("#history-ended").value)||null,
+  scorecards:parseJsonField("#history-scorecards",null),
+  events:parseJsonField("#history-events",[]),
+  stats:parseJsonField("#history-stats",null),
+  fan_consensus:parseJsonField("#history-fan-consensus",null),
+  data_quality:$("#history-quality").value,
+  confidence:(Number($("#history-confidence").value)||75)/100,
+  source_notes:parseJsonField("#history-source-notes",{}),
+  sources:parseJsonField("#history-sources",[])
+ };
+}
+async function saveVerifiedFight(){
+ if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){verifiedStatus("Supabase is not connected yet.","error");return}
+ if(!authUser()){openAuthDialog("Sign in before editing verified fight history.");return}
+ try{
+  verifiedStatus("Saving verified fight…");
+  const payload=verifiedPayload();
+  await window.RINGSIDE_SUPABASE.upsertVerifiedFight(payload);
+  await syncVerifiedFightsFromSupabase(true);
+  renderVerifiedPickers(payload.id);$("#history-fight").value=payload.id;fillVerifiedForm(verifiedFightList().find(f=>f.id===payload.id));
+  verifiedStatus("Saved. This fight will now override the simulator when those two fighters are selected.","ok");
+ }catch(error){
+  verifiedStatus(error.message||"Could not save verified fight.","error");
+ }
+}
+async function deleteVerifiedFight(){
+ if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){verifiedStatus("Supabase is not connected yet.","error");return}
+ if(!authUser()){openAuthDialog("Sign in before editing verified fight history.");return}
+ const id=$("#history-id").value.trim();
+ if(!id){verifiedStatus("Pick a fight before deleting.","error");return}
+ if(!confirm(`Delete verified fight ${id} from Supabase? Built-in local history may still appear if this is a hardcoded fight.`))return;
+ try{
+  verifiedStatus(`Deleting ${id}…`);
+  await window.RINGSIDE_SUPABASE.deleteVerifiedFight(id);
+  const list=window.BOXING_FIGHT_HISTORY?.fights||[];
+  const index=list.findIndex(f=>f.id===id&&f.synced);
+  if(index>=0)list.splice(index,1);
+  await syncVerifiedFightsFromSupabase(true);
+  renderVerifiedPickers("__new");fillVerifiedForm(null);
+  verifiedStatus("Deleted that Supabase verified fight.","ok");
+ }catch(error){
+  verifiedStatus(error.message||"Could not delete verified fight.","error");
+ }
+}
 function shareUrl(slug){
  const url=new URL(location.href);
  url.searchParams.set("fight",slug);
@@ -529,6 +682,7 @@ async function setupFight(){
  replayingSavedFight=false;
  const button=$("#simulate"),a=active("a"),b=active("b");
  button.disabled=true;button.textContent="OPENING RESEARCH DESK…";
+ await syncVerifiedFightsFromSupabase();
  await window.BOXING_FIGHT_HISTORY?.resolve(a,b);
  const deskSettings=fightSettings();
  researchDesk=window.BOXING_RESEARCH_DESK?.create(a,b,deskSettings);
@@ -606,7 +760,8 @@ async function saveResultToSupabase(){
 }
 function showResults(){
  $("#broadcast").classList.add("hidden");$("#results").classList.remove("hidden");$("#result-kicker").textContent=replayingSavedFight?"SAVED FIGHT REPLAY":"OFFICIAL RESULT";const w=fight.winner==="draw"?null:fight[fight.winner]||active(fight.winner);
- $("#winner-name").textContent=w?.name||"DRAW";$("#decision").textContent=fight.historical?`${fight.decision} · ${fight.officialScorecards?"OFFICIAL REPLAY":"VERIFIED OUTCOME"}`:fight.decision;
+ const verifiedLabel=window.BOXING_FIGHT_HISTORY?.qualityLabel?.(fight.event)||(fight.officialScorecards?"OFFICIAL REPLAY":"VERIFIED OUTCOME");
+ $("#winner-name").textContent=w?.name||"DRAW";$("#decision").textContent=fight.historical?`${fight.decision} · ${verifiedLabel}`:fight.decision;
  $("#official-cards").innerHTML=fight.historical&&!fight.officialScorecards
   ?`<div class="judge-card"><small>OFFICIAL CARDS</small><b>NOT AVAILABLE</b></div>`
   :fight.judges.map(j=>`<div class="judge-card"><small>${j.name}</small><b>${j.a} — ${j.b}</b></div>`).join("");
@@ -646,24 +801,28 @@ $("#my-fights-list").onclick=async e=>{
 $("#my-fights").onclick=e=>{if(e.target.closest("[data-open-auth]"))openAuthDialog()};
 $("#auth-button").onclick=()=>openAuthDialog();
 $("#signin-button").onclick=async()=>{
- try{await window.RINGSIDE_SUPABASE.signIn($("#auth-email").value,$("#auth-password").value);renderAuthState();$("#auth-dialog").close();if(fight&&!lastSavedFight&&!replayingSavedFight&&!$("#results").classList.contains("hidden"))saveResultToSupabase();loadMyFights();if(!$("#roster-manager")?.classList.contains("hidden"))renderRosterManager()}
+ try{await window.RINGSIDE_SUPABASE.signIn($("#auth-email").value,$("#auth-password").value);renderAuthState();$("#auth-dialog").close();if(fight&&!lastSavedFight&&!replayingSavedFight&&!$("#results").classList.contains("hidden"))saveResultToSupabase();loadMyFights();if(!$("#roster-manager")?.classList.contains("hidden"))renderRosterManager();if(!$("#verified-manager")?.classList.contains("hidden"))renderVerifiedManager()}
  catch(error){$("#auth-message").textContent=error.message||"Could not sign in."}
 };
 $("#signup-button").onclick=async()=>{
  try{
   const data=await window.RINGSIDE_SUPABASE.signUp($("#auth-email").value,$("#auth-password").value);
   renderAuthState();
-  if(data?.access_token){$("#auth-dialog").close();if(fight&&!lastSavedFight&&!replayingSavedFight&&!$("#results").classList.contains("hidden"))saveResultToSupabase();loadMyFights();if(!$("#roster-manager")?.classList.contains("hidden"))renderRosterManager()}
+  if(data?.access_token){$("#auth-dialog").close();if(fight&&!lastSavedFight&&!replayingSavedFight&&!$("#results").classList.contains("hidden"))saveResultToSupabase();loadMyFights();if(!$("#roster-manager")?.classList.contains("hidden"))renderRosterManager();if(!$("#verified-manager")?.classList.contains("hidden"))renderVerifiedManager()}
   else $("#auth-message").textContent="Account created. Check your email if Supabase asks you to confirm it, then sign in.";
  }catch(error){$("#auth-message").textContent=error.message||"Could not create account."}
 };
-$("#signout-button").onclick=async()=>{await window.RINGSIDE_SUPABASE.signOut();savedFightRows=[];renderAuthState();$("#auth-dialog").close();loadMyFights();if(!$("#roster-manager")?.classList.contains("hidden"))renderRosterManager()};
+$("#signout-button").onclick=async()=>{await window.RINGSIDE_SUPABASE.signOut();savedFightRows=[];renderAuthState();$("#auth-dialog").close();loadMyFights();if(!$("#roster-manager")?.classList.contains("hidden"))renderRosterManager();if(!$("#verified-manager")?.classList.contains("hidden"))renderVerifiedManager()};
 $("#roster-fighter").onchange=()=>{renderRosterPickers();fillRosterForm()};
 $("#roster-version").onchange=fillRosterForm;
 $("#roster-form").onsubmit=e=>{e.preventDefault();saveRosterEdit()};
 $("#delete-roster-version").onclick=deleteRosterVersion;
 $("#seed-roster").onclick=seedRosterToSupabase;
 $("#reload-roster").onclick=async()=>{rosterStatus("Reloading Supabase roster…");await syncRosterFromSupabase();renderRosterManager()};
+$("#history-fight").onchange=()=>{const id=$("#history-fight").value;fillVerifiedForm(id==="__new"?null:verifiedFightList().find(f=>f.id===id))};
+$("#history-form").onsubmit=e=>{e.preventDefault();saveVerifiedFight()};
+$("#delete-verified-fight").onclick=deleteVerifiedFight;
+$("#reload-verified-fights").onclick=async()=>{verifiedStatus("Reloading verified fight history…");await syncVerifiedFightsFromSupabase(true);renderVerifiedManager()};
 document.querySelectorAll("[data-view]").forEach(button=>button.onclick=()=>setView(button.dataset.view));
 $("#view-play-by-play").onclick=()=>{
  const archive=$("#postfight-rounds"),opening=archive.classList.contains("hidden");
@@ -677,5 +836,6 @@ $("#weight").onchange=renderResearchDesk;
 renderFighter("a");renderFighter("b");renderArchive();
 renderAuthState();
 syncRosterFromSupabase();
+syncVerifiedFightsFromSupabase();
 const initialSlug=new URLSearchParams(location.search).get("fight");
 if(initialSlug)openSavedFight(initialSlug);
