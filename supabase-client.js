@@ -144,6 +144,10 @@ async function replaceFighterVersion(row){
  await request(`fighter_versions?fighter_id=eq.${encodeURIComponent(row.fighter_id)}&label=eq.${encodeURIComponent(row.label)}`,{method:"DELETE",headers:{Prefer:"return=minimal"}});
  return request("fighter_versions?select=fighter_id,label,year,division,weight_lbs,ratings,best_performance,source_notes,is_default",{method:"POST",body:row});
 }
+async function deleteFighterVersion({fighter_id,label}){
+ if(!currentUser())return {authRequired:true,reason:"Sign in to edit the roster."};
+ return request(`fighter_versions?fighter_id=eq.${encodeURIComponent(fighter_id)}&label=eq.${encodeURIComponent(label)}`,{method:"DELETE",headers:{Prefer:"return=minimal"}});
+}
 async function seedRoster(localFighters=[]){
  if(!currentUser())return {authRequired:true,reason:"Sign in to seed the roster."};
  const fighterRows=localFighters.map(f=>({
@@ -174,5 +178,5 @@ async function seedRoster(localFighters=[]){
  const savedVersions=versionRows.length?await request("fighter_versions",{method:"POST",body:versionRows,headers:{Prefer:"return=minimal"}}):{data:[]};
  return {data:{fighters:savedFighters.data||[],versions:savedVersions.data||[],fighterCount:fighterRows.length,versionCount:versionRows.length}};
 }
-global.RINGSIDE_SUPABASE={isConfigured,getSession,currentUser,signUp,signIn,signOut,saveFight,listSavedFights,getSavedFight,loadRoster,isRosterAdmin,upsertFighter,replaceFighterVersion,seedRoster,refreshSession};
+global.RINGSIDE_SUPABASE={isConfigured,getSession,currentUser,signUp,signIn,signOut,saveFight,listSavedFights,getSavedFight,loadRoster,isRosterAdmin,upsertFighter,replaceFighterVersion,deleteFighterVersion,seedRoster,refreshSession};
 })(typeof window!=="undefined"?window:globalThis);

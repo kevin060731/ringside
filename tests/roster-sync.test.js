@@ -55,6 +55,21 @@ test("roster sync overrides matching versions without deleting other local versi
  assert.ok(merged.some(version=>version.label==="2023 · 135-LB SHARPSHOOTER"));
 });
 
+test("roster sync drops stale synced versions after they are deleted remotely",()=>{
+ const sync=loadSync();
+ const merged=sync.mergeVersions([
+  {year:2024,label:"2024 · TOP CONTENDER",weight:135,power:81},
+  {year:2026,label:"2026 · ACCIDENTAL DUPLICATE",weight:140,power:84,synced:true},
+  {year:2026,label:"2026 · 140-LB TECHNICIAN",weight:138,power:82,synced:true}
+ ],[
+  {year:2026,label:"2026 · 140-LB TECHNICIAN",weight:138,power:85,isDefault:true,synced:true}
+ ]);
+ assert.equal(merged.length,2);
+ assert.ok(!merged.some(version=>version.label==="2026 · ACCIDENTAL DUPLICATE"));
+ assert.ok(merged.some(version=>version.label==="2024 · TOP CONTENDER"));
+ assert.equal(merged[0].power,85);
+});
+
 test("roster sync can build versions from fighter model_data when version rows are absent",()=>{
  const sync=loadSync();
  const local=[];

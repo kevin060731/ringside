@@ -350,6 +350,26 @@ async function saveRosterEdit(){
   rosterStatus(error.message||"Could not save roster update.","error");
  }
 }
+async function deleteRosterVersion(){
+ if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){rosterStatus("Supabase is not connected yet.","error");return}
+ if(!authUser()){openAuthDialog("Sign in before editing the roster.");return}
+ const f=rosterFighter(),v=f.years[rosterVersionIndex()]||{};
+ if(!v.label){rosterStatus("Pick a version before deleting.","error");return}
+ const ok=confirm(`Delete ${f.name} — ${v.label} from Supabase? This only removes the synced version row.`);
+ if(!ok)return;
+ try{
+  rosterStatus(`Deleting ${v.label}…`);
+  await window.RINGSIDE_SUPABASE.deleteFighterVersion({fighter_id:f.id,label:v.label});
+  f.years=(f.years||[]).filter(version=>!(version.synced&&(version.label||"")===v.label));
+  versions.a=Math.min(versions.a,selected.a.years.length-1);
+  versions.b=Math.min(versions.b,selected.b.years.length-1);
+  await syncRosterFromSupabase();
+  renderRosterPickers();$("#roster-fighter").value=f.id;fillRosterForm();
+  rosterStatus("Deleted that Supabase version. If it was a built-in era, the local fallback may still appear.","ok");
+ }catch(error){
+  rosterStatus(error.message||"Could not delete that version.","error");
+ }
+}
 async function seedRosterToSupabase(){
  if(!authUser()){openAuthDialog("Sign in before seeding the roster.");return}
  try{
@@ -641,6 +661,7 @@ $("#signout-button").onclick=async()=>{await window.RINGSIDE_SUPABASE.signOut();
 $("#roster-fighter").onchange=()=>{renderRosterPickers();fillRosterForm()};
 $("#roster-version").onchange=fillRosterForm;
 $("#roster-form").onsubmit=e=>{e.preventDefault();saveRosterEdit()};
+$("#delete-roster-version").onclick=deleteRosterVersion;
 $("#seed-roster").onclick=seedRosterToSupabase;
 $("#reload-roster").onclick=async()=>{rosterStatus("Reloading Supabase roster…");await syncRosterFromSupabase();renderRosterManager()};
 document.querySelectorAll("[data-view]").forEach(button=>button.onclick=()=>setView(button.dataset.view));
