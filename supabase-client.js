@@ -25,17 +25,22 @@ function authHeader(){
 async function request(path,{method="GET",body=null,headers={}}={}){
  if(!isConfigured())return {skipped:true,reason:"Supabase is not configured yet."};
  const url=`${clean(config.url).replace(/\/$/,"")}/rest/v1/${path}`;
- const res=await fetch(url,{
-  method,
-  headers:{
-   apikey:clean(config.anonKey),
-   Authorization:authHeader(),
-   "Content-Type":"application/json",
-   Prefer:"return=representation",
-   ...headers
-  },
-  body:body?JSON.stringify(body):null
- });
+ const options=()=>({
+   method,
+   headers:{
+    apikey:clean(config.anonKey),
+    Authorization:authHeader(),
+    "Content-Type":"application/json",
+    Prefer:"return=representation",
+    ...headers
+   },
+   body:body?JSON.stringify(body):null
+  });
+ let res=await fetch(url,options());
+ if(res.status===401&&session?.refresh_token){
+  const refreshed=await refreshSession().catch(()=>null);
+  if(refreshed)res=await fetch(url,options());
+ }
  const text=await res.text();
  const data=text?JSON.parse(text):null;
  if(!res.ok)throw new Error(data?.message||`Supabase request failed: ${res.status}`);
@@ -63,6 +68,12 @@ async function signIn(email,password){
  const data=await authRequest("token?grant_type=password",{email:clean(email),password});
  setSession(data);
  return data;
+}
+async function refreshSession(){
+ if(!isConfigured()||!session?.refresh_token)return null;
+ const data=await authRequest("token?grant_type=refresh_token",{refresh_token:session.refresh_token});
+ setSession(data);
+ return session;
 }
 async function signOut(){
  if(isConfigured()&&session?.access_token){
@@ -163,5 +174,5 @@ async function seedRoster(localFighters=[]){
  const savedVersions=versionRows.length?await request("fighter_versions",{method:"POST",body:versionRows,headers:{Prefer:"return=minimal"}}):{data:[]};
  return {data:{fighters:savedFighters.data||[],versions:savedVersions.data||[],fighterCount:fighterRows.length,versionCount:versionRows.length}};
 }
-global.RINGSIDE_SUPABASE={isConfigured,getSession,currentUser,signUp,signIn,signOut,saveFight,listSavedFights,getSavedFight,loadRoster,isRosterAdmin,upsertFighter,replaceFighterVersion,seedRoster};
+global.RINGSIDE_SUPABASE={isConfigured,getSession,currentUser,signUp,signIn,signOut,saveFight,listSavedFights,getSavedFight,loadRoster,isRosterAdmin,upsertFighter,replaceFighterVersion,seedRoster,refreshSession};
 })(typeof window!=="undefined"?window:globalThis);

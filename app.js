@@ -300,8 +300,9 @@ async function renderRosterManager(){
   rosterStatus(rosterAdmin?"Ready to edit roster data.":"Add this user ID to public.roster_admins in Supabase, then reload.","");
  }catch(error){
   rosterAdmin=false;
-  if(status)status.textContent="ADMIN CHECK FAILED";
-  rosterStatus(error.message||"Could not check roster admin status.","error");
+  const message=error.message||"Could not check roster admin status.";
+  if(status)status.textContent=/jwt|token|expired/i.test(message)?"SESSION EXPIRED":"ADMIN CHECK FAILED";
+  rosterStatus(`${message} ${/jwt|token|expired/i.test(message)?"Sign out and sign back in if this keeps happening.":""}`.trim(),"error");
  }
 }
 function rosterPayload(){

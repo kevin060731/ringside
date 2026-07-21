@@ -147,3 +147,27 @@ test("Supabase client can seed the current roster without deleting unrelated fig
  assert.equal(versionInsert.options.method,"POST");
  assert.equal(JSON.parse(versionInsert.options.body).length,2);
 });
+
+test("Supabase client refreshes an expired session before retrying roster admin checks",async()=>{
+ const requests=[];
+ const context=loadClient(async(url,options)=>{
+  requests.push({url,options});
+  if(String(url).includes("/auth/v1/token?grant_type=password")){
+   return {ok:true,text:async()=>JSON.stringify({access_token:"old-token",refresh_token:"refresh-1",user:{id:"user-1",email:"kev@example.com"}})};
+  }
+  if(String(url).includes("/auth/v1/token?grant_type=refresh_token")){
+   return {ok:true,text:async()=>JSON.stringify({access_token:"fresh-token",refresh_token:"refresh-2",user:{id:"user-1",email:"kev@example.com"}})};
+  }
+  const auth=options.headers.Authorization;
+  if(auth==="Bearer old-token")return {ok:false,status:401,text:async()=>JSON.stringify({message:"JWT expired"})};
+  return {ok:true,text:async()=>JSON.stringify([{user_id:"user-1"}])};
+ });
+ await context.RINGSIDE_SUPABASE.signIn("kev@example.com","secret123");
+ const admin=await context.RINGSIDE_SUPABASE.isRosterAdmin();
+ assert.equal(admin.data,true);
+ const adminRequests=requests.filter(request=>String(request.url).includes("roster_admins"));
+ assert.equal(adminRequests.length,2);
+ assert.equal(adminRequests[0].options.headers.Authorization,"Bearer old-token");
+ assert.equal(adminRequests[1].options.headers.Authorization,"Bearer fresh-token");
+ assert.equal(context.RINGSIDE_SUPABASE.getSession().access_token,"fresh-token");
+});
