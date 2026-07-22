@@ -32,7 +32,7 @@ function decorateRoster(){
 }
 let selected={a:fighters[0],b:fighters[1]},versions={a:0,b:0},pickerSide="a",scheduled=12,fight=null,current=0,archiveDivision="All",researchDesk=null,lastSavedFight=null,replayingSavedFight=false,savedFightRows=[],rosterAdmin=false,verifiedFightRows=[],verifiedFightSyncPromise=null;
 const $=s=>document.querySelector(s);
-const fightLabSections=[".hero","#setup","#research-desk",".settings-panel",".data-panel"];
+const fightLabSections=[".hero","#public-status","#setup","#research-desk",".settings-panel",".data-panel"];
 const wikiAliases={"Saúl Álvarez":"Canelo Álvarez","Gennadiy Golovkin":"Gennady Golovkin","Jesse Rodriguez":"Jesse Rodríguez (boxer)","Oleksandr Usyk":"Oleksandr Usyk","Floyd Mayweather":"Floyd Mayweather Jr.","Julio César Chávez":"Julio César Chávez","Teófimo López":"Teófimo López"};
 const portraitJobs=new Map();
 async function loadPortrait(f,img){
@@ -114,6 +114,7 @@ async function syncVerifiedFightsFromSupabase(force=false){
    if(verifiedFightRows.length){
     const summary=window.BOXING_FIGHT_HISTORY.mergeVerifiedFights(verifiedFightRows);
     console.info(`RINGSIDE verified fight sync: ${summary.updated} updated, ${summary.added} added`);
+    renderPublicStatus();
    }
    return verifiedFightRows;
   }catch(error){
@@ -151,6 +152,7 @@ function renderFighter(side){
  loadPortrait(f,$(`#portrait-${side}`));
  loadBio(f,side);
 	 renderResearchDesk();
+	 renderPublicStatus();
 	}
 function fightSettings(){
  return {
@@ -228,9 +230,53 @@ function renderResearchDesk(){
    ${researchDesk.dataGaps.length?`<div class="desk-gaps"><small>DATA GAPS FOR FUTURE OPENAI RESEARCH</small>${researchDesk.dataGaps.map(g=>`<span>${g}</span>`).join("")}</div>`:""}
   </div>
  </details>`;
+ renderPublicStatus();
 }
 function openPicker(side){pickerSide=side;$("#fighter-search").value="";renderArchive();$("#picker").showModal()}
-function renderArchive(q=""){const list=fighters.filter(f=>(archiveDivision==="All"||f.division===archiveDivision)&&(f.name+f.nickname+f.division+f.years.map(y=>y.year).join(" ")).toLowerCase().includes(q.toLowerCase()));$("#fighter-grid").innerHTML=list.map(f=>`<button class="archive-fighter" data-id="${f.id}"><img src="${f.img}" data-fighter="${f.id}" alt="${f.name}"><span><b>${f.name}</b><small>“${f.nickname}” · ${f.division}</small></span></button>`).join("");$("#division-filters").innerHTML=["All",...(window.WEIGHT_CLASSES||[])].map(d=>`<button class="${d===archiveDivision?"active":""}" data-division="${d}">${d}</button>`).join("");document.querySelectorAll("img[data-fighter]").forEach(img=>portraitObserver.observe(img))}
+function renderArchive(q=""){
+ const query=q.trim().toLowerCase();
+ const searchable=f=>(f.name+(f.nickname||"")+(f.division||"")+(f.country||"")+f.years.map(y=>`${y.year} ${y.label} ${y.division||""} ${y.bestPerformance?.opponent||""}`).join(" ")).toLowerCase();
+ const list=fighters
+  .filter(f=>(archiveDivision==="All"||f.division===archiveDivision)&&searchable(f).includes(query))
+  .sort((a,b)=>(Number(!!b.active)-Number(!!a.active))||a.last.localeCompare(b.last));
+ $("#fighter-grid").innerHTML=list.length?list.map(f=>{
+  const latest=f.years[0]||{};
+  const verifiedCount=window.BOXING_FIGHT_HISTORY?.fights?.filter(record=>record.red===f.id||record.blue===f.id).length||0;
+  return `<button class="archive-fighter" data-id="${f.id}">
+    <img src="${f.img}" data-fighter="${f.id}" alt="${f.name}" onerror="this.classList.add('image-missing')">
+    <span>
+      <b>${f.name}</b>
+      <small>${f.nickname?`“${f.nickname}” · `:""}${f.division}</small>
+      <em>${f.years.length} version${f.years.length===1?"":"s"} · ${latest.label||"Current"}${verifiedCount?` · ${verifiedCount} verified fight${verifiedCount===1?"":"s"}`:""}</em>
+    </span>
+    ${f.active?`<i>ACTIVE</i>`:""}
+   </button>`;
+ }).join(""):`<div class="archive-empty"><b>No fighters found</b><span>Try a different name, nickname, year, or division.</span></div>`;
+ $("#division-filters").innerHTML=["All",...(window.WEIGHT_CLASSES||[])].map(d=>`<button class="${d===archiveDivision?"active":""}" data-division="${d}">${d}</button>`).join("");
+ document.querySelectorAll("img[data-fighter]").forEach(img=>portraitObserver.observe(img));
+}
+function renderPublicStatus(){
+ const rosterCount=$("#roster-count"),historyCount=$("#history-count"),modeTitle=$("#match-mode-title"),modeCopy=$("#match-mode-copy"),modeLabel=$("#match-mode-label"),status=$("#public-status");
+ if(rosterCount)rosterCount.textContent=`${fighters.length} fighters`;
+ if(historyCount)historyCount.textContent=`${window.BOXING_FIGHT_HISTORY?.fights?.length||0} fights`;
+ if(!modeTitle||!modeCopy||!modeLabel)return;
+ const a=active("a"),b=active("b");
+ const known=window.BOXING_FIGHT_HISTORY?.find?.(a,b);
+ status?.classList.toggle("verified-match",!!known);
+ status?.classList.toggle("hypothetical-match",!known);
+ if(known){
+  const winner=known.winner?fighters.find(f=>f.id===known.winner)?.last||known.winner:"Draw";
+  modeLabel.textContent="VERIFIED MATCHUP";
+  modeTitle.textContent=`${a.last} vs ${b.last} already happened`;
+  modeCopy.textContent=`The app will replay the real outcome: ${winner} · ${known.method} · ${known.date||"date stored"}. Add exact cards/events in History Manager when available.`;
+ }else{
+  const mismatch=researchDesk?.mismatch;
+  const mismatchText=mismatch?.type&&!["competitive","lean"].includes(mismatch.type)?` Mismatch watch: ${mismatch.type.replace("-"," ")}.`:"";
+  modeLabel.textContent="HYPOTHETICAL MATCHUP";
+  modeTitle.textContent=`${a.last} vs ${b.last} is a fantasy simulation`;
+  modeCopy.textContent=`No verified head-to-head record is stored, so RINGSIDE will use versions, styles, fight settings, and the Research Desk layer.${mismatchText}`;
+ }
+}
 function setView(view="home"){
  const showHome=view==="home"||view==="archive";
  fightLabSections.forEach(selector=>document.querySelector(selector)?.classList.toggle("hidden",!showHome));
@@ -681,13 +727,13 @@ function renderFightPoster(last=null){
 async function setupFight(){
  replayingSavedFight=false;
  const button=$("#simulate"),a=active("a"),b=active("b");
- button.disabled=true;button.textContent="OPENING RESEARCH DESK…";
+ button.disabled=true;button.innerHTML="<span>OPENING RESEARCH DESK…</span><b>⌁</b>";
  await syncVerifiedFightsFromSupabase();
  await window.BOXING_FIGHT_HISTORY?.resolve(a,b);
  const deskSettings=fightSettings();
  researchDesk=window.BOXING_RESEARCH_DESK?.create(a,b,deskSettings);
  fight=BoxingEngine.buildFight(a,b,{...deskSettings,narrationSalt:`${Date.now()}-${Math.random()}`,researchDesk});
- button.disabled=false;button.textContent="SIMULATE THE FIGHT →";
+ button.disabled=false;button.innerHTML="<span>SIMULATE THE FIGHT</span><b>→</b>";
  if(fight.historical)scheduled=fight.rounds.length;
  current=0;$("#setup").classList.add("hidden");$(".settings-panel").classList.add("hidden");$(".hero").classList.add("hidden");$("#broadcast").classList.remove("hidden");$("#results").classList.add("hidden");
  for(const s of ["a","b"]){$(`#live-name-${s}`).textContent=active(s).name;$(`#live-img-${s}`).src=active(s).img;$(`#score-head-${s}`).textContent=active(s).last.toUpperCase();$(`#prob-name-${s}`).textContent=active(s).last.toUpperCase()}
@@ -761,6 +807,13 @@ async function saveResultToSupabase(){
 function showResults(){
  $("#broadcast").classList.add("hidden");$("#results").classList.remove("hidden");$("#result-kicker").textContent=replayingSavedFight?"SAVED FIGHT REPLAY":"OFFICIAL RESULT";const w=fight.winner==="draw"?null:fight[fight.winner]||active(fight.winner);
  const verifiedLabel=window.BOXING_FIGHT_HISTORY?.qualityLabel?.(fight.event)||(fight.officialScorecards?"OFFICIAL REPLAY":"VERIFIED OUTCOME");
+ const resultMode=$("#result-mode-pill");
+ if(resultMode){
+  resultMode.className="result-mode-pill";
+  if(replayingSavedFight){resultMode.textContent="SAVED REPLAY";resultMode.classList.add("saved")}
+  else if(fight.historical){resultMode.textContent=verifiedLabel;resultMode.classList.add("verified")}
+  else {resultMode.textContent="HYPOTHETICAL SIMULATION";resultMode.classList.add("fantasy")}
+ }
  $("#winner-name").textContent=w?.name||"DRAW";$("#decision").textContent=fight.historical?`${fight.decision} · ${verifiedLabel}`:fight.decision;
  $("#official-cards").innerHTML=fight.historical&&!fight.officialScorecards
   ?`<div class="judge-card"><small>OFFICIAL CARDS</small><b>NOT AVAILABLE</b></div>`
