@@ -32,6 +32,13 @@ function decorateRoster(){
 }
 let selected={a:fighters[0],b:fighters[1]},versions={a:0,b:0},pickerSide="a",scheduled=12,fight=null,current=0,archiveDivision="All",researchDesk=null,lastSavedFight=null,replayingSavedFight=false,savedFightRows=[],rosterAdmin=false,verifiedFightRows=[],verifiedFightSyncPromise=null;
 const $=s=>document.querySelector(s);
+function setImage(img,src,alt=""){
+ if(!img)return;
+ img.classList.remove("image-missing");
+ img.alt=alt;
+ img.onerror=()=>img.classList.add("image-missing");
+ img.src=src||"";
+}
 const fightLabSections=[".hero","#public-status","#setup","#research-desk",".settings-panel",".data-panel"];
 const wikiAliases={"Saúl Álvarez":"Canelo Álvarez","Gennadiy Golovkin":"Gennady Golovkin","Jesse Rodriguez":"Jesse Rodríguez (boxer)","Oleksandr Usyk":"Oleksandr Usyk","Floyd Mayweather":"Floyd Mayweather Jr.","Julio César Chávez":"Julio César Chávez","Teófimo López":"Teófimo López"};
 const portraitJobs=new Map();
@@ -200,17 +207,17 @@ function renderResearchDesk(){
     </ul>
   </div>`;
  }).join("");
- const keyTags=[...new Set([...(researchDesk.fighters.a.tags||[]),...(researchDesk.fighters.b.tags||[])])].slice(0,4);
- const quickKeys=researchDesk.quickKeys?.length?researchDesk.quickKeys:researchDesk.scoutingQuestions.slice(0,3);
+ const keyTags=[...new Set([...(researchDesk.fighters.a.tags||[]),...(researchDesk.fighters.b.tags||[])])].slice(0,3);
+ const compactSummary=researchDesk.verifiedFight
+  ? researchDesk.styleClash.summary
+  : `${researchDesk.fighters.a.last} vs ${researchDesk.fighters.b.last}: ${researchDesk.styleClash.summary}`;
  panel.innerHTML=`<details class="desk-details">
   <summary class="desk-compact">
    <div class="desk-compact-title">
     <small>RINGSIDE RESEARCH DESK</small>
-    <h2>${researchDesk.verifiedFight?"VERIFIED KEYS":"KEYS TO THE FIGHT"}</h2>
+    <h2>${researchDesk.verifiedFight?"VERIFIED REPLAY":"SCOUTING SNAPSHOT"}</h2>
    </div>
-   <div class="desk-key-list">
-    ${quickKeys.map((key,i)=>`<div><b>${String(i+1).padStart(2,"0")}</b><span>${key}</span></div>`).join("")}
-   </div>
+   <p>${compactSummary}</p>
    <div class="desk-compact-meta">
     ${keyTags.map(tag=>`<b>${tag}</b>`).join("")}
     <span>${researchDesk.confidence}% CONFIDENCE</span>
@@ -257,8 +264,8 @@ function renderArchive(q=""){
 }
 function renderPublicStatus(){
  const rosterCount=$("#roster-count"),historyCount=$("#history-count"),modeTitle=$("#match-mode-title"),modeCopy=$("#match-mode-copy"),modeLabel=$("#match-mode-label"),status=$("#public-status");
- if(rosterCount)rosterCount.textContent=`${fighters.length} fighters`;
- if(historyCount)historyCount.textContent=`${window.BOXING_FIGHT_HISTORY?.fights?.length||0} fights`;
+ if(rosterCount)rosterCount.textContent=`${fighters.length}`;
+ if(historyCount)historyCount.textContent=`${window.BOXING_FIGHT_HISTORY?.fights?.length||0}`;
  if(!modeTitle||!modeCopy||!modeLabel)return;
  const a=active("a"),b=active("b");
  const known=window.BOXING_FIGHT_HISTORY?.find?.(a,b);
@@ -267,14 +274,14 @@ function renderPublicStatus(){
  if(known){
   const winner=known.winner?fighters.find(f=>f.id===known.winner)?.last||known.winner:"Draw";
   modeLabel.textContent="VERIFIED MATCHUP";
-  modeTitle.textContent=`${a.last} vs ${b.last} already happened`;
-  modeCopy.textContent=`The app will replay the real outcome: ${winner} · ${known.method} · ${known.date||"date stored"}. Add exact cards/events in History Manager when available.`;
+  modeTitle.textContent="Verified replay loaded";
+  modeCopy.textContent=`${a.last} vs ${b.last} · ${winner} · ${known.method}${known.date?` · ${known.date}`:""}`;
  }else{
   const mismatch=researchDesk?.mismatch;
   const mismatchText=mismatch?.type&&!["competitive","lean"].includes(mismatch.type)?` Mismatch watch: ${mismatch.type.replace("-"," ")}.`:"";
   modeLabel.textContent="HYPOTHETICAL MATCHUP";
-  modeTitle.textContent=`${a.last} vs ${b.last} is a fantasy simulation`;
-  modeCopy.textContent=`No verified head-to-head record is stored, so RINGSIDE will use versions, styles, fight settings, and the Research Desk layer.${mismatchText}`;
+  modeTitle.textContent="Fantasy simulation";
+  modeCopy.textContent=`${a.last} vs ${b.last} · versions, styles and settings active.${mismatchText}`;
  }
 }
 function setView(view="home"){
@@ -716,7 +723,7 @@ async function openSavedFight(slug){
 }
 function renderFightPoster(last=null){
  const a=active("a"),b=active("b"),round=last?.number||1;
- $("#poster-img-a").src=a.img;$("#poster-img-a").alt=a.name;$("#poster-img-b").src=b.img;$("#poster-img-b").alt=b.name;
+ setImage($("#poster-img-a"),a.img,a.name);setImage($("#poster-img-b"),b.img,b.name);
  $("#poster-name-a").textContent=a.last;$("#poster-name-b").textContent=b.last;
  $("#poster-bg-a").textContent=a.last;$("#poster-bg-b").textContent=b.last;
  $("#poster-version-a").textContent=a.label||`${a.year||""}`;$("#poster-version-b").textContent=b.label||`${b.year||""}`;
@@ -736,7 +743,7 @@ async function setupFight(){
  button.disabled=false;button.innerHTML="<span>SIMULATE THE FIGHT</span><b>→</b>";
  if(fight.historical)scheduled=fight.rounds.length;
  current=0;$("#setup").classList.add("hidden");$(".settings-panel").classList.add("hidden");$(".hero").classList.add("hidden");$("#broadcast").classList.remove("hidden");$("#results").classList.add("hidden");
- for(const s of ["a","b"]){$(`#live-name-${s}`).textContent=active(s).name;$(`#live-img-${s}`).src=active(s).img;$(`#score-head-${s}`).textContent=active(s).last.toUpperCase();$(`#prob-name-${s}`).textContent=active(s).last.toUpperCase()}
+ for(const s of ["a","b"]){$(`#live-name-${s}`).textContent=active(s).name;setImage($(`#live-img-${s}`),active(s).img,active(s).name);$(`#score-head-${s}`).textContent=active(s).last.toUpperCase();$(`#prob-name-${s}`).textContent=active(s).last.toUpperCase()}
  $("#venue-display").textContent=$("#venue").value.toUpperCase();renderFightPoster();renderLive();window.scrollTo({top:0,behavior:"smooth"});
 }
 function renderLive(){

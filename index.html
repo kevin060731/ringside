@@ -8,9 +8,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,500;0,600;0,700;0,800;0,900;1,700&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=public-polish-1" />
-  <link rel="stylesheet" href="dashboard.css?v=public-polish-1" />
-  <link rel="stylesheet" href="playback.css?v=public-polish-1" />
+  <link rel="stylesheet" href="styles.css?v=sleek-1" />
+  <link rel="stylesheet" href="dashboard.css?v=sleek-1" />
+  <link rel="stylesheet" href="playback.css?v=sleek-1" />
 </head>
 <body>
   <header class="topbar">
@@ -36,18 +36,13 @@
       <article class="status-card primary">
         <small id="match-mode-label">MATCHUP MODE</small>
         <b id="match-mode-title">Checking archive…</b>
-        <span id="match-mode-copy">Choose two fighters and RINGSIDE will tell you if this is a verified replay or a hypothetical simulation.</span>
+        <span id="match-mode-copy">Styles, versions and fight settings are active.</span>
       </article>
-      <article class="status-card">
-        <small>ROSTER</small>
-        <b id="roster-count">— fighters</b>
-        <span>Synced roster data can update fighters and versions without changing the public site.</span>
-      </article>
-      <article class="status-card">
-        <small>VERIFIED HISTORY</small>
-        <b id="history-count">— fights</b>
-        <span>Real fights override the simulator when the selected matchup already happened.</span>
-      </article>
+      <div class="status-metrics" aria-label="RINGSIDE data status">
+        <span><b id="roster-count">—</b><small>fighters</small></span>
+        <span><b id="history-count">—</b><small>verified fights</small></span>
+        <span><b>Live</b><small>Supabase sync</small></span>
+      </div>
     </section>
 
     <section class="matchup-shell" id="setup">
@@ -400,21 +395,21 @@
       <button type="button" id="signout-button" class="signout-button">SIGN OUT</button>
     </form>
   </dialog>
-  <script src="supabase-config.js?v=public-polish-1"></script>
-  <script src="supabase-client.js?v=public-polish-1"></script>
-  <script src="fight-history.js?v=public-polish-1"></script>
+  <script src="supabase-config.js?v=sleek-1"></script>
+  <script src="supabase-client.js?v=sleek-1"></script>
+  <script src="fight-history.js?v=sleek-1"></script>
   <script src="verified-fights-pack.js?v=verified-history-pack-1"></script>
-  <script src="compubox-provider.js?v=public-polish-1"></script>
-  <script src="engine.js?v=public-polish-1"></script>
-  <script src="roster.js?v=public-polish-1"></script>
-  <script src="roster-expanded.js?v=public-polish-1"></script>
-  <script src="roster-active.js?v=public-polish-1"></script>
-  <script src="roster-deep.js?v=public-polish-1"></script>
-  <script src="roster-versions.js?v=public-polish-1"></script>
-  <script src="boxing-gems-data.js?v=public-polish-1"></script>
-  <script src="rummy-corner-data.js?v=public-polish-1"></script>
-  <script src="research-desk.js?v=public-polish-1"></script>
-  <script src="roster-sync.js?v=public-polish-1"></script>
-  <script src="app.js?v=public-polish-1"></script>
+  <script src="compubox-provider.js?v=sleek-1"></script>
+  <script src="engine.js?v=sleek-1"></script>
+  <script src="roster.js?v=sleek-1"></script>
+  <script src="roster-expanded.js?v=sleek-1"></script>
+  <script src="roster-active.js?v=sleek-1"></script>
+  <script src="roster-deep.js?v=sleek-1"></script>
+  <script src="roster-versions.js?v=sleek-1"></script>
+  <script src="boxing-gems-data.js?v=sleek-1"></script>
+  <script src="rummy-corner-data.js?v=sleek-1"></script>
+  <script src="research-desk.js?v=sleek-1"></script>
+  <script src="roster-sync.js?v=sleek-1"></script>
+  <script src="app.js?v=sleek-1"></script>
 </body>
 </html>
