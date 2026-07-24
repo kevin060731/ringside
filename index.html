@@ -8,9 +8,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,500;0,600;0,700;0,800;0,900;1,700&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=sleek-1" />
-  <link rel="stylesheet" href="dashboard.css?v=sleek-1" />
-  <link rel="stylesheet" href="playback.css?v=sleek-1" />
+  <link rel="stylesheet" href="styles.css?v=auth-guard-1" />
+  <link rel="stylesheet" href="dashboard.css?v=auth-guard-1" />
+  <link rel="stylesheet" href="playback.css?v=auth-guard-1" />
 </head>
 <body>
   <header class="topbar">
@@ -385,9 +385,11 @@
       <button class="auth-close" id="close-auth" value="cancel" aria-label="Close">×</button>
       <small>RINGSIDE PROFILE</small>
       <h2>Your Fight Vault</h2>
-      <p id="auth-message">Sign in so My Fights only shows your saved simulations.</p>
+      <p id="auth-message">Sign in so My Fights only shows your saved simulations. New accounts should use a real email you can open.</p>
       <label>Email<input id="auth-email" type="email" autocomplete="email" placeholder="you@example.com"></label>
+      <label class="signup-confirm">Confirm email <span>new accounts only</span><input id="auth-email-confirm" type="email" autocomplete="email" placeholder="Type your email again"></label>
       <label>Password<input id="auth-password" type="password" autocomplete="current-password" placeholder="At least 6 characters"></label>
+      <div class="auth-note">For new accounts, RINGSIDE may send one confirmation email. Double-check the address before creating the account.</div>
       <div class="auth-actions">
         <button type="button" id="signin-button">SIGN IN</button>
         <button type="button" id="signup-button">CREATE ACCOUNT</button>
@@ -395,21 +397,21 @@
       <button type="button" id="signout-button" class="signout-button">SIGN OUT</button>
     </form>
   </dialog>
-  <script src="supabase-config.js?v=sleek-1"></script>
-  <script src="supabase-client.js?v=sleek-1"></script>
-  <script src="fight-history.js?v=sleek-1"></script>
+  <script src="supabase-config.js?v=auth-guard-1"></script>
+  <script src="supabase-client.js?v=auth-guard-1"></script>
+  <script src="fight-history.js?v=auth-guard-1"></script>
   <script src="verified-fights-pack.js?v=verified-history-pack-1"></script>
-  <script src="compubox-provider.js?v=sleek-1"></script>
-  <script src="engine.js?v=sleek-1"></script>
-  <script src="roster.js?v=sleek-1"></script>
-  <script src="roster-expanded.js?v=sleek-1"></script>
-  <script src="roster-active.js?v=sleek-1"></script>
-  <script src="roster-deep.js?v=sleek-1"></script>
-  <script src="roster-versions.js?v=sleek-1"></script>
-  <script src="boxing-gems-data.js?v=sleek-1"></script>
-  <script src="rummy-corner-data.js?v=sleek-1"></script>
-  <script src="research-desk.js?v=sleek-1"></script>
-  <script src="roster-sync.js?v=sleek-1"></script>
-  <script src="app.js?v=sleek-1"></script>
+  <script src="compubox-provider.js?v=auth-guard-1"></script>
+  <script src="engine.js?v=auth-guard-1"></script>
+  <script src="roster.js?v=auth-guard-1"></script>
+  <script src="roster-expanded.js?v=auth-guard-1"></script>
+  <script src="roster-active.js?v=auth-guard-1"></script>
+  <script src="roster-deep.js?v=auth-guard-1"></script>
+  <script src="roster-versions.js?v=auth-guard-1"></script>
+  <script src="boxing-gems-data.js?v=auth-guard-1"></script>
+  <script src="rummy-corner-data.js?v=auth-guard-1"></script>
+  <script src="research-desk.js?v=auth-guard-1"></script>
+  <script src="roster-sync.js?v=auth-guard-1"></script>
+  <script src="app.js?v=auth-guard-1"></script>
 </body>
 </html>

@@ -308,13 +308,48 @@ function renderAuthState(){
  if(button)button.textContent=user?userLabel(user):"SIGN IN";
  if(copy)copy.textContent=user?`Signed in as ${user.email}. These saved fights belong to your profile.`:"Sign in to see your own private fight vault. Share links still work for replaying specific fights.";
  card?.classList.toggle("signed-in",!!user);
- if(message)message.textContent=user?`Signed in as ${user.email}. Your fight vault is now private to this profile.`:"Sign in so My Fights only shows your saved simulations.";
+ if(message)message.textContent=user?`Signed in as ${user.email}. Your fight vault is now private to this profile.`:"Sign in so My Fights only shows your saved simulations. New accounts should use a real email you can open.";
 }
 function openAuthDialog(message=""){
  const dialog=$("#auth-dialog");
  renderAuthState();
  if(message)$("#auth-message").textContent=message;
  dialog?.showModal();
+}
+function cleanEmail(value=""){return value.trim().toLowerCase()}
+function isValidEmail(value=""){
+ return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(cleanEmail(value));
+}
+function authFields(){
+ return {
+  email:cleanEmail($("#auth-email")?.value||""),
+  confirmEmail:cleanEmail($("#auth-email-confirm")?.value||""),
+  password:$("#auth-password")?.value||""
+ };
+}
+function setAuthBusy(busy,message=""){
+ const buttons=["#signin-button","#signup-button","#signout-button"].map($).filter(Boolean);
+ buttons.forEach(button=>button.disabled=busy);
+ const authMessage=$("#auth-message");
+ if(message&&authMessage)authMessage.textContent=message;
+}
+function authError(message){
+ const el=$("#auth-message");
+ if(el)el.textContent=message;
+ return false;
+}
+function validateSignIn(){
+ const {email,password}=authFields();
+ if(!isValidEmail(email))return authError("Enter a valid email address before signing in.");
+ if(!password)return authError("Enter your password before signing in.");
+ return {email,password};
+}
+function validateSignUp(){
+ const {email,confirmEmail,password}=authFields();
+ if(!isValidEmail(email))return authError("Use a real email address you can open. Example: name@gmail.com");
+ if(email!==confirmEmail)return authError("The two email fields do not match. Check for typos before creating the account.");
+ if(password.length<6)return authError("Use a password with at least 6 characters.");
+ return {email,password};
 }
 const ratingFields=["power","speed","chin","defense","iq","footwork","cardio","accuracy","aggression"];
 function rosterStatus(message,type=""){
@@ -861,16 +896,27 @@ $("#my-fights-list").onclick=async e=>{
 $("#my-fights").onclick=e=>{if(e.target.closest("[data-open-auth]"))openAuthDialog()};
 $("#auth-button").onclick=()=>openAuthDialog();
 $("#signin-button").onclick=async()=>{
- try{await window.RINGSIDE_SUPABASE.signIn($("#auth-email").value,$("#auth-password").value);renderAuthState();$("#auth-dialog").close();if(fight&&!lastSavedFight&&!replayingSavedFight&&!$("#results").classList.contains("hidden"))saveResultToSupabase();loadMyFights();if(!$("#roster-manager")?.classList.contains("hidden"))renderRosterManager();if(!$("#verified-manager")?.classList.contains("hidden"))renderVerifiedManager()}
- catch(error){$("#auth-message").textContent=error.message||"Could not sign in."}
+ const fields=validateSignIn();
+ if(!fields)return;
+ try{
+  setAuthBusy(true,"Signing in…");
+  await window.RINGSIDE_SUPABASE.signIn(fields.email,fields.password);
+  renderAuthState();$("#auth-dialog").close();if(fight&&!lastSavedFight&&!replayingSavedFight&&!$("#results").classList.contains("hidden"))saveResultToSupabase();loadMyFights();if(!$("#roster-manager")?.classList.contains("hidden"))renderRosterManager();if(!$("#verified-manager")?.classList.contains("hidden"))renderVerifiedManager()
+ }
+ catch(error){$("#auth-message").textContent=error.message||"Could not sign in. Check the email and password, then try again."}
+ finally{setAuthBusy(false)}
 };
 $("#signup-button").onclick=async()=>{
+ const fields=validateSignUp();
+ if(!fields)return;
  try{
-  const data=await window.RINGSIDE_SUPABASE.signUp($("#auth-email").value,$("#auth-password").value);
+  setAuthBusy(true,"Creating account… one confirmation email may be sent.");
+  const data=await window.RINGSIDE_SUPABASE.signUp(fields.email,fields.password);
   renderAuthState();
   if(data?.access_token){$("#auth-dialog").close();if(fight&&!lastSavedFight&&!replayingSavedFight&&!$("#results").classList.contains("hidden"))saveResultToSupabase();loadMyFights();if(!$("#roster-manager")?.classList.contains("hidden"))renderRosterManager();if(!$("#verified-manager")?.classList.contains("hidden"))renderVerifiedManager()}
-  else $("#auth-message").textContent="Account created. Check your email if Supabase asks you to confirm it, then sign in.";
- }catch(error){$("#auth-message").textContent=error.message||"Could not create account."}
+  else $("#auth-message").textContent="Account created. Check that email inbox for the confirmation message, then come back and sign in.";
+ }catch(error){$("#auth-message").textContent=error.message||"Could not create account. Make sure the email is real and typed correctly."}
+ finally{setAuthBusy(false)}
 };
 $("#signout-button").onclick=async()=>{await window.RINGSIDE_SUPABASE.signOut();savedFightRows=[];renderAuthState();$("#auth-dialog").close();loadMyFights();if(!$("#roster-manager")?.classList.contains("hidden"))renderRosterManager();if(!$("#verified-manager")?.classList.contains("hidden"))renderVerifiedManager()};
 $("#roster-fighter").onchange=()=>{renderRosterPickers();fillRosterForm()};
