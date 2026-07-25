@@ -241,3 +241,40 @@ dialog{border-radius:20px}
  .poster-corner{padding:16px}
  .poster-corner b{font-size:30px}
 }
+
+/* Matt review polish: less generated-feeling typography and cleaner mobile rules */
+.brand,.fighter-info strong,.results h2,.round-copy h2,.poster-corner b{letter-spacing:-.03em}
+.auth-card h2{font-family:Inter,sans-serif;font-size:32px;line-height:1;letter-spacing:-1.1px;text-transform:none}
+.auth-card p{font-size:13px;color:#b8c0ce}
+.auth-actions button,.signout-button,#auth-button{font-family:Inter,sans-serif;letter-spacing:.3px;text-transform:none}
+.public-status>.status-card.primary b,.status-metrics b{font-family:Inter,sans-serif;letter-spacing:-.4px;text-transform:none}
+
+@media(max-width:760px){
+ body{overflow-x:hidden;background-size:34px 34px}
+ .topbar{min-height:56px;padding:8px 12px}
+ .brand{font-family:Inter,sans-serif;font-size:17px;font-weight:850;letter-spacing:-.6px}
+ .brand-mark{width:27px;height:27px}
+ .search-btn{display:none}
+ #auth-button{min-width:66px;height:34px;padding:0 12px;font-size:11px}
+ .sport-nav{height:44px}
+ .sport-nav button{padding:0 14px;font-size:10px}
+ .hero{display:block;padding:28px 16px 18px}
+ .hero h1{max-width:310px;font-size:clamp(42px,13vw,54px);line-height:.92;letter-spacing:-2px}
+ .hero p{max-width:270px;font-size:12px}
+ .season-chip{display:none!important}
+ .public-status{display:block;margin:0 12px 16px}
+ .public-status>.status-card.primary{padding:13px 14px;border-radius:14px}
+ .public-status>.status-card.primary small{font-size:7px;letter-spacing:1px}
+ .public-status>.status-card.primary b{font-size:18px}
+ .public-status>.status-card.primary span{font-size:11px;line-height:1.35}
+ .status-metrics{margin-top:8px;display:flex;gap:6px;overflow:hidden}
+ .status-metrics span{flex:1;min-width:0;padding:8px 9px;border-radius:12px}
+ .status-metrics b{font-size:13px}
+ .status-metrics small{font-size:6px;letter-spacing:.6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .matchup-shell,.research-desk,.data-panel,.settings-panel{margin-left:12px;margin-right:12px;width:auto;max-width:none}
+ .matchup-shell{overflow:hidden}
+ .fighter-card,.matchup-header,.year-label,.physical-row,.rating-row{border-left-width:0;border-right-width:0}
+ .bottom-nav{height:58px}
+ .bottom-nav b{font-size:15px}
+ .bottom-nav span{font-size:8px}
+}

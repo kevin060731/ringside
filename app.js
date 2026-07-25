@@ -105,7 +105,7 @@ async function syncRosterFromSupabase(){
   renderFighter("a");renderFighter("b");renderArchive($("#fighter-search")?.value||"");
   if(!$("#roster-manager")?.classList.contains("hidden"))renderRosterManager();
   const chip=document.querySelector(".season-chip b");
-  if(chip)chip.textContent=`Supabase synced · ${new Intl.DateTimeFormat(undefined,{month:"short",day:"numeric",year:"numeric"}).format(new Date())}`;
+  if(chip)chip.textContent=`Cloud synced · ${new Intl.DateTimeFormat(undefined,{month:"short",day:"numeric",year:"numeric"}).format(new Date())}`;
   console.info(`RINGSIDE roster sync: ${summary.updated} updated, ${summary.added} added`);
  }catch(error){
   console.warn("RINGSIDE roster sync skipped:",error.message||error);
@@ -408,7 +408,7 @@ async function renderRosterManager(){
   const result=await window.RINGSIDE_SUPABASE?.isRosterAdmin?.();
   rosterAdmin=!!result?.data;
   if(status)status.textContent=rosterAdmin?"ADMIN ENABLED":"NOT ADMIN YET";
-  rosterStatus(rosterAdmin?"Ready to edit roster data.":"Add this user ID to public.roster_admins in Supabase, then reload.","");
+  rosterStatus(rosterAdmin?"Ready to edit roster data.":"Add this user ID to the roster admins table, then reload.","");
  }catch(error){
   rosterAdmin=false;
   const message=error.message||"Could not check roster admin status.";
@@ -447,7 +447,7 @@ function rosterPayload(){
  };
 }
 async function saveRosterEdit(){
- if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){rosterStatus("Supabase is not connected yet.","error");return}
+ if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){rosterStatus("Cloud database is not connected yet.","error");return}
  if(!authUser()){openAuthDialog("Sign in before editing the roster.");return}
  try{
   rosterStatus("Saving roster update…");
@@ -462,11 +462,11 @@ async function saveRosterEdit(){
  }
 }
 async function deleteRosterVersion(){
- if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){rosterStatus("Supabase is not connected yet.","error");return}
+ if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){rosterStatus("Cloud database is not connected yet.","error");return}
  if(!authUser()){openAuthDialog("Sign in before editing the roster.");return}
  const f=rosterFighter(),v=f.years[rosterVersionIndex()]||{};
  if(!v.label){rosterStatus("Pick a version before deleting.","error");return}
- const ok=confirm(`Delete ${f.name} — ${v.label} from Supabase? This only removes the synced version row.`);
+ const ok=confirm(`Delete ${f.name} — ${v.label} from the cloud roster? This only removes the synced version row.`);
  if(!ok)return;
  try{
   rosterStatus(`Deleting ${v.label}…`);
@@ -476,7 +476,7 @@ async function deleteRosterVersion(){
   versions.b=Math.min(versions.b,selected.b.years.length-1);
   await syncRosterFromSupabase();
   renderRosterPickers();$("#roster-fighter").value=f.id;fillRosterForm();
-  rosterStatus("Deleted that Supabase version. If it was a built-in era, the local fallback may still appear.","ok");
+  rosterStatus("Deleted that cloud roster version. If it was a built-in era, the local fallback may still appear.","ok");
  }catch(error){
   rosterStatus(error.message||"Could not delete that version.","error");
  }
@@ -484,9 +484,9 @@ async function deleteRosterVersion(){
 async function seedRosterToSupabase(){
  if(!authUser()){openAuthDialog("Sign in before seeding the roster.");return}
  try{
-  rosterStatus("Seeding current app roster to Supabase… this can take a moment.");
+  rosterStatus("Seeding current app roster to the cloud database… this can take a moment.");
   const result=await window.RINGSIDE_SUPABASE.seedRoster(fighters);
-  rosterStatus(`Seeded ${result.data.fighterCount} fighters and ${result.data.versionCount} versions to Supabase.`,"ok");
+  rosterStatus(`Seeded ${result.data.fighterCount} fighters and ${result.data.versionCount} versions to the cloud database.`,"ok");
   await syncRosterFromSupabase();
   renderRosterPickers();fillRosterForm();
  }catch(error){
@@ -559,7 +559,7 @@ async function renderVerifiedManager(){
   const result=await window.RINGSIDE_SUPABASE?.isRosterAdmin?.();
   rosterAdmin=!!result?.data;
   if(status)status.textContent=rosterAdmin?"ADMIN ENABLED":"NOT ADMIN YET";
-  verifiedStatus(rosterAdmin?"Ready to edit verified fight history.":"Add this user ID to public.roster_admins in Supabase, then reload.","");
+  verifiedStatus(rosterAdmin?"Ready to edit verified fight history.":"Add this user ID to the roster admins table, then reload.","");
  }catch(error){
   rosterAdmin=false;
   if(status)status.textContent="ADMIN CHECK FAILED";
@@ -591,7 +591,7 @@ function verifiedPayload(){
  };
 }
 async function saveVerifiedFight(){
- if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){verifiedStatus("Supabase is not connected yet.","error");return}
+ if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){verifiedStatus("Cloud database is not connected yet.","error");return}
  if(!authUser()){openAuthDialog("Sign in before editing verified fight history.");return}
  try{
   verifiedStatus("Saving verified fight…");
@@ -605,11 +605,11 @@ async function saveVerifiedFight(){
  }
 }
 async function deleteVerifiedFight(){
- if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){verifiedStatus("Supabase is not connected yet.","error");return}
+ if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){verifiedStatus("Cloud database is not connected yet.","error");return}
  if(!authUser()){openAuthDialog("Sign in before editing verified fight history.");return}
  const id=$("#history-id").value.trim();
  if(!id){verifiedStatus("Pick a fight before deleting.","error");return}
- if(!confirm(`Delete verified fight ${id} from Supabase? Built-in local history may still appear if this is a hardcoded fight.`))return;
+ if(!confirm(`Delete verified fight ${id} from the cloud archive? Built-in local history may still appear if this is a hardcoded fight.`))return;
  try{
   verifiedStatus(`Deleting ${id}…`);
   await window.RINGSIDE_SUPABASE.deleteVerifiedFight(id);
@@ -618,7 +618,7 @@ async function deleteVerifiedFight(){
   if(index>=0)list.splice(index,1);
   await syncVerifiedFightsFromSupabase(true);
   renderVerifiedPickers("__new");fillVerifiedForm(null);
-  verifiedStatus("Deleted that Supabase verified fight.","ok");
+  verifiedStatus("Deleted that cloud verified fight.","ok");
  }catch(error){
   verifiedStatus(error.message||"Could not delete verified fight.","error");
  }
@@ -696,7 +696,7 @@ async function loadMyFights(){
  const status=$("#my-fights-status"),list=$("#my-fights-list");
  if(!status||!list)return;
  status.classList.remove("hidden");status.textContent="Loading saved fights…";list.innerHTML="";
- if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){status.textContent="Supabase is not connected yet, so My Fights cannot load.";return}
+ if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){status.textContent="Cloud sync is not connected yet, so My Fights cannot load.";return}
  if(!authUser()){status.innerHTML=`Sign in to view your private fight vault. <button class="inline-auth" data-open-auth>Sign in</button>`;return}
  try{
   const result=await window.RINGSIDE_SUPABASE.listSavedFights(24);
@@ -832,7 +832,7 @@ function renderPostfightRounds(){
 async function saveResultToSupabase(){
  if(replayingSavedFight)return;
  setSaveStatus("saving");
- if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){setSaveStatus("error",null,"Supabase is not connected yet, so this fight could not be saved.");return}
+ if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){setSaveStatus("error",null,"Cloud sync is not connected yet, so this fight could not be saved.");return}
  if(!authUser()){setSaveStatus("auth",null,"Sign in or create an account to save this fight to your private vault.");return}
  try{
   const red=active("a"),blue=active("b");
@@ -840,10 +840,10 @@ async function saveResultToSupabase(){
   if(saved?.authRequired){setSaveStatus("auth",null,saved.reason);return}
   const row=saved?.data?.[0];
   if(row?.share_slug){setSaveStatus("saved",row);console.info(`RINGSIDE saved fight: ${row.share_slug}`)}
-  else setSaveStatus("error",null,"Supabase answered, but no share code came back.");
+  else setSaveStatus("error",null,"Cloud sync answered, but no share code came back.");
  }catch(error){
   setSaveStatus("error",null,error.message||"The fight could not be saved.");
-  console.warn("RINGSIDE Supabase save skipped:",error.message||error);
+  console.warn("RINGSIDE cloud save skipped:",error.message||error);
  }
 }
 function showResults(){
@@ -924,7 +924,7 @@ $("#roster-version").onchange=fillRosterForm;
 $("#roster-form").onsubmit=e=>{e.preventDefault();saveRosterEdit()};
 $("#delete-roster-version").onclick=deleteRosterVersion;
 $("#seed-roster").onclick=seedRosterToSupabase;
-$("#reload-roster").onclick=async()=>{rosterStatus("Reloading Supabase roster…");await syncRosterFromSupabase();renderRosterManager()};
+$("#reload-roster").onclick=async()=>{rosterStatus("Reloading cloud roster…");await syncRosterFromSupabase();renderRosterManager()};
 $("#history-fight").onchange=()=>{const id=$("#history-fight").value;fillVerifiedForm(id==="__new"?null:verifiedFightList().find(f=>f.id===id))};
 $("#history-form").onsubmit=e=>{e.preventDefault();saveVerifiedFight()};
 $("#delete-verified-fight").onclick=deleteVerifiedFight;
