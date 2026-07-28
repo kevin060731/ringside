@@ -59,6 +59,49 @@ async function authRequest(path,body){
  if(!res.ok)throw new Error(data?.msg||data?.message||`Supabase auth failed: ${res.status}`);
  return data;
 }
+function authBaseUrl(){
+ return `${clean(config.url).replace(/\/$/,"")}/auth/v1`;
+}
+function getRedirectUrl(){
+ const location=global.location;
+ if(!location)return "";
+ return `${location.origin}${location.pathname}${location.search||""}`;
+}
+async function userForAccessToken(accessToken){
+ const res=await fetch(`${authBaseUrl()}/user`,{
+  headers:{apikey:clean(config.anonKey),Authorization:`Bearer ${accessToken}`}
+ });
+ const text=await res.text();
+ const data=text?JSON.parse(text):null;
+ if(!res.ok)throw new Error(data?.msg||data?.message||`Could not finish Google sign-in: ${res.status}`);
+ return data;
+}
+async function completeOAuthFromUrl(){
+ if(!isConfigured()||!global.location)return null;
+ const hash=global.location.hash?.startsWith("#")?global.location.hash.slice(1):"";
+ if(!hash)return null;
+ const params=new URLSearchParams(hash);
+ const error=params.get("error_description")||params.get("error");
+ if(error)throw new Error(error);
+ const accessToken=params.get("access_token");
+ const refreshToken=params.get("refresh_token");
+ if(!accessToken)return null;
+ const expiresIn=Number(params.get("expires_in"))||3600;
+ const user=await userForAccessToken(accessToken);
+ setSession({
+  access_token:accessToken,
+  refresh_token:refreshToken,
+  token_type:params.get("token_type")||"bearer",
+  expires_in:expiresIn,
+  expires_at:Math.floor(Date.now()/1000)+expiresIn,
+  provider_token:params.get("provider_token")||null,
+  user
+ });
+ if(global.history?.replaceState){
+  global.history.replaceState(null,global.document?.title||"RINGSIDE",`${global.location.pathname}${global.location.search||""}`);
+ }
+ return session;
+}
 async function signUp(email,password){
  const data=await authRequest("signup",{email:clean(email),password});
  if(data?.access_token)setSession(data);
@@ -68,6 +111,14 @@ async function signIn(email,password){
  const data=await authRequest("token?grant_type=password",{email:clean(email),password});
  setSession(data);
  return data;
+}
+function signInWithGoogle(){
+ if(!isConfigured())throw new Error("Cloud database is not connected yet.");
+ const params=new URLSearchParams({
+  provider:"google",
+  redirect_to:getRedirectUrl()
+ });
+ global.location.assign(`${authBaseUrl()}/authorize?${params.toString()}`);
 }
 async function refreshSession(){
  if(!isConfigured()||!session?.refresh_token)return null;
@@ -190,5 +241,5 @@ async function seedRoster(localFighters=[]){
  const savedVersions=versionRows.length?await request("fighter_versions",{method:"POST",body:versionRows,headers:{Prefer:"return=minimal"}}):{data:[]};
  return {data:{fighters:savedFighters.data||[],versions:savedVersions.data||[],fighterCount:fighterRows.length,versionCount:versionRows.length}};
 }
-global.RINGSIDE_SUPABASE={isConfigured,getSession,currentUser,signUp,signIn,signOut,saveFight,listSavedFights,getSavedFight,loadRoster,loadVerifiedFights,isRosterAdmin,upsertFighter,replaceFighterVersion,deleteFighterVersion,upsertVerifiedFight,deleteVerifiedFight,seedRoster,refreshSession};
+global.RINGSIDE_SUPABASE={isConfigured,getSession,currentUser,completeOAuthFromUrl,signUp,signIn,signInWithGoogle,signOut,saveFight,listSavedFights,getSavedFight,loadRoster,loadVerifiedFights,isRosterAdmin,upsertFighter,replaceFighterVersion,deleteFighterVersion,upsertVerifiedFight,deleteVerifiedFight,seedRoster,refreshSession};
 })(typeof window!=="undefined"?window:globalThis);

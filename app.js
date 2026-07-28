@@ -328,10 +328,17 @@ function authFields(){
  };
 }
 function setAuthBusy(busy,message=""){
- const buttons=["#signin-button","#signup-button","#signout-button"].map($).filter(Boolean);
+ const buttons=["#google-signin-button","#signin-button","#signup-button","#signout-button"].map($).filter(Boolean);
  buttons.forEach(button=>button.disabled=busy);
  const authMessage=$("#auth-message");
  if(message&&authMessage)authMessage.textContent=message;
+}
+function refreshAfterAuth(){
+ renderAuthState();
+ if(fight&&!lastSavedFight&&!replayingSavedFight&&!$("#results").classList.contains("hidden"))saveResultToSupabase();
+ loadMyFights();
+ if(!$("#roster-manager")?.classList.contains("hidden"))renderRosterManager();
+ if(!$("#verified-manager")?.classList.contains("hidden"))renderVerifiedManager();
 }
 function authError(message){
  const el=$("#auth-message");
@@ -895,13 +902,22 @@ $("#my-fights-list").onclick=async e=>{
 };
 $("#my-fights").onclick=e=>{if(e.target.closest("[data-open-auth]"))openAuthDialog()};
 $("#auth-button").onclick=()=>openAuthDialog();
+$("#google-signin-button").onclick=async()=>{
+ try{
+  setAuthBusy(true,"Opening Google sign-in…");
+  window.RINGSIDE_SUPABASE.signInWithGoogle();
+ }catch(error){
+  $("#auth-message").textContent=error.message||"Google sign-in is not ready yet.";
+  setAuthBusy(false);
+ }
+};
 $("#signin-button").onclick=async()=>{
  const fields=validateSignIn();
  if(!fields)return;
  try{
   setAuthBusy(true,"Signing in…");
   await window.RINGSIDE_SUPABASE.signIn(fields.email,fields.password);
-  renderAuthState();$("#auth-dialog").close();if(fight&&!lastSavedFight&&!replayingSavedFight&&!$("#results").classList.contains("hidden"))saveResultToSupabase();loadMyFights();if(!$("#roster-manager")?.classList.contains("hidden"))renderRosterManager();if(!$("#verified-manager")?.classList.contains("hidden"))renderVerifiedManager()
+  refreshAfterAuth();$("#auth-dialog").close()
  }
  catch(error){$("#auth-message").textContent=error.message||"Could not sign in. Check the email and password, then try again."}
  finally{setAuthBusy(false)}
@@ -913,7 +929,7 @@ $("#signup-button").onclick=async()=>{
   setAuthBusy(true,"Creating account… one confirmation email may be sent.");
   const data=await window.RINGSIDE_SUPABASE.signUp(fields.email,fields.password);
   renderAuthState();
-  if(data?.access_token){$("#auth-dialog").close();if(fight&&!lastSavedFight&&!replayingSavedFight&&!$("#results").classList.contains("hidden"))saveResultToSupabase();loadMyFights();if(!$("#roster-manager")?.classList.contains("hidden"))renderRosterManager();if(!$("#verified-manager")?.classList.contains("hidden"))renderVerifiedManager()}
+  if(data?.access_token){refreshAfterAuth();$("#auth-dialog").close()}
   else $("#auth-message").textContent="Account created. Check that email inbox for the confirmation message, then come back and sign in.";
  }catch(error){$("#auth-message").textContent=error.message||"Could not create account. Make sure the email is real and typed correctly."}
  finally{setAuthBusy(false)}
@@ -941,6 +957,13 @@ $("#weight").onchange=renderResearchDesk;
 ["ring","venue","championship","neutral","ruleset","environment","weighin","equipment"].forEach(id=>{const el=$(`#${id}`);if(el)el.onchange=renderResearchDesk});
 renderFighter("a");renderFighter("b");renderArchive();
 renderAuthState();
+window.RINGSIDE_SUPABASE?.completeOAuthFromUrl?.().then(session=>{
+ if(!session)return;
+ refreshAfterAuth();
+ $("#auth-dialog")?.close?.();
+}).catch(error=>{
+ openAuthDialog(error.message||"Google sign-in could not be completed. Try again.");
+});
 syncRosterFromSupabase();
 syncVerifiedFightsFromSupabase();
 const initialSlug=new URLSearchParams(location.search).get("fight");
