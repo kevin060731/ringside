@@ -328,7 +328,7 @@ function authFields(){
  };
 }
 function setAuthBusy(busy,message=""){
- const buttons=["#google-signin-button","#signin-button","#signup-button","#signout-button"].map($).filter(Boolean);
+ const buttons=["#github-signin-button","#signin-button","#signup-button","#signout-button"].map($).filter(Boolean);
  buttons.forEach(button=>button.disabled=busy);
  const authMessage=$("#auth-message");
  if(message&&authMessage)authMessage.textContent=message;
@@ -902,12 +902,12 @@ $("#my-fights-list").onclick=async e=>{
 };
 $("#my-fights").onclick=e=>{if(e.target.closest("[data-open-auth]"))openAuthDialog()};
 $("#auth-button").onclick=()=>openAuthDialog();
-$("#google-signin-button").onclick=async()=>{
+$("#github-signin-button").onclick=async()=>{
  try{
-  setAuthBusy(true,"Opening Google sign-in…");
-  window.RINGSIDE_SUPABASE.signInWithGoogle();
+  setAuthBusy(true,"Opening GitHub sign-in…");
+  window.RINGSIDE_SUPABASE.signInWithGitHub();
  }catch(error){
-  $("#auth-message").textContent=error.message||"Google sign-in is not ready yet.";
+  $("#auth-message").textContent=error.message||"GitHub sign-in is not ready yet.";
   setAuthBusy(false);
  }
 };
@@ -962,7 +962,7 @@ window.RINGSIDE_SUPABASE?.completeOAuthFromUrl?.().then(session=>{
  refreshAfterAuth();
  $("#auth-dialog")?.close?.();
 }).catch(error=>{
- openAuthDialog(error.message||"Google sign-in could not be completed. Try again.");
+ openAuthDialog(error.message||"GitHub sign-in could not be completed. Try again.");
 });
 syncRosterFromSupabase();
 syncVerifiedFightsFromSupabase();

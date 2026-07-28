@@ -73,7 +73,7 @@ async function userForAccessToken(accessToken){
  });
  const text=await res.text();
  const data=text?JSON.parse(text):null;
- if(!res.ok)throw new Error(data?.msg||data?.message||`Could not finish Google sign-in: ${res.status}`);
+ if(!res.ok)throw new Error(data?.msg||data?.message||`Could not finish GitHub sign-in: ${res.status}`);
  return data;
 }
 async function completeOAuthFromUrl(){
@@ -112,10 +112,10 @@ async function signIn(email,password){
  setSession(data);
  return data;
 }
-function signInWithGoogle(){
+function signInWithGitHub(){
  if(!isConfigured())throw new Error("Cloud database is not connected yet.");
  const params=new URLSearchParams({
-  provider:"google",
+  provider:"github",
   redirect_to:getRedirectUrl()
  });
  global.location.assign(`${authBaseUrl()}/authorize?${params.toString()}`);
@@ -241,5 +241,5 @@ async function seedRoster(localFighters=[]){
  const savedVersions=versionRows.length?await request("fighter_versions",{method:"POST",body:versionRows,headers:{Prefer:"return=minimal"}}):{data:[]};
  return {data:{fighters:savedFighters.data||[],versions:savedVersions.data||[],fighterCount:fighterRows.length,versionCount:versionRows.length}};
 }
-global.RINGSIDE_SUPABASE={isConfigured,getSession,currentUser,completeOAuthFromUrl,signUp,signIn,signInWithGoogle,signOut,saveFight,listSavedFights,getSavedFight,loadRoster,loadVerifiedFights,isRosterAdmin,upsertFighter,replaceFighterVersion,deleteFighterVersion,upsertVerifiedFight,deleteVerifiedFight,seedRoster,refreshSession};
+global.RINGSIDE_SUPABASE={isConfigured,getSession,currentUser,completeOAuthFromUrl,signUp,signIn,signInWithGitHub,signOut,saveFight,listSavedFights,getSavedFight,loadRoster,loadVerifiedFights,isRosterAdmin,upsertFighter,replaceFighterVersion,deleteFighterVersion,upsertVerifiedFight,deleteVerifiedFight,seedRoster,refreshSession};
 })(typeof window!=="undefined"?window:globalThis);

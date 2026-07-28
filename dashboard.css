@@ -246,7 +246,7 @@ dialog{border-radius:20px}
 .brand,.fighter-info strong,.results h2,.round-copy h2,.poster-corner b{letter-spacing:-.03em}
 .auth-card h2{font-family:Inter,sans-serif;font-size:32px;line-height:1;letter-spacing:-1.1px;text-transform:none}
 .auth-card p{font-size:13px;color:#b8c0ce}
-.auth-actions button,.signout-button,#auth-button,.google-auth-button{font-family:Inter,sans-serif;letter-spacing:.3px;text-transform:none}
+.auth-actions button,.signout-button,#auth-button,.github-auth-button{font-family:Inter,sans-serif;letter-spacing:.3px;text-transform:none}
 .public-status>.status-card.primary b,.status-metrics b{font-family:Inter,sans-serif;letter-spacing:-.4px;text-transform:none}
 
 @media(max-width:760px){
