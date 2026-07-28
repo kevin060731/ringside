@@ -43,6 +43,25 @@
 .inline-auth{margin-left:8px;border:1px solid #38435b;border-radius:999px;background:#222a3e;color:#f4f6fb;padding:7px 12px;font:900 10px Inter;letter-spacing:.7px;text-transform:uppercase;cursor:pointer}
 #auth-button{min-width:76px;border-radius:999px;padding:0 14px;font-size:11px;letter-spacing:.5px}
 @media(max-width:520px){.auth-actions{grid-template-columns:1fr}.auth-card{padding:23px}.auth-card h2{font-size:36px}}
+
+/* Demo polish: auth/save surfaces should feel simple and trustworthy */
+.auth-card{gap:12px}
+.auth-card h2{font-family:Inter,sans-serif;font-size:30px;letter-spacing:-1.1px;text-transform:none}
+.auth-card p{font-size:13px;color:#c0c8d6}
+.auth-note{border-color:rgba(139,153,181,.18);background:rgba(255,255,255,.03);color:#aab4c8}
+.save-status b{font-family:Inter,sans-serif;letter-spacing:-.4px;text-transform:none}
+.save-actions button,.inline-auth{font-family:Inter,sans-serif;text-transform:none;letter-spacing:.2px}
+
+@media(max-width:700px){
+ .save-status{padding:14px;border-radius:14px}
+ .save-actions button{flex:1}
+}
+
+@media(max-width:520px){
+ .auth-dialog{width:min(430px,94vw)}
+ .auth-card{padding:20px}
+ .github-auth-button{padding:12px}
+}
 .roster-manager{max-width:1132px;margin:22px auto 90px;background:#151b28;border:1px solid #30384d;border-radius:24px;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.22)}
 .roster-manager-head{display:grid;grid-template-columns:1fr minmax(240px,320px);gap:18px;padding:26px 28px;border-bottom:1px solid #30384d;background:linear-gradient(90deg,rgba(255,65,78,.09),rgba(74,146,255,.08))}
 .roster-manager-head small,.roster-admin-card small,.roster-form label,.roster-picker-card label,.wide-label{color:#8d98ad;font:900 9px "DM Mono";letter-spacing:1.4px;text-transform:uppercase}.roster-manager-head h2{margin:3px 0;font:900 52px/.85 "Barlow Condensed";text-transform:uppercase}.roster-manager-head p{margin:0;color:#aab4c8;font:650 13px/1.55 Inter}

@@ -23,7 +23,7 @@ function authHeader(){
  return session?.access_token?`Bearer ${session.access_token}`:`Bearer ${clean(config.anonKey)}`;
 }
 async function request(path,{method="GET",body=null,headers={}}={}){
- if(!isConfigured())return {skipped:true,reason:"Supabase is not configured yet."};
+ if(!isConfigured())return {skipped:true,reason:"RINGSIDE services are not connected yet."};
  const url=`${clean(config.url).replace(/\/$/,"")}/rest/v1/${path}`;
  const options=()=>({
    method,
@@ -43,11 +43,11 @@ async function request(path,{method="GET",body=null,headers={}}={}){
  }
  const text=await res.text();
  const data=text?JSON.parse(text):null;
- if(!res.ok)throw new Error(data?.message||`Supabase request failed: ${res.status}`);
+ if(!res.ok)throw new Error(data?.message||`RINGSIDE request failed: ${res.status}`);
  return {data};
 }
 async function authRequest(path,body){
- if(!isConfigured())return {skipped:true,reason:"Supabase is not configured yet."};
+ if(!isConfigured())return {skipped:true,reason:"RINGSIDE services are not connected yet."};
  const url=`${clean(config.url).replace(/\/$/,"")}/auth/v1/${path}`;
  const res=await fetch(url,{
   method:"POST",
@@ -56,7 +56,7 @@ async function authRequest(path,body){
  });
  const text=await res.text();
  const data=text?JSON.parse(text):null;
- if(!res.ok)throw new Error(data?.msg||data?.message||`Supabase auth failed: ${res.status}`);
+ if(!res.ok)throw new Error(data?.msg||data?.message||`RINGSIDE sign-in failed: ${res.status}`);
  return data;
 }
 function authBaseUrl(){
@@ -113,7 +113,7 @@ async function signIn(email,password){
  return data;
 }
 function signInWithGitHub(){
- if(!isConfigured())throw new Error("Cloud database is not connected yet.");
+ if(!isConfigured())throw new Error("RINGSIDE database is not connected yet.");
  const params=new URLSearchParams({
   provider:"github",
   redirect_to:getRedirectUrl()
@@ -157,31 +157,31 @@ function summarizeFightPayload({fight,red,blue,settings,researchDesk}){
  };
 }
 async function saveFight(payload){
- if(!isConfigured())return {skipped:true,reason:"Supabase is not configured yet."};
+ if(!isConfigured())return {skipped:true,reason:"RINGSIDE services are not connected yet."};
  if(!currentUser())return {authRequired:true,reason:"Sign in to save fights to your private vault."};
  const body=summarizeFightPayload(payload);
  return request("saved_fights?select=id,share_slug,created_at",{method:"POST",body});
 }
 async function listSavedFights(limit=24){
- if(!isConfigured())return {skipped:true,reason:"Supabase is not configured yet.",data:[]};
+ if(!isConfigured())return {skipped:true,reason:"RINGSIDE services are not connected yet.",data:[]};
  if(!currentUser())return {authRequired:true,reason:"Sign in to view your saved fights.",data:[]};
  const safeLimit=Math.max(1,Math.min(50,Number(limit)||24));
  const userId=encodeURIComponent(currentUser().id);
  return request(`saved_fights?select=id,share_slug,red_fighter_id,blue_fighter_id,red_version_label,blue_version_label,winner_fighter_id,decision,method,rounds_completed,is_historical,created_at,fight_data&created_by=eq.${userId}&order=created_at.desc&limit=${safeLimit}`);
 }
 async function getSavedFight(slug){
- if(!isConfigured())return {skipped:true,reason:"Supabase is not configured yet.",data:null};
+ if(!isConfigured())return {skipped:true,reason:"RINGSIDE services are not connected yet.",data:null};
  const result=await request("rpc/get_public_saved_fight",{method:"POST",body:{p_share_slug:clean(slug)}});
  return {data:result.data?.[0]||null};
 }
 async function loadRoster(){
- if(!isConfigured())return {skipped:true,reason:"Supabase is not configured yet.",data:{fighters:[],versions:[]}};
+ if(!isConfigured())return {skipped:true,reason:"RINGSIDE services are not connected yet.",data:{fighters:[],versions:[]}};
  const roster=await request("fighters?select=id,name,last_name,country,stance,primary_division,image_url,active,model_data,updated_at&order=updated_at.desc&limit=1000");
  const versions=await request("fighter_versions?select=fighter_id,label,year,division,weight_lbs,ratings,best_performance,source_notes,is_default,updated_at&order=fighter_id.asc,is_default.desc,year.desc&limit=3000");
  return {data:{fighters:roster.data||[],versions:versions.data||[]}};
 }
 async function loadVerifiedFights(){
- if(!isConfigured())return {skipped:true,reason:"Supabase is not configured yet.",data:[]};
+ if(!isConfigured())return {skipped:true,reason:"RINGSIDE services are not connected yet.",data:[]};
  return request("verified_fights?select=id,fight_date,red_fighter_id,blue_fighter_id,winner_fighter_id,division,venue,method,scheduled_rounds,ended_round,scorecards,events,stats,fan_consensus,data_quality,confidence,source_notes,sources,updated_at&order=fight_date.desc&limit=1000");
 }
 async function isRosterAdmin(){

@@ -40,6 +40,7 @@ body{background:#eef0f2;color:#17191c;background-image:none}
  .bottom-nav{position:fixed;display:grid;grid-template-columns:repeat(5,1fr);height:62px;z-index:20;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #d6d9dc;box-shadow:0 -2px 8px rgba(0,0,0,.08)}
  .bottom-nav button{border:0;background:none;color:#777;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:3px}.bottom-nav b{font-size:17px}.bottom-nav span{font:700 9px Inter}.bottom-nav button.active{color:#d71920}
 }
+
 @media(max-width:480px){.settings-grid{grid-template-columns:1fr}.settings-grid>label{border-right:0;border-bottom:1px solid #e1e3e5}.fighter-grid{grid-template-columns:1fr}}
 
 /* Game-like polish */
@@ -277,4 +278,79 @@ dialog{border-radius:20px}
  .bottom-nav{height:58px}
  .bottom-nav b{font-size:15px}
  .bottom-nav span{font-size:8px}
+}
+
+/* Final demo overrides */
+.hero h1{
+ font-family:Inter,sans-serif;
+ font-weight:900;
+ letter-spacing:-.07em;
+ line-height:.92;
+ text-transform:none
+}
+.hero h1 em{font-style:normal}
+.hero p{color:#bbc4d4;font-size:14px}
+.matchup-header h2,.section-title h2,.data-heading h2,.my-fights-head h2,.roster-manager-head h2,.status-card.primary b{
+ font-family:Inter,sans-serif;
+ letter-spacing:-.045em;
+ text-transform:none
+}
+.matchup-shell,.research-desk,.data-panel,.settings-panel,.status-card,.status-metrics span,.fighter-card,.version-scout>div,.physical-row>div,.rating-row>div{
+ border-color:rgba(139,153,181,.18)
+}
+.public-status>.status-card.primary{
+ border-color:rgba(139,153,181,.18);
+ box-shadow:0 18px 45px rgba(0,0,0,.14)
+}
+.status-metrics span:last-child{
+ background:rgba(54,206,134,.08);
+ border-color:rgba(54,206,134,.24)
+}
+.status-metrics span:last-child b{color:#78e6a2}
+.status-metrics span:last-child small{color:#9fcfb4}
+.sport-nav button,.utility-nav button,.matchup-header small,.corner-label,.year-label,.physical-row small,.rating-row small{
+ letter-spacing:.08em
+}
+
+@media(max-width:760px){
+ main{padding-bottom:70px}
+ .hero{padding:24px 16px 12px}
+ .hero h1{max-width:340px;font-size:clamp(42px,12vw,56px);letter-spacing:-.07em}
+ .hero p{max-width:310px;font-size:13px}
+ .public-status{margin:0 12px 14px}
+ .public-status>.status-card.primary{padding:12px 13px;border-radius:16px}
+ .status-metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+ .status-metrics span{padding:10px 11px;border-radius:14px}
+ .status-metrics span:last-child{display:none}
+ .matchup-header{height:auto;min-height:58px;padding:14px 16px}
+ .matchup-header h2{font-size:21px;line-height:1}
+ .corner-label{padding:13px 16px}
+ .fighter-select{min-height:126px;padding:18px 16px}
+ .portrait-wrap{width:92px;height:92px}
+ .fighter-info strong{font-family:Inter,sans-serif;font-size:28px;line-height:1.02;letter-spacing:-1.4px;text-transform:none}
+ .year-label,.version-scout,.physical-row,.rating-row,.gems-profile{padding-left:16px;padding-right:16px}
+ .version-scout{grid-template-columns:1fr;gap:0}
+ .version-scout>div{min-height:auto;padding:12px 0;border-right:0;border-bottom:1px solid rgba(139,153,181,.14)}
+ .physical-row,.rating-row{grid-template-columns:repeat(2,1fr)}
+ .rating-row div{padding:12px 8px}
+ .rating-row b{font-size:24px}
+ .settings-grid{grid-template-columns:1fr}
+ .settings-grid>label{border-right:0;border-bottom:1px solid rgba(139,153,181,.17)}
+ .segmented{display:grid;grid-template-columns:repeat(5,1fr)}
+ .segmented button{min-width:0}
+ .toggle-row{padding:16px;gap:14px}
+ .simulate-btn{margin:16px;height:58px}
+ .desk-compact{padding:14px}
+ .bottom-nav{grid-template-columns:repeat(4,1fr);border-top-color:rgba(139,153,181,.18)}
+ .bottom-nav button{min-width:0}
+ .bottom-nav button[data-view="roster-manager"]{display:none!important}
+ .bottom-nav button[data-view="home"],.bottom-nav button[data-view="archive"],.bottom-nav button[data-view="my-fights"],.bottom-nav button[data-view="verified-manager"]{display:flex!important}
+}
+
+@media(max-width:420px){
+ .sport-nav button{padding:0 12px}
+ .fighter-info strong{font-size:24px}
+ .portrait-wrap{width:82px;height:82px}
+ .status-metrics b{font-size:12px}
+ .status-metrics small{font-size:6px}
 }

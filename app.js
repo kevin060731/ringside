@@ -105,7 +105,7 @@ async function syncRosterFromSupabase(){
   renderFighter("a");renderFighter("b");renderArchive($("#fighter-search")?.value||"");
   if(!$("#roster-manager")?.classList.contains("hidden"))renderRosterManager();
   const chip=document.querySelector(".season-chip b");
-  if(chip)chip.textContent=`Cloud synced · ${new Intl.DateTimeFormat(undefined,{month:"short",day:"numeric",year:"numeric"}).format(new Date())}`;
+  if(chip)chip.textContent=`Archive updated · ${new Intl.DateTimeFormat(undefined,{month:"short",day:"numeric",year:"numeric"}).format(new Date())}`;
   console.info(`RINGSIDE roster sync: ${summary.updated} updated, ${summary.added} added`);
  }catch(error){
   console.warn("RINGSIDE roster sync skipped:",error.message||error);
@@ -306,9 +306,9 @@ function userLabel(user){
 function renderAuthState(){
  const user=authUser(),button=$("#auth-button"),copy=$("#my-fights-copy"),card=document.querySelector(".auth-card"),message=$("#auth-message");
  if(button)button.textContent=user?userLabel(user):"SIGN IN";
- if(copy)copy.textContent=user?`Signed in as ${user.email}. These saved fights belong to your profile.`:"Sign in to see your own private fight vault. Share links still work for replaying specific fights.";
+ if(copy)copy.textContent=user?`Signed in as ${user.email}. These saved fights belong to your profile.`:"Sign in to keep your saved replays private. Share links still work for anyone with the link.";
  card?.classList.toggle("signed-in",!!user);
- if(message)message.textContent=user?`Signed in as ${user.email}. Your fight vault is now private to this profile.`:"Sign in so My Fights only shows your saved simulations. New accounts should use a real email you can open.";
+ if(message)message.textContent=user?`Signed in as ${user.email}. Your fight vault is now private to this profile.`:"Continue with GitHub to save fights privately. Email sign-in is available as a backup.";
 }
 function openAuthDialog(message=""){
  const dialog=$("#auth-dialog");
@@ -454,7 +454,7 @@ function rosterPayload(){
  };
 }
 async function saveRosterEdit(){
- if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){rosterStatus("Cloud database is not connected yet.","error");return}
+ if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){rosterStatus("RINGSIDE database is not connected yet.","error");return}
  if(!authUser()){openAuthDialog("Sign in before editing the roster.");return}
  try{
   rosterStatus("Saving roster update…");
@@ -469,11 +469,11 @@ async function saveRosterEdit(){
  }
 }
 async function deleteRosterVersion(){
- if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){rosterStatus("Cloud database is not connected yet.","error");return}
+ if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){rosterStatus("RINGSIDE database is not connected yet.","error");return}
  if(!authUser()){openAuthDialog("Sign in before editing the roster.");return}
  const f=rosterFighter(),v=f.years[rosterVersionIndex()]||{};
  if(!v.label){rosterStatus("Pick a version before deleting.","error");return}
- const ok=confirm(`Delete ${f.name} — ${v.label} from the cloud roster? This only removes the synced version row.`);
+ const ok=confirm(`Delete ${f.name} — ${v.label} from the live roster? This only removes the synced version row.`);
  if(!ok)return;
  try{
   rosterStatus(`Deleting ${v.label}…`);
@@ -483,7 +483,7 @@ async function deleteRosterVersion(){
   versions.b=Math.min(versions.b,selected.b.years.length-1);
   await syncRosterFromSupabase();
   renderRosterPickers();$("#roster-fighter").value=f.id;fillRosterForm();
-  rosterStatus("Deleted that cloud roster version. If it was a built-in era, the local fallback may still appear.","ok");
+  rosterStatus("Deleted that live roster version. If it was a built-in era, the local fallback may still appear.","ok");
  }catch(error){
   rosterStatus(error.message||"Could not delete that version.","error");
  }
@@ -598,7 +598,7 @@ function verifiedPayload(){
  };
 }
 async function saveVerifiedFight(){
- if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){verifiedStatus("Cloud database is not connected yet.","error");return}
+ if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){verifiedStatus("RINGSIDE database is not connected yet.","error");return}
  if(!authUser()){openAuthDialog("Sign in before editing verified fight history.");return}
  try{
   verifiedStatus("Saving verified fight…");
@@ -612,7 +612,7 @@ async function saveVerifiedFight(){
  }
 }
 async function deleteVerifiedFight(){
- if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){verifiedStatus("Cloud database is not connected yet.","error");return}
+ if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){verifiedStatus("RINGSIDE database is not connected yet.","error");return}
  if(!authUser()){openAuthDialog("Sign in before editing verified fight history.");return}
  const id=$("#history-id").value.trim();
  if(!id){verifiedStatus("Pick a fight before deleting.","error");return}
@@ -703,7 +703,7 @@ async function loadMyFights(){
  const status=$("#my-fights-status"),list=$("#my-fights-list");
  if(!status||!list)return;
  status.classList.remove("hidden");status.textContent="Loading saved fights…";list.innerHTML="";
- if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){status.textContent="Cloud sync is not connected yet, so My Fights cannot load.";return}
+ if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){status.textContent="Saved fights are not connected yet. You can still run simulations and open shared replays.";return}
  if(!authUser()){status.innerHTML=`Sign in to view your private fight vault. <button class="inline-auth" data-open-auth>Sign in</button>`;return}
  try{
   const result=await window.RINGSIDE_SUPABASE.listSavedFights(24);
@@ -719,9 +719,9 @@ function setSaveStatus(state,row=null,message=""){
  if(!box)return;
  box.classList.remove("saved","error");
  const title=box.querySelector("b"),text=box.querySelector("span"),view=$("#view-saved-fight"),copy=$("#copy-share-link");
- if(state==="saving"){title.textContent="Saving fight…";text.textContent="Your fight is being added to My Fights.";view.textContent="VIEW IN MY FIGHTS";view.disabled=true;copy.disabled=true;lastSavedFight=null;return}
- if(state==="auth"){title.textContent="Sign in to save";text.textContent=message||"This fight is complete, but it needs a profile before it can go into My Fights.";view.textContent="SIGN IN TO SAVE";view.disabled=false;copy.disabled=true;lastSavedFight=null;return}
- if(state==="saved"&&row){box.classList.add("saved");title.textContent="Fight saved";text.textContent=`Added to My Fights as ${row.share_slug}. Copy the replay link or open the vault.`;view.textContent="VIEW IN MY FIGHTS";view.disabled=false;copy.disabled=false;lastSavedFight=row;return}
+ if(state==="saving"){title.textContent="Saving fight…";text.textContent="Adding this replay to My Fights.";view.textContent="VIEW IN MY FIGHTS";view.disabled=true;copy.disabled=true;lastSavedFight=null;return}
+ if(state==="auth"){title.textContent="Sign in to save";text.textContent=message||"Create a profile to save this replay privately.";view.textContent="SIGN IN TO SAVE";view.disabled=false;copy.disabled=true;lastSavedFight=null;return}
+ if(state==="saved"&&row){box.classList.add("saved");title.textContent="Fight saved";text.textContent=`Saved to My Fights as ${row.share_slug}. Copy the replay link or reopen it later.`;view.textContent="VIEW IN MY FIGHTS";view.disabled=false;copy.disabled=false;lastSavedFight=row;return}
  if(state==="replay"){box.classList.add("saved");title.textContent="Saved replay";text.textContent=message||"You are viewing a fight from My Fights.";view.textContent="VIEW IN MY FIGHTS";view.disabled=false;copy.disabled=!row?.share_slug;lastSavedFight=row;return}
  box.classList.add("error");title.textContent="Save unavailable";text.textContent=message||"The fight finished, but it could not be saved.";view.textContent="VIEW IN MY FIGHTS";view.disabled=false;copy.disabled=true;lastSavedFight=null;
 }
@@ -839,18 +839,18 @@ function renderPostfightRounds(){
 async function saveResultToSupabase(){
  if(replayingSavedFight)return;
  setSaveStatus("saving");
- if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){setSaveStatus("error",null,"Cloud sync is not connected yet, so this fight could not be saved.");return}
- if(!authUser()){setSaveStatus("auth",null,"Sign in or create an account to save this fight to your private vault.");return}
+ if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){setSaveStatus("error",null,"Saved fights are not connected yet, so this replay could not be added to My Fights.");return}
+ if(!authUser()){setSaveStatus("auth",null,"Sign in to save this fight to your private vault.");return}
  try{
   const red=active("a"),blue=active("b");
   const saved=await window.RINGSIDE_SUPABASE.saveFight({fight,red,blue,settings:fightSettings(),researchDesk});
   if(saved?.authRequired){setSaveStatus("auth",null,saved.reason);return}
   const row=saved?.data?.[0];
   if(row?.share_slug){setSaveStatus("saved",row);console.info(`RINGSIDE saved fight: ${row.share_slug}`)}
-  else setSaveStatus("error",null,"Cloud sync answered, but no share code came back.");
+  else setSaveStatus("error",null,"The save service answered, but no replay link came back.");
  }catch(error){
   setSaveStatus("error",null,error.message||"The fight could not be saved.");
-  console.warn("RINGSIDE cloud save skipped:",error.message||error);
+  console.warn("RINGSIDE save skipped:",error.message||error);
  }
 }
 function showResults(){
@@ -940,7 +940,7 @@ $("#roster-version").onchange=fillRosterForm;
 $("#roster-form").onsubmit=e=>{e.preventDefault();saveRosterEdit()};
 $("#delete-roster-version").onclick=deleteRosterVersion;
 $("#seed-roster").onclick=seedRosterToSupabase;
-$("#reload-roster").onclick=async()=>{rosterStatus("Reloading cloud roster…");await syncRosterFromSupabase();renderRosterManager()};
+$("#reload-roster").onclick=async()=>{rosterStatus("Reloading live roster…");await syncRosterFromSupabase();renderRosterManager()};
 $("#history-fight").onchange=()=>{const id=$("#history-fight").value;fillVerifiedForm(id==="__new"?null:verifiedFightList().find(f=>f.id===id))};
 $("#history-form").onsubmit=e=>{e.preventDefault();saveVerifiedFight()};
 $("#delete-verified-fight").onclick=deleteVerifiedFight;

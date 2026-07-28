@@ -9,8 +9,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,500;0,600;0,700;0,800;0,900;1,700&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=matt-polish-1" />
-  <link rel="stylesheet" href="dashboard.css?v=github-auth-1" />
-  <link rel="stylesheet" href="playback.css?v=github-auth-1" />
+  <link rel="stylesheet" href="dashboard.css?v=demo-polish-1" />
+  <link rel="stylesheet" href="playback.css?v=demo-polish-1" />
 </head>
 <body>
   <header class="topbar">
@@ -27,9 +27,9 @@
       <div class="hero-copy">
         <div class="eyebrow">RINGSIDE FIGHT LAB</div>
         <h1>Fantasy <em>Matchup</em></h1>
-        <p>Build an impossible fight. We’ll handle the scoring.</p>
+        <p>Pick any era. Run the fight. Save the replay.</p>
       </div>
-      <div class="season-chip"><small>ROSTER UPDATED</small><b>Cloud synced</b><span>●</span></div>
+      <div class="season-chip"><small>ROSTER UPDATED</small><b>Live archive</b><span>●</span></div>
     </section>
 
     <section class="public-status" id="public-status">
@@ -41,7 +41,7 @@
       <div class="status-metrics" aria-label="RINGSIDE data status">
         <span><b id="roster-count">—</b><small>fighters</small></span>
         <span><b id="history-count">—</b><small>verified fights</small></span>
-        <span><b>Live</b><small>Cloud sync</small></span>
+        <span><b>Private</b><small>saved fights</small></span>
       </div>
     </section>
 
@@ -367,10 +367,8 @@
   </main>
   <nav class="bottom-nav">
     <button class="active" data-view="home"><b>⌂</b><span>Home</span></button>
-    <button><b>⚔</b><span>Matchup</span></button>
-    <button><b>＋</b><span>Simulate</span></button>
     <button data-view="archive"><b>▤</b><span>Archive</span></button>
-    <button data-view="roster-manager"><b>✎</b><span>Roster</span></button>
+    <button data-view="my-fights"><b>★</b><span>My Fights</span></button>
     <button data-view="verified-manager"><b>✓</b><span>History</span></button>
   </nav>
 
@@ -385,13 +383,13 @@
       <button class="auth-close" id="close-auth" value="cancel" aria-label="Close">×</button>
       <small>RINGSIDE PROFILE</small>
       <h2>Your Fight Vault</h2>
-      <p id="auth-message">Sign in so My Fights only shows your saved simulations. New accounts should use a real email you can open.</p>
+      <p id="auth-message">Continue with GitHub to save fights privately. Email sign-in is available as a backup.</p>
       <button type="button" id="github-signin-button" class="github-auth-button"><span>GH</span>Continue with GitHub</button>
       <div class="auth-divider"><span>or use email</span></div>
       <label>Email<input id="auth-email" type="email" autocomplete="email" placeholder="you@example.com"></label>
       <label class="signup-confirm">Confirm email <span>new accounts only</span><input id="auth-email-confirm" type="email" autocomplete="email" placeholder="Type your email again"></label>
       <label>Password<input id="auth-password" type="password" autocomplete="current-password" placeholder="At least 6 characters"></label>
-      <div class="auth-note">For new accounts, RINGSIDE may send one confirmation email. Double-check the address before creating the account.</div>
+      <div class="auth-note">RINGSIDE only uses your profile to keep saved replays tied to you.</div>
       <div class="auth-actions">
         <button type="button" id="signin-button">SIGN IN</button>
         <button type="button" id="signup-button">CREATE ACCOUNT</button>
@@ -400,7 +398,7 @@
     </form>
   </dialog>
   <script src="supabase-config.js?v=github-auth-1"></script>
-  <script src="supabase-client.js?v=github-auth-1"></script>
+  <script src="supabase-client.js?v=demo-polish-1"></script>
   <script src="fight-history.js?v=matt-polish-1"></script>
   <script src="verified-fights-pack.js?v=verified-history-pack-1"></script>
   <script src="compubox-provider.js?v=matt-polish-1"></script>
@@ -414,6 +412,6 @@
   <script src="rummy-corner-data.js?v=matt-polish-1"></script>
   <script src="research-desk.js?v=matt-polish-1"></script>
   <script src="roster-sync.js?v=matt-polish-1"></script>
-  <script src="app.js?v=github-auth-1"></script>
+  <script src="app.js?v=demo-polish-1"></script>
 </body>
 </html>
