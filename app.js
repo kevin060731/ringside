@@ -160,15 +160,16 @@ function upcomingFightList(){
  [...(window.RINGSIDE_UPCOMING_FIGHTS||[]),...upcomingFightRows].map(normalizeUpcomingFight).filter(row=>row.id&&row.status!=="cancelled").forEach(row=>byId.set(row.id,row));
  return [...byId.values()].filter(row=>!row.fightDate||row.fightDate>=today).sort((a,b)=>(a.fightDate||"9999").localeCompare(b.fightDate||"9999")||a.boutOrder-b.boutOrder);
 }
-async function syncUpcomingFightsFromSupabase(force=false){
+async function syncUpcomingFightsFromSupabase(force=false,includeCancelled=false){
  if(!window.RINGSIDE_SUPABASE?.loadUpcomingFights)return upcomingFightRows;
  if(upcomingFightSyncPromise&&!force)return upcomingFightSyncPromise;
  upcomingFightSyncPromise=(async()=>{
   try{
-   const result=await window.RINGSIDE_SUPABASE.loadUpcomingFights();
+   const result=await window.RINGSIDE_SUPABASE.loadUpcomingFights({includeCancelled});
    if(result?.data?.length)upcomingFightRows=result.data.map(normalizeUpcomingFight);
    renderPublicStatus();
    if(!$("#fight-cards")?.classList.contains("hidden"))renderFightCards();
+   if(!$("#card-manager")?.classList.contains("hidden"))renderCardManager();
   }catch(error){
    console.warn("RINGSIDE fight card sync skipped:",error.message||error);
   }finally{
@@ -335,6 +336,7 @@ function setView(view="home"){
  fightLabSections.forEach(selector=>document.querySelector(selector)?.classList.toggle("hidden",!showHome));
  $("#my-fights")?.classList.toggle("hidden",view!=="my-fights");
  $("#fight-cards")?.classList.toggle("hidden",view!=="fight-cards");
+ $("#card-manager")?.classList.toggle("hidden",view!=="card-manager");
  $("#roster-manager")?.classList.toggle("hidden",view!=="roster-manager");
  $("#verified-manager")?.classList.toggle("hidden",view!=="verified-manager");
  $("#broadcast")?.classList.add("hidden");
@@ -342,6 +344,7 @@ function setView(view="home"){
  document.querySelectorAll("[data-view]").forEach(button=>button.classList.toggle("active",button.dataset.view===view||(view==="archive"&&button.dataset.view==="home"&&button.closest(".bottom-nav"))));
  if(view==="fight-cards")renderFightCards();
  if(view==="my-fights")loadMyFights();
+ if(view==="card-manager")renderCardManager();
  if(view==="roster-manager")renderRosterManager();
  if(view==="verified-manager")renderVerifiedManager();
  if(view==="archive")document.querySelector(".data-panel")?.scrollIntoView({behavior:"smooth",block:"start"});
@@ -433,6 +436,7 @@ function refreshAfterAuth(){
  renderAuthState();
  if(fight&&!lastSavedFight&&!replayingSavedFight&&!$("#results").classList.contains("hidden"))saveResultToSupabase();
  loadMyFights();
+ if(!$("#card-manager")?.classList.contains("hidden"))renderCardManager();
  if(!$("#roster-manager")?.classList.contains("hidden"))renderRosterManager();
  if(!$("#verified-manager")?.classList.contains("hidden"))renderVerifiedManager();
 }
@@ -614,6 +618,11 @@ function parseJsonField(selector,fallback){
 function verifiedFightList(){
  return [...(window.BOXING_FIGHT_HISTORY?.fights||[])].sort((a,b)=>(b.date||"").localeCompare(a.date||""));
 }
+function upcomingCardAdminList(){
+ const byId=new Map();
+ [...(window.RINGSIDE_UPCOMING_FIGHTS||[]),...upcomingFightRows].map(normalizeUpcomingFight).filter(row=>row.id).forEach(row=>byId.set(row.id,row));
+ return [...byId.values()].sort((a,b)=>(a.fightDate||"9999").localeCompare(b.fightDate||"9999")||a.boutOrder-b.boutOrder||a.id.localeCompare(b.id));
+}
 function fighterOptions(selectedId=""){
  return [...fighters].sort((a,b)=>a.name.localeCompare(b.name)).map(f=>`<option value="${f.id}" ${f.id===selectedId?"selected":""}>${f.name} · ${f.division}</option>`).join("");
 }
@@ -724,6 +733,118 @@ async function deleteVerifiedFight(){
   verifiedStatus("Deleted that cloud verified fight.","ok");
  }catch(error){
   verifiedStatus(error.message||"Could not delete verified fight.","error");
+ }
+}
+function cardStatus(message,type=""){
+ const el=$("#card-save-status");
+ if(!el)return;
+ el.textContent=message;
+ el.classList.toggle("ok",type==="ok");
+ el.classList.toggle("error",type==="error");
+}
+function renderCardPickers(selectedId=""){
+ const select=$("#card-fight");
+ if(!select)return;
+ const rows=upcomingCardAdminList();
+ select.innerHTML=`<option value="__new">+ New upcoming card from current matchup</option>`+rows.map(card=>`<option value="${card.id}" ${card.id===selectedId?"selected":""}>${card.status==="cancelled"?"CANCELLED · ":""}${card.fightDate||"Date TBA"} · ${card.redName} vs ${card.blueName}</option>`).join("");
+}
+function fillCardForm(card=null){
+ const a=active("a"),b=active("b"),today=new Date().toISOString().slice(0,10),isNew=!card;
+ const redId=card?.red||a.id,blueId=card?.blue||b.id;
+ const fallbackId=`${redId}-${blueId}-${(card?.fightDate||today).slice(0,4)}`.toLowerCase().replace(/[^a-z0-9-]+/g,"-").replace(/^-|-$/g,"");
+ const divisionOptions=(window.WEIGHT_CLASSES||[]).map(d=>`<option value="${d}" ${d===(card?.division||$("#weight")?.value||a.division||b.division)?"selected":""}>${d}</option>`).join("");
+ $("#card-red").innerHTML=fighterOptions(redId);
+ $("#card-blue").innerHTML=fighterOptions(blueId);
+ $("#card-division").innerHTML=divisionOptions;
+ $("#card-id").value=card?.id||fallbackId;
+ $("#card-event-name").value=card?.eventName||`${a.last} vs ${b.last}`;
+ $("#card-date").value=card?.fightDate||"";
+ $("#card-venue").value=card?.venue==="Venue TBA"?"":card?.venue||$("#venue")?.value||"";
+ $("#card-promoter").value=card?.promoter||"";
+ $("#card-broadcast").value=card?.broadcast||"";
+ $("#card-bout-order").value=card?.boutOrder||1;
+ $("#card-status").value=card?.status||"scheduled";
+ $("#card-red-name").value=card?.redName||fighters.find(f=>f.id===redId)?.name||"";
+ $("#card-blue-name").value=card?.blueName||fighters.find(f=>f.id===blueId)?.name||"";
+ $("#card-rounds").value=card?.scheduledRounds||scheduled||12;
+ $("#card-note").value=card?.cardNote||`Source checked ${today}. Update this note when the fight date, venue, or status changes.`;
+ $("#card-market").value=jsonText(card?.market||{label:"Style market",angle:"Add the key style question for this matchup."},{});
+ $("#card-sources").value=jsonText(card?.sources||[],[]);
+ $("#card-preview-name").textContent=isNew?"New upcoming card":`${card.redName} vs ${card.blueName}`;
+ $("#card-preview-meta").textContent=isNew?"Fill in the schedule details, then save.":`${card.fightDate||"Date TBA"} · ${card.status} · ${card.venue||"Venue TBA"}`;
+}
+async function renderCardManager(){
+ renderCardPickers($("#card-fight")?.value);
+ const selectedId=$("#card-fight")?.value;
+ fillCardForm(selectedId&&selectedId!=="__new"?upcomingCardAdminList().find(f=>f.id===selectedId):null);
+ const user=authUser(),status=$("#card-admin-status"),meta=$("#card-admin-user");
+ if(!user){if(status)status.textContent="SIGN IN REQUIRED";if(meta)meta.textContent="Sign in first. Fight card editing uses the same admin access as roster editing.";cardStatus("Sign in before editing upcoming fight cards.","error");return}
+ if(meta)meta.textContent=`${user.email} · User ID: ${user.id}`;
+ try{
+  const result=await window.RINGSIDE_SUPABASE?.isRosterAdmin?.();
+  rosterAdmin=!!result?.data;
+  if(status)status.textContent=rosterAdmin?"ADMIN ENABLED":"NOT ADMIN YET";
+  cardStatus(rosterAdmin?"Ready to edit upcoming fight cards.":"Add this user ID to the roster admins table, then reload.","");
+ }catch(error){
+  rosterAdmin=false;
+  if(status)status.textContent="ADMIN CHECK FAILED";
+  cardStatus(error.message||"Could not check admin status.","error");
+ }
+}
+function cardPayload(statusOverride=null){
+ const id=$("#card-id").value.trim();
+ if(!id)throw new Error("Card ID is required.");
+ const redId=$("#card-red").value,blueId=$("#card-blue").value;
+ return {
+  id,
+  event_name:$("#card-event-name").value.trim()||"Upcoming Boxing Card",
+  fight_date:$("#card-date").value||null,
+  venue:$("#card-venue").value.trim()||null,
+  promoter:$("#card-promoter").value.trim()||null,
+  broadcast:$("#card-broadcast").value.trim()||null,
+  bout_order:Number($("#card-bout-order").value)||1,
+  red_fighter_id:redId||null,
+  blue_fighter_id:blueId||null,
+  red_name:$("#card-red-name").value.trim()||fighters.find(f=>f.id===redId)?.name||null,
+  blue_name:$("#card-blue-name").value.trim()||fighters.find(f=>f.id===blueId)?.name||null,
+  division:$("#card-division").value||null,
+  scheduled_rounds:Number($("#card-rounds").value)||null,
+  status:statusOverride||$("#card-status").value||"scheduled",
+  card_note:$("#card-note").value.trim()||null,
+  market:parseJsonField("#card-market",{}),
+  sources:parseJsonField("#card-sources",[])
+ };
+}
+async function saveCardFight(statusOverride=null){
+ if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){cardStatus("RINGSIDE database is not connected yet. Run the updated schema first if this table is missing.","error");return}
+ if(!authUser()){openAuthDialog("Sign in before editing upcoming fight cards.");return}
+ try{
+  cardStatus(statusOverride==="cancelled"?"Marking card cancelled…":"Saving fight card…");
+  const payload=cardPayload(statusOverride);
+  await window.RINGSIDE_SUPABASE.upsertUpcomingFight(payload);
+  await syncUpcomingFightsFromSupabase(true,true);
+  renderCardPickers(payload.id);$("#card-fight").value=payload.id;fillCardForm(upcomingCardAdminList().find(f=>f.id===payload.id));
+  renderFightCards();renderPublicStatus();
+  cardStatus(statusOverride==="cancelled"?"Cancelled. This card is hidden from the public preview board.":"Saved. This card is now controlled from the live schedule table.","ok");
+ }catch(error){
+  cardStatus(error.message||"Could not save fight card.","error");
+ }
+}
+async function deleteCardFight(){
+ if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){cardStatus("RINGSIDE database is not connected yet.","error");return}
+ if(!authUser()){openAuthDialog("Sign in before editing upcoming fight cards.");return}
+ const id=$("#card-id").value.trim();
+ if(!id){cardStatus("Pick a card before deleting.","error");return}
+ if(!confirm(`Delete upcoming card ${id} from the cloud schedule? Built-in local starter cards may still appear unless you mark the same ID cancelled.`))return;
+ try{
+  cardStatus(`Deleting ${id}…`);
+  await window.RINGSIDE_SUPABASE.deleteUpcomingFight(id);
+  upcomingFightRows=upcomingFightRows.filter(card=>card.id!==id);
+  await syncUpcomingFightsFromSupabase(true,true);
+  renderCardPickers("__new");fillCardForm(null);renderFightCards();renderPublicStatus();
+  cardStatus("Deleted that cloud card.","ok");
+ }catch(error){
+  cardStatus(error.message||"Could not delete fight card.","error");
  }
 }
 function shareUrl(slug){
@@ -1081,7 +1202,7 @@ $("#signup-button").onclick=async()=>{
  }catch(error){$("#auth-message").textContent=error.message||"Could not create account. Make sure the email is real and typed correctly."}
  finally{setAuthBusy(false)}
 };
-$("#signout-button").onclick=async()=>{await window.RINGSIDE_SUPABASE.signOut();savedFightRows=[];renderAuthState();$("#auth-dialog").close();loadMyFights();if(!$("#roster-manager")?.classList.contains("hidden"))renderRosterManager();if(!$("#verified-manager")?.classList.contains("hidden"))renderVerifiedManager()};
+$("#signout-button").onclick=async()=>{await window.RINGSIDE_SUPABASE.signOut();savedFightRows=[];renderAuthState();$("#auth-dialog").close();loadMyFights();if(!$("#card-manager")?.classList.contains("hidden"))renderCardManager();if(!$("#roster-manager")?.classList.contains("hidden"))renderRosterManager();if(!$("#verified-manager")?.classList.contains("hidden"))renderVerifiedManager()};
 $("#roster-fighter").onchange=()=>{renderRosterPickers();fillRosterForm()};
 $("#roster-version").onchange=fillRosterForm;
 $("#roster-form").onsubmit=e=>{e.preventDefault();saveRosterEdit()};
@@ -1092,6 +1213,12 @@ $("#history-fight").onchange=()=>{const id=$("#history-fight").value;fillVerifie
 $("#history-form").onsubmit=e=>{e.preventDefault();saveVerifiedFight()};
 $("#delete-verified-fight").onclick=deleteVerifiedFight;
 $("#reload-verified-fights").onclick=async()=>{verifiedStatus("Reloading verified fight history…");await syncVerifiedFightsFromSupabase(true);renderVerifiedManager()};
+$("#card-fight").onchange=()=>{const id=$("#card-fight").value;fillCardForm(id==="__new"?null:upcomingCardAdminList().find(f=>f.id===id))};
+$("#card-form").onsubmit=e=>{e.preventDefault();saveCardFight()};
+$("#new-card-fight").onclick=()=>{renderCardPickers("__new");$("#card-fight").value="__new";fillCardForm(null);cardStatus("New card ready. Fill in the schedule details, then save.")};
+$("#cancel-card-fight").onclick=()=>saveCardFight("cancelled");
+$("#delete-card-fight").onclick=deleteCardFight;
+$("#reload-card-fights").onclick=async()=>{cardStatus("Reloading fight cards…");await syncUpcomingFightsFromSupabase(true,true);renderCardManager()};
 document.querySelectorAll("[data-view]").forEach(button=>button.onclick=()=>setView(button.dataset.view));
 document.querySelectorAll("[data-demo-red][data-demo-blue]").forEach(button=>button.onclick=()=>setDemoMatchup(button.dataset.demoRed,button.dataset.demoBlue));
 $("#view-play-by-play").onclick=()=>{

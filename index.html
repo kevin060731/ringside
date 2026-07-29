@@ -15,7 +15,7 @@
 <body>
   <header class="topbar">
     <a class="brand" href="#"><span class="brand-mark">R</span><span>RING<span>SIDE</span></span></a>
-    <nav class="utility-nav"><button data-view="home">FIGHT LAB</button><button data-view="fight-cards">FIGHT CARDS</button><button data-view="my-fights">MY FIGHTS</button><button data-view="archive">ARCHIVE</button><button data-view="roster-manager">ROSTER</button><button data-view="verified-manager">HISTORY</button></nav>
+    <nav class="utility-nav"><button data-view="home">FIGHT LAB</button><button data-view="fight-cards">FIGHT CARDS</button><button data-view="my-fights">MY FIGHTS</button><button data-view="archive">ARCHIVE</button><button data-view="card-manager">CARD ADMIN</button><button data-view="roster-manager">ROSTER</button><button data-view="verified-manager">HISTORY</button></nav>
     <div class="header-actions"><button class="search-btn" aria-label="Search">⌕</button><button class="avatar-btn" id="auth-button" aria-label="Profile">SIGN IN</button></div>
   </header>
   <nav class="sport-nav">
@@ -295,6 +295,59 @@
       </div>
     </section>
 
+    <section class="roster-manager card-manager hidden" id="card-manager">
+      <div class="roster-manager-head">
+        <div>
+          <small>RINGSIDE ADMIN</small>
+          <h2>Fight Card Manager</h2>
+          <p>Add, update, postpone, cancel, or delete upcoming fight cards. Saved cards sync into the public preview board without another code deploy.</p>
+        </div>
+        <div class="roster-admin-card">
+          <small>ADMIN STATUS</small>
+          <b id="card-admin-status">Checking…</b>
+          <span id="card-admin-user">Sign in to manage upcoming cards.</span>
+        </div>
+      </div>
+      <div class="roster-tools">
+        <button id="reload-card-fights">RELOAD FIGHT CARDS</button>
+        <button id="new-card-fight">NEW CARD</button>
+      </div>
+      <div class="roster-editor">
+        <div class="roster-picker-card">
+          <label>UPCOMING CARD<select id="card-fight"></select></label>
+          <div class="roster-preview history-preview"><span><b id="card-preview-name">Choose card</b><small id="card-preview-meta">—</small></span></div>
+          <p class="json-help">Use <b>scheduled</b> for active cards, <b>postponed</b> when details changed, and <b>cancelled</b> to hide a card from the public preview board.</p>
+        </div>
+        <form class="roster-form" id="card-form">
+          <div class="roster-form-grid">
+            <label>Card ID<input id="card-id"></label>
+            <label>Event Name<input id="card-event-name"></label>
+            <label>Fight Date<input id="card-date" type="date"></label>
+            <label>Venue<input id="card-venue"></label>
+            <label>Promoter<input id="card-promoter"></label>
+            <label>Broadcast<input id="card-broadcast"></label>
+            <label>Bout Order<input id="card-bout-order" type="number" min="1"></label>
+            <label>Status<select id="card-status"><option value="scheduled">scheduled</option><option value="postponed">postponed</option><option value="cancelled">cancelled</option><option value="completed">completed</option></select></label>
+            <label>Red Fighter<select id="card-red"></select></label>
+            <label>Blue Fighter<select id="card-blue"></select></label>
+            <label>Red Display Name<input id="card-red-name"></label>
+            <label>Blue Display Name<input id="card-blue-name"></label>
+            <label>Division<select id="card-division"></select></label>
+            <label>Scheduled Rounds<input id="card-rounds" type="number" min="1" max="45"></label>
+          </div>
+          <label class="wide-label">Card Note<textarea id="card-note" rows="3"></textarea></label>
+          <label class="wide-label">Market / Style Angle JSON<textarea id="card-market" rows="4"></textarea></label>
+          <label class="wide-label">Sources JSON<textarea id="card-sources" rows="4"></textarea></label>
+          <div class="roster-save-row">
+            <button type="submit">SAVE FIGHT CARD</button>
+            <button type="button" id="cancel-card-fight" class="danger-button">MARK CANCELLED</button>
+            <button type="button" id="delete-card-fight" class="danger-button">DELETE CARD</button>
+            <span id="card-save-status">Pick a card to edit.</span>
+          </div>
+        </form>
+      </div>
+    </section>
+
     <section class="broadcast hidden" id="broadcast">
       <div class="broadcast-top">
         <button class="back-btn" id="new-fight">← NEW FIGHT</button>
@@ -424,10 +477,10 @@
     </form>
   </dialog>
   <script src="supabase-config.js?v=github-auth-1"></script>
-  <script src="supabase-client.js?v=fight-cards-1"></script>
+  <script src="supabase-client.js?v=card-manager-1"></script>
   <script src="fight-history.js?v=matt-polish-1"></script>
   <script src="verified-fights-pack.js?v=verified-history-pack-1"></script>
-  <script src="upcoming-fights.js?v=fight-cards-1"></script>
+  <script src="upcoming-fights.js?v=card-manager-1"></script>
   <script src="compubox-provider.js?v=matt-polish-1"></script>
   <script src="engine.js?v=matt-polish-1"></script>
   <script src="roster.js?v=matt-polish-1"></script>
@@ -439,6 +492,6 @@
   <script src="rummy-corner-data.js?v=matt-polish-1"></script>
   <script src="research-desk.js?v=matt-polish-1"></script>
   <script src="roster-sync.js?v=matt-polish-1"></script>
-  <script src="app.js?v=fight-cards-1"></script>
+  <script src="app.js?v=card-manager-1"></script>
 </body>
 </html>

@@ -184,9 +184,10 @@ async function loadVerifiedFights(){
  if(!isConfigured())return {skipped:true,reason:"RINGSIDE services are not connected yet.",data:[]};
  return request("verified_fights?select=id,fight_date,red_fighter_id,blue_fighter_id,winner_fighter_id,division,venue,method,scheduled_rounds,ended_round,scorecards,events,stats,fan_consensus,data_quality,confidence,source_notes,sources,updated_at&order=fight_date.desc&limit=1000");
 }
-async function loadUpcomingFights(){
+async function loadUpcomingFights({includeCancelled=false}={}){
  if(!isConfigured())return {skipped:true,reason:"RINGSIDE services are not connected yet.",data:[]};
- return request("upcoming_fights?select=id,event_name,fight_date,venue,promoter,broadcast,bout_order,red_fighter_id,blue_fighter_id,red_name,blue_name,division,scheduled_rounds,status,card_note,market,sources,updated_at&status=neq.cancelled&order=fight_date.asc,bout_order.asc&limit=250");
+ const filter=includeCancelled?"":"&status=neq.cancelled";
+ return request(`upcoming_fights?select=id,event_name,fight_date,venue,promoter,broadcast,bout_order,red_fighter_id,blue_fighter_id,red_name,blue_name,division,scheduled_rounds,status,card_note,market,sources,updated_at${filter}&order=fight_date.asc,bout_order.asc&limit=250`);
 }
 async function isRosterAdmin(){
  const user=currentUser();
@@ -214,6 +215,14 @@ async function upsertVerifiedFight(row){
 async function deleteVerifiedFight(id){
  if(!currentUser())return {authRequired:true,reason:"Sign in to edit verified fight history."};
  return request(`verified_fights?id=eq.${encodeURIComponent(id)}`,{method:"DELETE",headers:{Prefer:"return=minimal"}});
+}
+async function upsertUpcomingFight(row){
+ if(!currentUser())return {authRequired:true,reason:"Sign in to edit upcoming fight cards."};
+ return request("upcoming_fights?on_conflict=id",{method:"POST",body:[row],headers:{Prefer:"resolution=merge-duplicates,return=representation"}});
+}
+async function deleteUpcomingFight(id){
+ if(!currentUser())return {authRequired:true,reason:"Sign in to edit upcoming fight cards."};
+ return request(`upcoming_fights?id=eq.${encodeURIComponent(id)}`,{method:"DELETE",headers:{Prefer:"return=minimal"}});
 }
 async function seedRoster(localFighters=[]){
  if(!currentUser())return {authRequired:true,reason:"Sign in to seed the roster."};
@@ -245,5 +254,5 @@ async function seedRoster(localFighters=[]){
  const savedVersions=versionRows.length?await request("fighter_versions",{method:"POST",body:versionRows,headers:{Prefer:"return=minimal"}}):{data:[]};
  return {data:{fighters:savedFighters.data||[],versions:savedVersions.data||[],fighterCount:fighterRows.length,versionCount:versionRows.length}};
 }
-global.RINGSIDE_SUPABASE={isConfigured,getSession,currentUser,completeOAuthFromUrl,signUp,signIn,signInWithGitHub,signOut,saveFight,listSavedFights,getSavedFight,loadRoster,loadVerifiedFights,loadUpcomingFights,isRosterAdmin,upsertFighter,replaceFighterVersion,deleteFighterVersion,upsertVerifiedFight,deleteVerifiedFight,seedRoster,refreshSession};
+global.RINGSIDE_SUPABASE={isConfigured,getSession,currentUser,completeOAuthFromUrl,signUp,signIn,signInWithGitHub,signOut,saveFight,listSavedFights,getSavedFight,loadRoster,loadVerifiedFights,loadUpcomingFights,isRosterAdmin,upsertFighter,replaceFighterVersion,deleteFighterVersion,upsertVerifiedFight,deleteVerifiedFight,upsertUpcomingFight,deleteUpcomingFight,seedRoster,refreshSession};
 })(typeof window!=="undefined"?window:globalThis);
