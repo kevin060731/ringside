@@ -9,17 +9,17 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,500;0,600;0,700;0,800;0,900;1,700&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=matt-polish-1" />
-  <link rel="stylesheet" href="dashboard.css?v=demo-polish-1" />
-  <link rel="stylesheet" href="playback.css?v=demo-polish-1" />
+  <link rel="stylesheet" href="dashboard.css?v=demo-polish-2" />
+  <link rel="stylesheet" href="playback.css?v=demo-polish-2" />
 </head>
 <body>
   <header class="topbar">
     <a class="brand" href="#"><span class="brand-mark">R</span><span>RING<span>SIDE</span></span></a>
-    <nav class="utility-nav"><button data-view="home">FIGHT LAB</button><button>RANKINGS</button><button>NEWS</button><button data-view="roster-manager">ROSTER</button><button data-view="verified-manager">HISTORY</button></nav>
+    <nav class="utility-nav"><button data-view="home">FIGHT LAB</button><button data-view="my-fights">MY FIGHTS</button><button data-view="archive">ARCHIVE</button><button data-view="roster-manager">ROSTER</button><button data-view="verified-manager">HISTORY</button></nav>
     <div class="header-actions"><button class="search-btn" aria-label="Search">⌕</button><button class="avatar-btn" id="auth-button" aria-label="Profile">SIGN IN</button></div>
   </header>
   <nav class="sport-nav">
-    <button class="active" data-view="home">BOXING</button><button data-view="my-fights">MY FIGHTS</button><button data-view="roster-manager">ROSTER</button><button data-view="verified-manager">HISTORY</button><button data-view="archive">ARCHIVE</button>
+    <button class="active" data-view="home">BOXING</button><button data-view="my-fights">MY FIGHTS</button><button data-view="archive">ARCHIVE</button>
   </nav>
 
   <main>
@@ -42,6 +42,19 @@
         <span><b id="roster-count">—</b><small>fighters</small></span>
         <span><b id="history-count">—</b><small>verified fights</small></span>
         <span><b>Private</b><small>saved fights</small></span>
+      </div>
+    </section>
+
+    <section class="demo-brief" aria-label="How RINGSIDE works">
+      <div class="demo-copy">
+        <small>WHAT RINGSIDE DOES</small>
+        <h2>History when it exists. Simulation when it doesn’t.</h2>
+        <p>If the matchup already happened, RINGSIDE replays the verified result. If it never happened, the engine uses fighter versions, styles, weight, rules, and settings to build a fantasy fight.</p>
+      </div>
+      <div class="demo-picks" aria-label="Demo matchups">
+        <button data-demo-red="haney" data-demo-blue="lomachenko"><small>Verified replay</small><b>Haney vs Lomachenko</b></button>
+        <button data-demo-red="mayweather" data-demo-blue="whitaker"><small>Style chess</small><b>Mayweather vs Whitaker</b></button>
+        <button data-demo-red="fury" data-demo-blue="rodriguez"><small>Mismatch logic</small><b>Fury vs Bam</b></button>
       </div>
     </section>
 
@@ -177,8 +190,8 @@
         </div>
       </div>
       <div class="roster-tools">
-        <button id="seed-roster">SYNC CURRENT APP ROSTER TO SUPABASE</button>
-        <button id="reload-roster">RELOAD SUPABASE ROSTER</button>
+        <button id="seed-roster">SYNC CURRENT APP ROSTER</button>
+        <button id="reload-roster">RELOAD LIVE ROSTER</button>
       </div>
       <div class="roster-editor">
         <div class="roster-picker-card">
@@ -347,7 +360,7 @@
       <p id="decision"></p>
       <section class="save-status" id="save-status">
         <div>
-          <small>SUPABASE VAULT</small>
+          <small>RINGSIDE VAULT</small>
           <b>Saving fight…</b>
           <span>Your fight is being added to My Fights.</span>
         </div>
@@ -412,6 +425,6 @@
   <script src="rummy-corner-data.js?v=matt-polish-1"></script>
   <script src="research-desk.js?v=matt-polish-1"></script>
   <script src="roster-sync.js?v=matt-polish-1"></script>
-  <script src="app.js?v=demo-polish-1"></script>
+  <script src="app.js?v=demo-polish-2"></script>
 </body>
 </html>

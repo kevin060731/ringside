@@ -39,7 +39,7 @@ function setImage(img,src,alt=""){
  img.onerror=()=>img.classList.add("image-missing");
  img.src=src||"";
 }
-const fightLabSections=[".hero","#public-status","#setup","#research-desk",".settings-panel",".data-panel"];
+const fightLabSections=[".hero","#public-status",".demo-brief","#setup","#research-desk",".settings-panel",".data-panel"];
 const wikiAliases={"Saúl Álvarez":"Canelo Álvarez","Gennadiy Golovkin":"Gennady Golovkin","Jesse Rodriguez":"Jesse Rodríguez (boxer)","Oleksandr Usyk":"Oleksandr Usyk","Floyd Mayweather":"Floyd Mayweather Jr.","Julio César Chávez":"Julio César Chávez","Teófimo López":"Teófimo López"};
 const portraitJobs=new Map();
 async function loadPortrait(f,img){
@@ -297,6 +297,14 @@ function setView(view="home"){
  if(view==="roster-manager")renderRosterManager();
  if(view==="verified-manager")renderVerifiedManager();
  if(view==="archive")document.querySelector(".data-panel")?.scrollIntoView({behavior:"smooth",block:"start"});
+}
+function setDemoMatchup(redId,blueId){
+ const red=fighters.find(f=>f.id===redId),blue=fighters.find(f=>f.id===blueId);
+ if(!red||!blue)return;
+ selected.a=red;selected.b=blue;versions.a=0;versions.b=0;
+ renderFighter("a");renderFighter("b");renderResearchDesk();renderPublicStatus();
+ setView("home");
+ document.querySelector("#setup")?.scrollIntoView({behavior:"smooth",block:"start"});
 }
 function authUser(){return window.RINGSIDE_SUPABASE?.currentUser?.()||null}
 function userLabel(user){
@@ -946,6 +954,7 @@ $("#history-form").onsubmit=e=>{e.preventDefault();saveVerifiedFight()};
 $("#delete-verified-fight").onclick=deleteVerifiedFight;
 $("#reload-verified-fights").onclick=async()=>{verifiedStatus("Reloading verified fight history…");await syncVerifiedFightsFromSupabase(true);renderVerifiedManager()};
 document.querySelectorAll("[data-view]").forEach(button=>button.onclick=()=>setView(button.dataset.view));
+document.querySelectorAll("[data-demo-red][data-demo-blue]").forEach(button=>button.onclick=()=>setDemoMatchup(button.dataset.demoRed,button.dataset.demoBlue));
 $("#view-play-by-play").onclick=()=>{
  const archive=$("#postfight-rounds"),opening=archive.classList.contains("hidden");
  archive.classList.toggle("hidden",!opening);

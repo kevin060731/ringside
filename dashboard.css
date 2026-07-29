@@ -354,3 +354,80 @@ dialog{border-radius:20px}
  .status-metrics b{font-size:12px}
  .status-metrics small{font-size:6px}
 }
+
+/* First-time demo guide */
+.demo-brief{
+ max-width:1132px;
+ margin:0 auto 22px;
+ padding:0 24px;
+ display:grid;
+ grid-template-columns:minmax(0,1fr) minmax(420px,.95fr);
+ gap:14px;
+ color:#f4f6fb
+}
+.demo-copy,.demo-picks button{
+ border:1px solid rgba(139,153,181,.18);
+ border-radius:18px;
+ background:linear-gradient(135deg,rgba(24,30,44,.92),rgba(15,20,31,.78));
+ box-shadow:0 18px 45px rgba(0,0,0,.12)
+}
+.demo-copy{padding:18px 20px}
+.demo-copy small,.demo-picks small{
+ display:block;
+ color:#ff5969;
+ font:900 8px "DM Mono";
+ letter-spacing:1.4px;
+ text-transform:uppercase
+}
+.demo-copy h2{
+ margin:7px 0 7px;
+ font:900 24px/1 Inter,sans-serif;
+ letter-spacing:-.04em;
+ color:#fff
+}
+.demo-copy p{
+ margin:0;
+ color:#aeb8ca;
+ font:650 12px/1.55 Inter,sans-serif
+}
+.demo-picks{
+ display:grid;
+ grid-template-columns:repeat(3,1fr);
+ gap:10px
+}
+.demo-picks button{
+ appearance:none;
+ cursor:pointer;
+ text-align:left;
+ padding:16px;
+ color:#fff;
+ transition:transform .18s,border-color .18s,background .18s
+}
+.demo-picks button:hover{
+ transform:translateY(-2px);
+ border-color:rgba(214,173,100,.45);
+ background:linear-gradient(135deg,rgba(34,42,62,.96),rgba(16,21,33,.86))
+}
+.demo-picks b{
+ display:block;
+ margin-top:7px;
+ font:900 15px/1.1 Inter,sans-serif;
+ letter-spacing:-.03em
+}
+.demo-picks button:nth-child(1) small{color:#d6ad64}
+.demo-picks button:nth-child(2) small{color:#8fb8ff}
+.demo-picks button:nth-child(3) small{color:#78e6a2}
+
+@media(max-width:900px){
+ .demo-brief{grid-template-columns:1fr}
+ .demo-picks{grid-template-columns:1fr 1fr 1fr}
+}
+
+@media(max-width:760px){
+ .demo-brief{margin:0 12px 14px;padding:0;gap:10px}
+ .demo-copy{padding:15px}
+ .demo-copy h2{font-size:20px}
+ .demo-copy p{font-size:12px}
+ .demo-picks{grid-template-columns:1fr;gap:8px}
+ .demo-picks button{padding:14px 15px;border-radius:15px}
+}
