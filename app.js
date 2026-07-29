@@ -740,6 +740,7 @@ function compactDate(value){
  catch{return value||"Saved"}
 }
 function longDate(value){
+ if(!value)return "Date TBA";
  try{return new Intl.DateTimeFormat(undefined,{weekday:"short",month:"short",day:"numeric",year:"numeric"}).format(new Date(value))}
  catch{return value||"Date TBA"}
 }
