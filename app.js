@@ -30,7 +30,7 @@ function decorateRoster(){
  fighters.forEach(f=>{f.compubox=window.COMPUBOX_DATA?.profileFor(f)||f.compubox||null});
  fighters.forEach(f=>f.years.forEach(v=>{if(!v.weight)v.weight=divisionWeightsLb[v.division||f.division]||160}));
 }
-let selected={a:fighters[0],b:fighters[1]},versions={a:0,b:0},pickerSide="a",scheduled=12,fight=null,current=0,archiveDivision="All",researchDesk=null,lastSavedFight=null,replayingSavedFight=false,savedFightRows=[],rosterAdmin=false,verifiedFightRows=[],verifiedFightSyncPromise=null;
+let selected={a:fighters[0],b:fighters[1]},versions={a:0,b:0},pickerSide="a",scheduled=12,fight=null,current=0,archiveDivision="All",researchDesk=null,lastSavedFight=null,replayingSavedFight=false,savedFightRows=[],rosterAdmin=false,verifiedFightRows=[],verifiedFightSyncPromise=null,upcomingFightRows=[...(window.RINGSIDE_UPCOMING_FIGHTS||[])],upcomingFightSyncPromise=null;
 const $=s=>document.querySelector(s);
 function setImage(img,src,alt=""){
  if(!img)return;
@@ -132,6 +132,51 @@ async function syncVerifiedFightsFromSupabase(force=false){
   }
  })();
  return verifiedFightSyncPromise;
+}
+function normalizeUpcomingFight(row={}){
+ return {
+  id:row.id,
+  eventName:row.eventName||row.event_name||"Upcoming Boxing Card",
+  fightDate:row.fightDate||row.fight_date||null,
+  venue:row.venue||"Venue TBA",
+  promoter:row.promoter||"",
+  broadcast:row.broadcast||"",
+  boutOrder:Number(row.boutOrder??row.bout_order??1),
+  red:row.red||row.red_fighter_id||"",
+  blue:row.blue||row.blue_fighter_id||"",
+  redName:row.redName||row.red_name||row.red_fighter_id||"Red corner",
+  blueName:row.blueName||row.blue_name||row.blue_fighter_id||"Blue corner",
+  division:row.division||"Welterweight",
+  scheduledRounds:Number(row.scheduledRounds??row.scheduled_rounds??12),
+  status:row.status||"scheduled",
+  cardNote:row.cardNote||row.card_note||"",
+  market:row.market||{},
+  sources:row.sources||[]
+ };
+}
+function upcomingFightList(){
+ const today=new Date().toISOString().slice(0,10);
+ const byId=new Map();
+ [...(window.RINGSIDE_UPCOMING_FIGHTS||[]),...upcomingFightRows].map(normalizeUpcomingFight).filter(row=>row.id&&row.status!=="cancelled").forEach(row=>byId.set(row.id,row));
+ return [...byId.values()].filter(row=>!row.fightDate||row.fightDate>=today).sort((a,b)=>(a.fightDate||"9999").localeCompare(b.fightDate||"9999")||a.boutOrder-b.boutOrder);
+}
+async function syncUpcomingFightsFromSupabase(force=false){
+ if(!window.RINGSIDE_SUPABASE?.loadUpcomingFights)return upcomingFightRows;
+ if(upcomingFightSyncPromise&&!force)return upcomingFightSyncPromise;
+ upcomingFightSyncPromise=(async()=>{
+  try{
+   const result=await window.RINGSIDE_SUPABASE.loadUpcomingFights();
+   if(result?.data?.length)upcomingFightRows=result.data.map(normalizeUpcomingFight);
+   renderPublicStatus();
+   if(!$("#fight-cards")?.classList.contains("hidden"))renderFightCards();
+  }catch(error){
+   console.warn("RINGSIDE fight card sync skipped:",error.message||error);
+  }finally{
+   if(force)upcomingFightSyncPromise=null;
+  }
+  return upcomingFightRows;
+ })();
+ return upcomingFightSyncPromise;
 }
 function active(side){return {...selected[side],...selected[side].years[versions[side]]}}
 function versionProfile(f,v){
@@ -263,9 +308,10 @@ function renderArchive(q=""){
  document.querySelectorAll("img[data-fighter]").forEach(img=>portraitObserver.observe(img));
 }
 function renderPublicStatus(){
- const rosterCount=$("#roster-count"),historyCount=$("#history-count"),modeTitle=$("#match-mode-title"),modeCopy=$("#match-mode-copy"),modeLabel=$("#match-mode-label"),status=$("#public-status");
+ const rosterCount=$("#roster-count"),historyCount=$("#history-count"),cardCount=$("#card-count"),modeTitle=$("#match-mode-title"),modeCopy=$("#match-mode-copy"),modeLabel=$("#match-mode-label"),status=$("#public-status");
  if(rosterCount)rosterCount.textContent=`${fighters.length}`;
  if(historyCount)historyCount.textContent=`${window.BOXING_FIGHT_HISTORY?.fights?.length||0}`;
+ if(cardCount)cardCount.textContent=`${upcomingFightList().length}`;
  if(!modeTitle||!modeCopy||!modeLabel)return;
  const a=active("a"),b=active("b");
  const known=window.BOXING_FIGHT_HISTORY?.find?.(a,b);
@@ -288,11 +334,13 @@ function setView(view="home"){
  const showHome=view==="home"||view==="archive";
  fightLabSections.forEach(selector=>document.querySelector(selector)?.classList.toggle("hidden",!showHome));
  $("#my-fights")?.classList.toggle("hidden",view!=="my-fights");
+ $("#fight-cards")?.classList.toggle("hidden",view!=="fight-cards");
  $("#roster-manager")?.classList.toggle("hidden",view!=="roster-manager");
  $("#verified-manager")?.classList.toggle("hidden",view!=="verified-manager");
  $("#broadcast")?.classList.add("hidden");
  $("#results")?.classList.add("hidden");
  document.querySelectorAll("[data-view]").forEach(button=>button.classList.toggle("active",button.dataset.view===view||(view==="archive"&&button.dataset.view==="home"&&button.closest(".bottom-nav"))));
+ if(view==="fight-cards")renderFightCards();
  if(view==="my-fights")loadMyFights();
  if(view==="roster-manager")renderRosterManager();
  if(view==="verified-manager")renderVerifiedManager();
@@ -302,6 +350,46 @@ function setDemoMatchup(redId,blueId){
  const red=fighters.find(f=>f.id===redId),blue=fighters.find(f=>f.id===blueId);
  if(!red||!blue)return;
  selected.a=red;selected.b=blue;versions.a=0;versions.b=0;
+ renderFighter("a");renderFighter("b");renderResearchDesk();renderPublicStatus();
+ setView("home");
+ document.querySelector("#setup")?.scrollIntoView({behavior:"smooth",block:"start"});
+}
+function setSelectOptionValue(selector,value){
+ const select=$(selector);
+ if(!select||!value)return;
+ if(![...select.options].some(option=>option.value===value||option.textContent===value)){
+  const option=document.createElement("option");
+  option.value=value;
+  option.textContent=value;
+  select.appendChild(option);
+ }
+ select.value=value;
+}
+function setRoundCount(rounds=12){
+ scheduled=Number(rounds)||12;
+ document.querySelectorAll("[data-rounds]").forEach(button=>button.classList.toggle("active",Number(button.dataset.rounds)===scheduled));
+}
+function versionIndexForCard(f,card,side){
+ const label=card[`${side}VersionLabel`];
+ if(label){
+  const exact=f.years.findIndex(v=>(v.label||"")===label);
+  if(exact>=0)return exact;
+ }
+ const division=card.division;
+ const sameDivision=f.years.findIndex(v=>(v.division||f.division)===division);
+ return sameDivision>=0?sameDivision:0;
+}
+function loadFightCard(cardId){
+ const card=upcomingFightList().find(row=>row.id===cardId);
+ if(!card)return;
+ const red=fighters.find(f=>f.id===card.red),blue=fighters.find(f=>f.id===card.blue);
+ if(!red||!blue)return;
+ selected.a=red;selected.b=blue;
+ versions.a=versionIndexForCard(red,card,"red");
+ versions.b=versionIndexForCard(blue,card,"blue");
+ setRoundCount(card.scheduledRounds);
+ setSelectOptionValue("#weight",card.division);
+ setSelectOptionValue("#venue",card.venue);
  renderFighter("a");renderFighter("b");renderResearchDesk();renderPublicStatus();
  setView("home");
  document.querySelector("#setup")?.scrollIntoView({behavior:"smooth",block:"start"});
@@ -651,6 +739,54 @@ function compactDate(value){
  try{return new Intl.DateTimeFormat(undefined,{month:"short",day:"numeric"}).format(new Date(value))}
  catch{return value||"Saved"}
 }
+function longDate(value){
+ try{return new Intl.DateTimeFormat(undefined,{weekday:"short",month:"short",day:"numeric",year:"numeric"}).format(new Date(value))}
+ catch{return value||"Date TBA"}
+}
+function fighterById(id){return fighters.find(f=>f.id===id)}
+function matchupPreview(card){
+ const red=fighterById(card.red),blue=fighterById(card.blue);
+ if(!red||!blue)return {ready:false,label:"Roster needed",copy:"Add both fighters to the roster before this matchup can be simulated.",lean:"—"};
+ const a={...red,...red.years[versionIndexForCard(red,card,"red")]},b={...blue,...blue.years[versionIndexForCard(blue,card,"blue")]};
+ const ratingA=["power","speed","defense","iq","cardio","accuracy"].reduce((n,key)=>n+(Number(a[key])||0),0);
+ const ratingB=["power","speed","defense","iq","cardio","accuracy"].reduce((n,key)=>n+(Number(b[key])||0),0);
+ const sizeA=Number(a.weight)||divisionWeightsLb[a.division]||147,sizeB=Number(b.weight)||divisionWeightsLb[b.division]||147;
+ const sizeSwing=Math.max(-12,Math.min(12,(sizeA-sizeB)*.7));
+ const raw=50+((ratingA-ratingB)*.45)+sizeSwing;
+ const lean=Math.max(5,Math.min(95,Math.round(raw)));
+ const favorite=lean>=50?a:b,percent=lean>=50?lean:100-lean;
+ const mismatch=percent>=75?"Mismatch watch":percent>=62?"Clear lean":"Pick'em preview";
+ return {ready:true,label:mismatch,copy:card.market?.angle||"Style, version and setting edge preview.",lean:`${favorite.last} ${percent}%`};
+}
+function renderFightCards(){
+ const status=$("#fight-cards-status"),list=$("#fight-cards-list");
+ if(!status||!list)return;
+ const rows=upcomingFightList();
+ if(!rows.length){status.textContent="No upcoming cards are loaded yet. Add rows to the upcoming_fights table to publish a preview board.";status.classList.remove("hidden");list.innerHTML="";return}
+ status.classList.add("hidden");
+ list.innerHTML=rows.map(card=>{
+  const red=fighterById(card.red),blue=fighterById(card.blue),preview=matchupPreview(card),ready=!!(red&&blue);
+  const sources=(card.sources||[]).map(source=>source.url?`<a href="${source.url}" target="_blank" rel="noreferrer">${source.label||"Source"} ↗</a>`:`<span>${source.label||"Source noted"}</span>`).join("");
+  return `<article class="fight-card-preview ${ready?"ready":"needs-roster"}">
+   <div class="fight-card-date">
+    <small>${card.broadcast||card.promoter||"Preview"}</small>
+    <b>${longDate(card.fightDate)}</b>
+    <span>${card.venue||"Venue TBA"}</span>
+   </div>
+   <div class="fight-card-main">
+    <small>${card.eventName}</small>
+    <h3>${red?.last||card.redName} <em>vs</em> ${blue?.last||card.blueName}</h3>
+    <p>${card.division} · ${card.scheduledRounds} rounds${card.cardNote?` · ${card.cardNote}`:""}</p>
+    <div class="fight-card-meta">
+     <span>${preview.label}</span>
+     <span>${card.market?.label||"Preview lean"}: ${preview.lean}</span>
+     ${sources}
+    </div>
+   </div>
+   <button ${ready?`data-load-card="${card.id}"`:"disabled"}>${ready?"LOAD PREVIEW":"ADD FIGHTERS"}</button>
+  </article>`;
+ }).join("");
+}
 function fightNameFromSaved(row){
  const data=row.fight_data||{},a=data.a?.last||row.red_fighter_id||"Red",b=data.b?.last||row.blue_fighter_id||"Blue";
  return `${a} vs ${b}`;
@@ -894,6 +1030,7 @@ $("#next-round").onclick=()=>{if(current>=fight.rounds.length||fight.rounds[curr
 $("#prev-round").onclick=()=>{if(!fight||current<=0)return;current--;renderLive()};
 $("#new-fight").onclick=()=>location.reload();$("#run-again").onclick=()=>{if(replayingSavedFight&&lastSavedFight)hydrateSavedMatchup(lastSavedFight);setupFight()};
 $("#refresh-my-fights").onclick=loadMyFights;
+$("#refresh-fight-cards").onclick=async()=>{const status=$("#fight-cards-status");if(status){status.textContent="Refreshing preview board…";status.classList.remove("hidden")}await syncUpcomingFightsFromSupabase(true);renderFightCards()};
 $("#my-fights-search").oninput=applyMyFightsFilter;
 $("#view-saved-fight").onclick=()=>{if(!authUser())openAuthDialog("Sign in first, then this fight can be saved to your private vault.");else setView("my-fights")};
 $("#copy-share-link").onclick=async()=>{
@@ -909,6 +1046,7 @@ $("#my-fights-list").onclick=async e=>{
  if(copy){await copyText(shareUrl(copy.dataset.copySaved));copy.textContent="COPIED";setTimeout(()=>copy.textContent="COPY LINK",1200)}
 };
 $("#my-fights").onclick=e=>{if(e.target.closest("[data-open-auth]"))openAuthDialog()};
+$("#fight-cards").onclick=e=>{const button=e.target.closest("[data-load-card]");if(button)loadFightCard(button.dataset.loadCard)};
 $("#auth-button").onclick=()=>openAuthDialog();
 $("#github-signin-button").onclick=async()=>{
  try{
@@ -965,6 +1103,7 @@ $("#weight").innerHTML=(window.WEIGHT_CLASSES||[]).map(d=>`<option>${d}</option>
 $("#weight").onchange=renderResearchDesk;
 ["ring","venue","championship","neutral","ruleset","environment","weighin","equipment"].forEach(id=>{const el=$(`#${id}`);if(el)el.onchange=renderResearchDesk});
 renderFighter("a");renderFighter("b");renderArchive();
+renderFightCards();
 renderAuthState();
 window.RINGSIDE_SUPABASE?.completeOAuthFromUrl?.().then(session=>{
  if(!session)return;
@@ -975,5 +1114,6 @@ window.RINGSIDE_SUPABASE?.completeOAuthFromUrl?.().then(session=>{
 });
 syncRosterFromSupabase();
 syncVerifiedFightsFromSupabase();
+syncUpcomingFightsFromSupabase();
 const initialSlug=new URLSearchParams(location.search).get("fight");
 if(initialSlug)openSavedFight(initialSlug);

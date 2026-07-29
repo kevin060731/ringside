@@ -15,11 +15,11 @@
 <body>
   <header class="topbar">
     <a class="brand" href="#"><span class="brand-mark">R</span><span>RING<span>SIDE</span></span></a>
-    <nav class="utility-nav"><button data-view="home">FIGHT LAB</button><button data-view="my-fights">MY FIGHTS</button><button data-view="archive">ARCHIVE</button><button data-view="roster-manager">ROSTER</button><button data-view="verified-manager">HISTORY</button></nav>
+    <nav class="utility-nav"><button data-view="home">FIGHT LAB</button><button data-view="fight-cards">FIGHT CARDS</button><button data-view="my-fights">MY FIGHTS</button><button data-view="archive">ARCHIVE</button><button data-view="roster-manager">ROSTER</button><button data-view="verified-manager">HISTORY</button></nav>
     <div class="header-actions"><button class="search-btn" aria-label="Search">⌕</button><button class="avatar-btn" id="auth-button" aria-label="Profile">SIGN IN</button></div>
   </header>
   <nav class="sport-nav">
-    <button class="active" data-view="home">BOXING</button><button data-view="my-fights">MY FIGHTS</button><button data-view="archive">ARCHIVE</button>
+    <button class="active" data-view="home">BOXING</button><button data-view="fight-cards">FIGHT CARDS</button><button data-view="my-fights">MY FIGHTS</button><button data-view="archive">ARCHIVE</button>
   </nav>
 
   <main>
@@ -41,7 +41,7 @@
       <div class="status-metrics" aria-label="RINGSIDE data status">
         <span><b id="roster-count">—</b><small>fighters</small></span>
         <span><b id="history-count">—</b><small>verified fights</small></span>
-        <span><b>Private</b><small>saved fights</small></span>
+        <span><b id="card-count">—</b><small>fight cards</small></span>
       </div>
     </section>
 
@@ -56,6 +56,19 @@
         <button data-demo-red="mayweather" data-demo-blue="whitaker"><small>Style chess</small><b>Mayweather vs Whitaker</b></button>
         <button data-demo-red="fury" data-demo-blue="rodriguez"><small>Mismatch logic</small><b>Fury vs Bam</b></button>
       </div>
+    </section>
+
+    <section class="fight-cards hidden" id="fight-cards">
+      <div class="fight-cards-head">
+        <div>
+          <small>RINGSIDE PREVIEW BOARD</small>
+          <h2>Upcoming Fight Cards</h2>
+          <p>Browse scheduled fights, load the matchup, and run a simulation preview. These are not betting odds — they’re style leans from the RINGSIDE engine.</p>
+        </div>
+        <button id="refresh-fight-cards">REFRESH CARDS</button>
+      </div>
+      <div class="fight-cards-status" id="fight-cards-status">Loading upcoming cards…</div>
+      <div class="fight-cards-list" id="fight-cards-list"></div>
     </section>
 
     <section class="matchup-shell" id="setup">
@@ -380,9 +393,9 @@
   </main>
   <nav class="bottom-nav">
     <button class="active" data-view="home"><b>⌂</b><span>Home</span></button>
-    <button data-view="archive"><b>▤</b><span>Archive</span></button>
+    <button data-view="fight-cards"><b>◷</b><span>Cards</span></button>
     <button data-view="my-fights"><b>★</b><span>My Fights</span></button>
-    <button data-view="verified-manager"><b>✓</b><span>History</span></button>
+    <button data-view="archive"><b>▤</b><span>Archive</span></button>
   </nav>
 
   <dialog id="picker">
@@ -411,9 +424,10 @@
     </form>
   </dialog>
   <script src="supabase-config.js?v=github-auth-1"></script>
-  <script src="supabase-client.js?v=demo-polish-1"></script>
+  <script src="supabase-client.js?v=fight-cards-1"></script>
   <script src="fight-history.js?v=matt-polish-1"></script>
   <script src="verified-fights-pack.js?v=verified-history-pack-1"></script>
+  <script src="upcoming-fights.js?v=fight-cards-1"></script>
   <script src="compubox-provider.js?v=matt-polish-1"></script>
   <script src="engine.js?v=matt-polish-1"></script>
   <script src="roster.js?v=matt-polish-1"></script>
@@ -425,6 +439,6 @@
   <script src="rummy-corner-data.js?v=matt-polish-1"></script>
   <script src="research-desk.js?v=matt-polish-1"></script>
   <script src="roster-sync.js?v=matt-polish-1"></script>
-  <script src="app.js?v=demo-polish-2"></script>
+  <script src="app.js?v=fight-cards-1"></script>
 </body>
 </html>

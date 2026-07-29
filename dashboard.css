@@ -343,8 +343,8 @@ dialog{border-radius:20px}
  .desk-compact{padding:14px}
  .bottom-nav{grid-template-columns:repeat(4,1fr);border-top-color:rgba(139,153,181,.18)}
  .bottom-nav button{min-width:0}
- .bottom-nav button[data-view="roster-manager"]{display:none!important}
- .bottom-nav button[data-view="home"],.bottom-nav button[data-view="archive"],.bottom-nav button[data-view="my-fights"],.bottom-nav button[data-view="verified-manager"]{display:flex!important}
+ .bottom-nav button[data-view="roster-manager"],.bottom-nav button[data-view="verified-manager"]{display:none!important}
+ .bottom-nav button[data-view="home"],.bottom-nav button[data-view="fight-cards"],.bottom-nav button[data-view="archive"],.bottom-nav button[data-view="my-fights"]{display:flex!important}
 }
 
 @media(max-width:420px){
@@ -418,9 +418,138 @@ dialog{border-radius:20px}
 .demo-picks button:nth-child(2) small{color:#8fb8ff}
 .demo-picks button:nth-child(3) small{color:#78e6a2}
 
+/* Upcoming fight cards */
+.fight-cards{
+ max-width:1132px;
+ margin:0 auto 28px;
+ padding:0 24px;
+ color:#f4f6fb
+}
+.fight-cards-head{
+ border:1px solid rgba(139,153,181,.18);
+ border-radius:22px 22px 0 0;
+ background:linear-gradient(115deg,rgba(31,38,57,.94),rgba(14,20,31,.86));
+ padding:22px 24px;
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ gap:20px
+}
+.fight-cards-head small,.fight-card-date small,.fight-card-main small{
+ display:block;
+ color:#ff5969;
+ font:900 8px "DM Mono";
+ letter-spacing:1.4px;
+ text-transform:uppercase
+}
+.fight-cards-head h2{
+ margin:5px 0;
+ color:#fff;
+ font:900 32px/.95 Inter,sans-serif;
+ letter-spacing:-.055em
+}
+.fight-cards-head p{
+ margin:0;
+ max-width:650px;
+ color:#aeb8ca;
+ font:650 12px/1.55 Inter,sans-serif
+}
+.fight-cards-head button,.fight-card-preview button{
+ border:1px solid rgba(214,173,100,.34);
+ border-radius:999px;
+ background:rgba(214,173,100,.08);
+ color:#f0c46f;
+ padding:11px 15px;
+ font:900 9px "DM Mono";
+ letter-spacing:1.1px;
+ cursor:pointer;
+ white-space:nowrap
+}
+.fight-cards-list{
+ border:1px solid rgba(139,153,181,.18);
+ border-top:0;
+ border-radius:0 0 22px 22px;
+ overflow:hidden;
+ background:rgba(12,17,26,.72)
+}
+.fight-card-preview{
+ display:grid;
+ grid-template-columns:190px minmax(0,1fr) 132px;
+ gap:22px;
+ align-items:center;
+ padding:20px 24px;
+ border-top:1px solid rgba(139,153,181,.16)
+}
+.fight-card-preview:first-child{border-top:0}
+.fight-card-preview.ready{
+ background:linear-gradient(90deg,rgba(255,73,63,.055),rgba(12,17,26,.4) 45%,rgba(85,168,255,.055))
+}
+.fight-card-preview.needs-roster{opacity:.78}
+.fight-card-date b{
+ display:block;
+ margin:5px 0;
+ color:#fff;
+ font:900 18px/1 Inter,sans-serif;
+ letter-spacing:-.03em
+}
+.fight-card-date span,.fight-card-main p{
+ color:#929db0;
+ font:700 11px/1.45 Inter,sans-serif
+}
+.fight-card-main h3{
+ margin:4px 0 6px;
+ color:#fff;
+ font:950 clamp(28px,4vw,42px)/.88 "Barlow Condensed";
+ text-transform:uppercase
+}
+.fight-card-main h3 em{
+ color:#d6ad64;
+ font-style:normal;
+ font-size:.72em
+}
+.fight-card-main p{margin:0}
+.fight-card-meta{
+ margin-top:12px;
+ display:flex;
+ flex-wrap:wrap;
+ gap:8px
+}
+.fight-card-meta span,.fight-card-meta a{
+ border:1px solid rgba(139,153,181,.16);
+ border-radius:999px;
+ background:rgba(31,38,57,.72);
+ color:#b8c2d4;
+ padding:7px 9px;
+ font:850 8px Inter;
+ text-decoration:none
+}
+.fight-card-meta span:first-child{
+ color:#78e6a2;
+ border-color:rgba(54,206,134,.25);
+ background:rgba(54,206,134,.08)
+}
+.fight-card-preview button:disabled{
+ cursor:not-allowed;
+ color:#8b94a7;
+ border-color:rgba(139,153,181,.18);
+ background:rgba(139,153,181,.08)
+}
+.fight-cards-status{
+ border:1px solid rgba(139,153,181,.18);
+ border-top:0;
+ border-radius:0 0 22px 22px;
+ padding:24px;
+ background:rgba(12,17,26,.72);
+ color:#aeb8ca;
+ font:750 12px/1.5 Inter
+}
+
 @media(max-width:900px){
  .demo-brief{grid-template-columns:1fr}
  .demo-picks{grid-template-columns:1fr 1fr 1fr}
+ .fight-card-preview{grid-template-columns:1fr;gap:12px}
+ .fight-cards-head{display:grid}
+ .fight-cards-head button{justify-self:start}
 }
 
 @media(max-width:760px){
@@ -430,4 +559,9 @@ dialog{border-radius:20px}
  .demo-copy p{font-size:12px}
  .demo-picks{grid-template-columns:1fr;gap:8px}
  .demo-picks button{padding:14px 15px;border-radius:15px}
+ .fight-cards{margin:0 12px 84px;padding:0}
+ .fight-cards-head{padding:18px 16px;border-radius:18px 18px 0 0}
+ .fight-cards-head h2{font-size:25px}
+ .fight-card-preview{padding:18px 16px}
+ .fight-card-main h3{font-size:34px}
 }

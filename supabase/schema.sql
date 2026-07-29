@@ -52,11 +52,36 @@ create table if not exists public.verified_fights (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists public.upcoming_fights (
+  id text primary key,
+  event_name text not null,
+  fight_date date,
+  venue text,
+  promoter text,
+  broadcast text,
+  bout_order int not null default 1,
+  red_fighter_id text references public.fighters(id),
+  blue_fighter_id text references public.fighters(id),
+  red_name text,
+  blue_name text,
+  division text,
+  scheduled_rounds int,
+  status text not null default 'scheduled',
+  card_note text,
+  market jsonb not null default '{}'::jsonb,
+  sources jsonb not null default '[]'::jsonb,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 alter table public.verified_fights add column if not exists division text;
 alter table public.verified_fights add column if not exists venue text;
 alter table public.verified_fights add column if not exists data_quality text not null default 'verified_outcome';
 alter table public.verified_fights add column if not exists confidence numeric not null default 0.75;
 alter table public.verified_fights add column if not exists source_notes jsonb not null default '{}'::jsonb;
+alter table public.upcoming_fights add column if not exists card_note text;
+alter table public.upcoming_fights add column if not exists market jsonb not null default '{}'::jsonb;
+alter table public.upcoming_fights add column if not exists sources jsonb not null default '[]'::jsonb;
 
 create table if not exists public.roster_admins (
   user_id uuid primary key references auth.users(id) on delete cascade,
@@ -89,6 +114,7 @@ create table if not exists public.saved_fights (
 alter table public.fighters enable row level security;
 alter table public.fighter_versions enable row level security;
 alter table public.verified_fights enable row level security;
+alter table public.upcoming_fights enable row level security;
 alter table public.roster_admins enable row level security;
 alter table public.saved_fights enable row level security;
 
@@ -122,6 +148,17 @@ using (true);
 drop policy if exists "Roster admins can manage verified fights" on public.verified_fights;
 create policy "Roster admins can manage verified fights"
 on public.verified_fights for all
+using (exists (select 1 from public.roster_admins admin where admin.user_id = auth.uid()))
+with check (exists (select 1 from public.roster_admins admin where admin.user_id = auth.uid()));
+
+drop policy if exists "Public upcoming fights are readable" on public.upcoming_fights;
+create policy "Public upcoming fights are readable"
+on public.upcoming_fights for select
+using (true);
+
+drop policy if exists "Roster admins can manage upcoming fights" on public.upcoming_fights;
+create policy "Roster admins can manage upcoming fights"
+on public.upcoming_fights for all
 using (exists (select 1 from public.roster_admins admin where admin.user_id = auth.uid()))
 with check (exists (select 1 from public.roster_admins admin where admin.user_id = auth.uid()));
 

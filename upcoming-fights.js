@@ -1,0 +1,61 @@
+(function(global){
+global.RINGSIDE_UPCOMING_FIGHTS=[
+ {
+  id:"mayweather-pacquiao-2026-09-19",
+  eventName:"Netflix Fight Night",
+  fightDate:"2026-09-19",
+  venue:"Las Vegas",
+  promoter:"Netflix",
+  broadcast:"Netflix",
+  boutOrder:1,
+  red:"mayweather",
+  blue:"pacquiao",
+  redName:"Floyd Mayweather",
+  blueName:"Manny Pacquiao",
+  division:"Welterweight",
+  scheduledRounds:12,
+  status:"scheduled",
+  cardNote:"Legacy rematch preview. The app treats this as a scheduled fantasy preview until an official result is stored.",
+  market:{"label":"Preview lean","angle":"age, inactivity, version selection and pace control are the scouting questions"},
+  sources:[{label:"ESPN schedule",url:"https://www.espn.com/boxing/story/_/id/12508267/boxing-fight-schedule"}]
+ },
+ {
+  id:"roach-zepeda-2026-08-01",
+  eventName:"WBC Lightweight Title Card",
+  fightDate:"2026-08-01",
+  venue:"Las Vegas",
+  promoter:"Golden Boy / DAZN",
+  broadcast:"DAZN",
+  boutOrder:1,
+  red:"lamontroach",
+  blue:"zepeda",
+  redName:"Lamont Roach",
+  blueName:"William Zepeda",
+  division:"Lightweight",
+  scheduledRounds:12,
+  status:"scheduled",
+  cardNote:"Title-fight preview. Add Lamont Roach to the live roster to make this card fully playable.",
+  market:{"label":"Upset path","angle":"Roach's craft and resets versus Zepeda's pressure volume"},
+  sources:[{label:"Bad Left Hook schedule",url:"https://www.badlefthook.com/boxing-schedule/117526/how-to-watch-lamont-roach-william-zepeda-pierce-oleary-mark-chamberlain-portable-streaming-tv-schedule-boxing-news-2026"}]
+ },
+ {
+  id:"mayer-cameron-2026-08-29",
+  eventName:"MVPW-06",
+  fightDate:"2026-08-29",
+  venue:"Birmingham, England",
+  promoter:"MVP / Matchroom",
+  broadcast:"TBA",
+  boutOrder:1,
+  red:"mikaelamayer",
+  blue:"chantellecameron",
+  redName:"Mikaela Mayer",
+  blueName:"Chantelle Cameron",
+  division:"Junior Middleweight",
+  scheduledRounds:10,
+  status:"scheduled",
+  cardNote:"Women's title-fight preview. Add both fighters to the roster to simulate the matchup.",
+  market:{"label":"Action watch","angle":"volume, inside positioning and championship-round separation"},
+  sources:[{label:"Bad Left Hook preview",url:"https://www.badlefthook.com/boxing-news/117591/mikaela-mayer-predicts-fight-of-the-year-against-chantelle-cameron-boxing-news-2026"}]
+ }
+];
+})(window);
