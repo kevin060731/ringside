@@ -113,7 +113,7 @@ async function signIn(email,password){
  return data;
 }
 function signInWithGitHub(){
- if(!isConfigured())throw new Error("RINGSIDE database is not connected yet.");
+ if(!isConfigured())throw new Error("RINGSIDE live services are not connected yet.");
  const params=new URLSearchParams({
   provider:"github",
   redirect_to:getRedirectUrl()

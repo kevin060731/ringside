@@ -565,3 +565,139 @@ dialog{border-radius:20px}
  .fight-card-preview{padding:18px 16px}
  .fight-card-main h3{font-size:34px}
 }
+
+/* Final product polish: auth and admin tools */
+.email-auth-panel{
+ margin-top:12px;
+ border:1px solid rgba(139,153,181,.16);
+ border-radius:16px;
+ background:rgba(12,17,27,.55);
+ overflow:hidden
+}
+.email-auth-panel summary{
+ cursor:pointer;
+ list-style:none;
+ padding:13px 15px;
+ color:#aeb8ca;
+ font:850 12px Inter,sans-serif;
+ letter-spacing:-.02em
+}
+.email-auth-panel summary::-webkit-details-marker{display:none}
+.email-auth-panel summary:after{
+ content:"↓";
+ float:right;
+ color:#ff5969;
+ font-weight:900
+}
+.email-auth-panel[open] summary:after{content:"↑"}
+.email-auth-panel label,.email-auth-panel .auth-note,.email-auth-panel .auth-actions,.email-auth-panel .auth-divider{
+ margin-left:15px;
+ margin-right:15px
+}
+.email-auth-panel .auth-actions{margin-bottom:15px}
+.github-auth-button{
+ width:100%;
+ min-height:48px;
+ border-radius:999px!important;
+ background:#f4f6fb!important;
+ color:#101522!important;
+ font-weight:900!important
+}
+.github-auth-button span{
+ display:inline-grid;
+ place-items:center;
+ width:26px;
+ height:26px;
+ margin-right:9px;
+ border-radius:50%;
+ background:#101522;
+ color:#fff;
+ font-size:10px
+}
+.roster-manager,.verified-manager,.card-manager{
+ max-width:1132px;
+ margin:24px auto 90px;
+ padding:0 24px;
+ color:#f4f6fb
+}
+.roster-manager-head,.roster-tools,.roster-editor{
+ border-color:rgba(139,153,181,.18)!important
+}
+.roster-tools{
+ display:flex;
+ flex-wrap:wrap;
+ gap:10px
+}
+.roster-tools button,.roster-save-row button{
+ border-radius:999px
+}
+.roster-form-grid{
+ gap:12px
+}
+.card-manager .roster-form textarea,
+.verified-manager .roster-form textarea{
+ font-family:"DM Mono",monospace;
+ font-size:11px;
+ line-height:1.45
+}
+.danger-button{
+ background:rgba(255,89,105,.09)!important;
+ border-color:rgba(255,89,105,.36)!important;
+ color:#ff7a86!important
+}
+
+@media(max-width:760px){
+ .roster-manager,.verified-manager,.card-manager{
+  margin:14px 12px 84px;
+  padding:0
+ }
+ .roster-manager-head{
+  display:block;
+  padding:18px 16px
+ }
+ .roster-manager-head h2{
+  font-size:26px;
+  line-height:1;
+  margin-bottom:8px
+ }
+ .roster-manager-head p{
+  font-size:12px;
+  line-height:1.45
+ }
+ .roster-admin-card{
+  margin-top:14px;
+  width:100%
+ }
+ .roster-tools{
+  padding:12px;
+  display:grid;
+  grid-template-columns:1fr
+ }
+ .roster-editor{
+  display:block
+ }
+ .roster-picker-card,.roster-form{
+  border-radius:16px;
+  margin-top:12px
+ }
+ .roster-form-grid{
+  grid-template-columns:1fr!important
+ }
+ .roster-save-row{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:10px
+ }
+ .roster-save-row span{
+  display:block;
+  text-align:left
+ }
+ .auth-card{
+  width:min(92vw,420px);
+  max-height:86vh;
+  overflow:auto;
+  border-radius:22px
+ }
+ .auth-card h2{font-size:28px}
+ .email-auth-panel summary{padding:12px 14px}
+}

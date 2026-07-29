@@ -407,7 +407,7 @@ function renderAuthState(){
  if(button)button.textContent=user?userLabel(user):"SIGN IN";
  if(copy)copy.textContent=user?`Signed in as ${user.email}. These saved fights belong to your profile.`:"Sign in to keep your saved replays private. Share links still work for anyone with the link.";
  card?.classList.toggle("signed-in",!!user);
- if(message)message.textContent=user?`Signed in as ${user.email}. Your fight vault is now private to this profile.`:"Continue with GitHub to save fights privately. Email sign-in is available as a backup.";
+ if(message)message.textContent=user?`Signed in as ${user.email}. Your fight vault is now private to this profile.`:"Continue with GitHub to save fights privately. It is the recommended sign-in path for this demo.";
 }
 function openAuthDialog(message=""){
  const dialog=$("#auth-dialog");
@@ -509,13 +509,13 @@ async function renderRosterManager(){
  renderRosterPickers();
  fillRosterForm();
  const user=authUser(),status=$("#roster-admin-status"),meta=$("#roster-admin-user");
- if(!user){if(status)status.textContent="SIGN IN REQUIRED";if(meta)meta.textContent="Sign in first. Then add your user ID to roster_admins.";rosterStatus("Sign in before editing the roster.","error");return}
+ if(!user){if(status)status.textContent="SIGN IN REQUIRED";if(meta)meta.textContent="Sign in first. Then add your profile ID to the admin list.";rosterStatus("Sign in before editing the roster.","error");return}
  if(meta)meta.textContent=`${user.email} · User ID: ${user.id}`;
  try{
   const result=await window.RINGSIDE_SUPABASE?.isRosterAdmin?.();
   rosterAdmin=!!result?.data;
   if(status)status.textContent=rosterAdmin?"ADMIN ENABLED":"NOT ADMIN YET";
-  rosterStatus(rosterAdmin?"Ready to edit roster data.":"Add this user ID to the roster admins table, then reload.","");
+  rosterStatus(rosterAdmin?"Ready to edit roster data.":"Add this profile ID to the admin list, then reload.","");
  }catch(error){
   rosterAdmin=false;
   const message=error.message||"Could not check roster admin status.";
@@ -554,7 +554,7 @@ function rosterPayload(){
  };
 }
 async function saveRosterEdit(){
- if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){rosterStatus("RINGSIDE database is not connected yet.","error");return}
+ if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){rosterStatus("RINGSIDE live services are not connected yet.","error");return}
  if(!authUser()){openAuthDialog("Sign in before editing the roster.");return}
  try{
   rosterStatus("Saving roster update…");
@@ -569,7 +569,7 @@ async function saveRosterEdit(){
  }
 }
 async function deleteRosterVersion(){
- if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){rosterStatus("RINGSIDE database is not connected yet.","error");return}
+ if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){rosterStatus("RINGSIDE live services are not connected yet.","error");return}
  if(!authUser()){openAuthDialog("Sign in before editing the roster.");return}
  const f=rosterFighter(),v=f.years[rosterVersionIndex()]||{};
  if(!v.label){rosterStatus("Pick a version before deleting.","error");return}
@@ -591,13 +591,13 @@ async function deleteRosterVersion(){
 async function seedRosterToSupabase(){
  if(!authUser()){openAuthDialog("Sign in before seeding the roster.");return}
  try{
-  rosterStatus("Seeding current app roster to the cloud database… this can take a moment.");
+  rosterStatus("Publishing the current app roster to the live archive… this can take a moment.");
   const result=await window.RINGSIDE_SUPABASE.seedRoster(fighters);
-  rosterStatus(`Seeded ${result.data.fighterCount} fighters and ${result.data.versionCount} versions to the cloud database.`,"ok");
+  rosterStatus(`Published ${result.data.fighterCount} fighters and ${result.data.versionCount} versions to the live archive.`,"ok");
   await syncRosterFromSupabase();
   renderRosterPickers();fillRosterForm();
  }catch(error){
-  rosterStatus(error.message||"Could not seed roster. Make sure your user ID is in public.roster_admins.","error");
+  rosterStatus(error.message||"Could not publish roster. Make sure your profile ID has admin access.","error");
  }
 }
 function verifiedStatus(message,type=""){
@@ -671,7 +671,7 @@ async function renderVerifiedManager(){
   const result=await window.RINGSIDE_SUPABASE?.isRosterAdmin?.();
   rosterAdmin=!!result?.data;
   if(status)status.textContent=rosterAdmin?"ADMIN ENABLED":"NOT ADMIN YET";
-  verifiedStatus(rosterAdmin?"Ready to edit verified fight history.":"Add this user ID to the roster admins table, then reload.","");
+  verifiedStatus(rosterAdmin?"Ready to edit verified fight history.":"Add this profile ID to the admin list, then reload.","");
  }catch(error){
   rosterAdmin=false;
   if(status)status.textContent="ADMIN CHECK FAILED";
@@ -703,7 +703,7 @@ function verifiedPayload(){
  };
 }
 async function saveVerifiedFight(){
- if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){verifiedStatus("RINGSIDE database is not connected yet.","error");return}
+ if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){verifiedStatus("RINGSIDE live services are not connected yet.","error");return}
  if(!authUser()){openAuthDialog("Sign in before editing verified fight history.");return}
  try{
   verifiedStatus("Saving verified fight…");
@@ -717,11 +717,11 @@ async function saveVerifiedFight(){
  }
 }
 async function deleteVerifiedFight(){
- if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){verifiedStatus("RINGSIDE database is not connected yet.","error");return}
+ if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){verifiedStatus("RINGSIDE live services are not connected yet.","error");return}
  if(!authUser()){openAuthDialog("Sign in before editing verified fight history.");return}
  const id=$("#history-id").value.trim();
  if(!id){verifiedStatus("Pick a fight before deleting.","error");return}
- if(!confirm(`Delete verified fight ${id} from the cloud archive? Built-in local history may still appear if this is a hardcoded fight.`))return;
+ if(!confirm(`Delete verified fight ${id} from the live archive? Built-in local history may still appear if this is a hardcoded fight.`))return;
  try{
   verifiedStatus(`Deleting ${id}…`);
   await window.RINGSIDE_SUPABASE.deleteVerifiedFight(id);
@@ -730,7 +730,7 @@ async function deleteVerifiedFight(){
   if(index>=0)list.splice(index,1);
   await syncVerifiedFightsFromSupabase(true);
   renderVerifiedPickers("__new");fillVerifiedForm(null);
-  verifiedStatus("Deleted that cloud verified fight.","ok");
+  verifiedStatus("Deleted that live verified fight.","ok");
  }catch(error){
   verifiedStatus(error.message||"Could not delete verified fight.","error");
  }
@@ -784,7 +784,7 @@ async function renderCardManager(){
   const result=await window.RINGSIDE_SUPABASE?.isRosterAdmin?.();
   rosterAdmin=!!result?.data;
   if(status)status.textContent=rosterAdmin?"ADMIN ENABLED":"NOT ADMIN YET";
-  cardStatus(rosterAdmin?"Ready to edit upcoming fight cards.":"Add this user ID to the roster admins table, then reload.","");
+  cardStatus(rosterAdmin?"Ready to edit upcoming fight cards.":"Add this profile ID to the admin list, then reload.","");
  }catch(error){
   rosterAdmin=false;
   if(status)status.textContent="ADMIN CHECK FAILED";
@@ -816,7 +816,7 @@ function cardPayload(statusOverride=null){
  };
 }
 async function saveCardFight(statusOverride=null){
- if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){cardStatus("RINGSIDE database is not connected yet. Run the updated schema first if this table is missing.","error");return}
+ if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){cardStatus("RINGSIDE live services are not connected yet. Run the updated schema first if this table is missing.","error");return}
  if(!authUser()){openAuthDialog("Sign in before editing upcoming fight cards.");return}
  try{
   cardStatus(statusOverride==="cancelled"?"Marking card cancelled…":"Saving fight card…");
@@ -825,24 +825,24 @@ async function saveCardFight(statusOverride=null){
   await syncUpcomingFightsFromSupabase(true,true);
   renderCardPickers(payload.id);$("#card-fight").value=payload.id;fillCardForm(upcomingCardAdminList().find(f=>f.id===payload.id));
   renderFightCards();renderPublicStatus();
-  cardStatus(statusOverride==="cancelled"?"Cancelled. This card is hidden from the public preview board.":"Saved. This card is now controlled from the live schedule table.","ok");
+  cardStatus(statusOverride==="cancelled"?"Cancelled. This card is hidden from the public preview board.":"Saved. This card is now controlled from the live schedule board.","ok");
  }catch(error){
   cardStatus(error.message||"Could not save fight card.","error");
  }
 }
 async function deleteCardFight(){
- if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){cardStatus("RINGSIDE database is not connected yet.","error");return}
+ if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){cardStatus("RINGSIDE live services are not connected yet.","error");return}
  if(!authUser()){openAuthDialog("Sign in before editing upcoming fight cards.");return}
  const id=$("#card-id").value.trim();
  if(!id){cardStatus("Pick a card before deleting.","error");return}
- if(!confirm(`Delete upcoming card ${id} from the cloud schedule? Built-in local starter cards may still appear unless you mark the same ID cancelled.`))return;
+ if(!confirm(`Delete upcoming card ${id} from the live schedule? Built-in starter cards may still appear unless you mark the same ID cancelled.`))return;
  try{
   cardStatus(`Deleting ${id}…`);
   await window.RINGSIDE_SUPABASE.deleteUpcomingFight(id);
   upcomingFightRows=upcomingFightRows.filter(card=>card.id!==id);
   await syncUpcomingFightsFromSupabase(true,true);
   renderCardPickers("__new");fillCardForm(null);renderFightCards();renderPublicStatus();
-  cardStatus("Deleted that cloud card.","ok");
+  cardStatus("Deleted that live card.","ok");
  }catch(error){
   cardStatus(error.message||"Could not delete fight card.","error");
  }

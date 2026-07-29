@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,500;0,600;0,700;0,800;0,900;1,700&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=matt-polish-1" />
-  <link rel="stylesheet" href="dashboard.css?v=demo-polish-2" />
+  <link rel="stylesheet" href="dashboard.css?v=final-polish-1" />
   <link rel="stylesheet" href="playback.css?v=demo-polish-2" />
 </head>
 <body>
@@ -462,25 +462,28 @@
       <button class="auth-close" id="close-auth" value="cancel" aria-label="Close">×</button>
       <small>RINGSIDE PROFILE</small>
       <h2>Your Fight Vault</h2>
-      <p id="auth-message">Continue with GitHub to save fights privately. Email sign-in is available as a backup.</p>
+      <p id="auth-message">Continue with GitHub to save fights privately. It is the recommended sign-in path for this demo.</p>
       <button type="button" id="github-signin-button" class="github-auth-button"><span>GH</span>Continue with GitHub</button>
-      <div class="auth-divider"><span>or use email</span></div>
-      <label>Email<input id="auth-email" type="email" autocomplete="email" placeholder="you@example.com"></label>
-      <label class="signup-confirm">Confirm email <span>new accounts only</span><input id="auth-email-confirm" type="email" autocomplete="email" placeholder="Type your email again"></label>
-      <label>Password<input id="auth-password" type="password" autocomplete="current-password" placeholder="At least 6 characters"></label>
-      <div class="auth-note">RINGSIDE only uses your profile to keep saved replays tied to you.</div>
-      <div class="auth-actions">
-        <button type="button" id="signin-button">SIGN IN</button>
-        <button type="button" id="signup-button">CREATE ACCOUNT</button>
-      </div>
+      <details class="email-auth-panel">
+        <summary>Email backup</summary>
+        <div class="auth-divider"><span>Email sign-in</span></div>
+        <label>Email<input id="auth-email" type="email" autocomplete="email" placeholder="you@example.com"></label>
+        <label class="signup-confirm">Confirm email <span>new accounts only</span><input id="auth-email-confirm" type="email" autocomplete="email" placeholder="Type your email again"></label>
+        <label>Password<input id="auth-password" type="password" autocomplete="current-password" placeholder="At least 6 characters"></label>
+        <div class="auth-note">Use email only if GitHub is unavailable. RINGSIDE keeps saved replays tied to your profile.</div>
+        <div class="auth-actions">
+          <button type="button" id="signin-button">SIGN IN</button>
+          <button type="button" id="signup-button">CREATE EMAIL ACCOUNT</button>
+        </div>
+      </details>
       <button type="button" id="signout-button" class="signout-button">SIGN OUT</button>
     </form>
   </dialog>
   <script src="supabase-config.js?v=github-auth-1"></script>
-  <script src="supabase-client.js?v=card-manager-1"></script>
+  <script src="supabase-client.js?v=final-polish-1"></script>
   <script src="fight-history.js?v=matt-polish-1"></script>
   <script src="verified-fights-pack.js?v=verified-history-pack-1"></script>
-  <script src="upcoming-fights.js?v=card-manager-1"></script>
+  <script src="upcoming-fights.js?v=final-polish-1"></script>
   <script src="compubox-provider.js?v=matt-polish-1"></script>
   <script src="engine.js?v=matt-polish-1"></script>
   <script src="roster.js?v=matt-polish-1"></script>
@@ -492,6 +495,6 @@
   <script src="rummy-corner-data.js?v=matt-polish-1"></script>
   <script src="research-desk.js?v=matt-polish-1"></script>
   <script src="roster-sync.js?v=matt-polish-1"></script>
-  <script src="app.js?v=card-manager-1"></script>
+  <script src="app.js?v=final-polish-1"></script>
 </body>
 </html>
