@@ -332,6 +332,7 @@ function renderPublicStatus(){
  }
 }
 function setView(view="home"){
+ document.body.dataset.view=view;
  const showHome=view==="home"||view==="archive";
  fightLabSections.forEach(selector=>document.querySelector(selector)?.classList.toggle("hidden",!showHome));
  $("#my-fights")?.classList.toggle("hidden",view!=="my-fights");
