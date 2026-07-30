@@ -67,6 +67,9 @@ create table if not exists public.upcoming_fights (
   division text,
   scheduled_rounds int,
   status text not null default 'scheduled',
+  source_checked_at date,
+  expires_at date,
+  refresh_cadence text not null default 'weekly',
   card_note text,
   market jsonb not null default '{}'::jsonb,
   sources jsonb not null default '[]'::jsonb,
@@ -82,6 +85,9 @@ alter table public.verified_fights add column if not exists source_notes jsonb n
 alter table public.upcoming_fights add column if not exists card_note text;
 alter table public.upcoming_fights add column if not exists market jsonb not null default '{}'::jsonb;
 alter table public.upcoming_fights add column if not exists sources jsonb not null default '[]'::jsonb;
+alter table public.upcoming_fights add column if not exists source_checked_at date;
+alter table public.upcoming_fights add column if not exists expires_at date;
+alter table public.upcoming_fights add column if not exists refresh_cadence text not null default 'weekly';
 
 create table if not exists public.roster_admins (
   user_id uuid primary key references auth.users(id) on delete cascade,

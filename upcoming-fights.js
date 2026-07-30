@@ -15,6 +15,9 @@ global.RINGSIDE_UPCOMING_FIGHTS=[
   division:"Lightweight",
   scheduledRounds:12,
   status:"scheduled",
+  sourceCheckedAt:"2026-07-29",
+  expiresAt:"2026-08-02",
+  refreshCadence:"weekly",
   cardNote:"Source checked July 29, 2026. Title-fight preview built from the current schedule board.",
   market:{"label":"Style market","angle":"Roach's craft, resets and counter timing versus Zepeda's pressure volume"},
   sources:[{label:"Bad Left Hook schedule",url:"https://www.badlefthook.com/boxing-schedule"}]
@@ -34,6 +37,9 @@ global.RINGSIDE_UPCOMING_FIGHTS=[
   division:"Welterweight",
   scheduledRounds:12,
   status:"scheduled",
+  sourceCheckedAt:"2026-07-29",
+  expiresAt:"2026-08-12",
+  refreshCadence:"weekly",
   cardNote:"Source checked July 29, 2026. Exact fight-night details should be confirmed before publishing as locked.",
   market:{"label":"Style market","angle":"Garcia's trigger-speed left hook against Benn's pressure, pace and finishing intent"},
   sources:[{label:"ESPN schedule",url:"https://www.espn.com/boxing/story/_/id/12508267/boxing-fight-schedule"}]
@@ -53,6 +59,9 @@ global.RINGSIDE_UPCOMING_FIGHTS=[
   division:"Super Middleweight",
   scheduledRounds:12,
   status:"scheduled",
+  sourceCheckedAt:"2026-07-29",
+  expiresAt:"2026-08-12",
+  refreshCadence:"weekly",
   cardNote:"Source checked July 29, 2026. Schedule-board preview; confirm sanctioning and final date before treating as locked.",
   market:{"label":"Style market","angle":"Canelo's counters, body reads and composure versus Mbilli's pressure pace"},
   sources:[{label:"ESPN schedule",url:"https://www.espn.com/boxing/story/_/id/12508267/boxing-fight-schedule"}]
@@ -72,6 +81,9 @@ global.RINGSIDE_UPCOMING_FIGHTS=[
   division:"Junior Welterweight",
   scheduledRounds:12,
   status:"scheduled",
+  sourceCheckedAt:"2026-07-29",
+  expiresAt:"2026-08-12",
+  refreshCadence:"weekly",
   cardNote:"Source checked July 29, 2026. Add Alberto Puello to the roster to make this card playable.",
   market:{"label":"Style market","angle":"Smith's timing and domestic momentum versus Puello's southpaw range craft"},
   sources:[{label:"ESPN schedule",url:"https://www.espn.com/boxing/story/_/id/12508267/boxing-fight-schedule"}]
@@ -91,6 +103,9 @@ global.RINGSIDE_UPCOMING_FIGHTS=[
   division:"Lightweight",
   scheduledRounds:12,
   status:"scheduled",
+  sourceCheckedAt:"2026-07-29",
+  expiresAt:"2026-08-12",
+  refreshCadence:"weekly",
   cardNote:"Source checked July 29, 2026. Add Andy Cruz to the roster to make this card playable.",
   market:{"label":"Style market","angle":"Muratalla's pro pressure and punch placement versus Cruz's amateur-school distance and angles"},
   sources:[{label:"ESPN schedule",url:"https://www.espn.com/boxing/story/_/id/12508267/boxing-fight-schedule"}]

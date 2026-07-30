@@ -108,6 +108,21 @@ test("Supabase client can load verified fight history rows",async()=>{
  assert.equal(requests[0].options.headers.Authorization,`Bearer ${context.RINGSIDE_SUPABASE_CONFIG.anonKey}`);
 });
 
+test("Supabase client can load upcoming fight cards with freshness fields",async()=>{
+ const requests=[];
+ const context=loadClient(async(url,options)=>{
+  requests.push({url,options});
+  return {ok:true,text:async()=>JSON.stringify([{id:"card-1",source_checked_at:"2026-07-29",expires_at:"2026-08-05",refresh_cadence:"weekly"}])};
+ });
+ const result=await context.RINGSIDE_SUPABASE.loadUpcomingFights();
+ assert.equal(result.data[0].source_checked_at,"2026-07-29");
+ assert.equal(result.data[0].expires_at,"2026-08-05");
+ assert.match(requests[0].url,/upcoming_fights\?select=/);
+ assert.match(requests[0].url,/source_checked_at,expires_at,refresh_cadence/);
+ assert.match(requests[0].url,/status=neq\.cancelled/);
+ assert.equal(requests[0].options.headers.Authorization,`Bearer ${context.RINGSIDE_SUPABASE_CONFIG.anonKey}`);
+});
+
 test("Supabase client supports roster admin edits",async()=>{
  const requests=[];
  const context=loadClient(async(url,options)=>{

@@ -178,11 +178,22 @@ Use the data quality field honestly:
 - `verified_outcome`: winner/method is verified, but exact round detail is incomplete
 - `scouted_reconstruction`: real outcome is known, but the round-by-round action is partly reconstructed
 
+## Upcoming Fight Cards
+
+The app also has a live upcoming-fights board controlled by Supabase `upcoming_fights`. This is the schedule layer for letting users preview and simulate real future matchups without redeploying the site.
+
+For each card, keep these freshness fields updated:
+
+- `source_checked_at`: the last date you confirmed the card details
+- `expires_at`: the date the app should flag the card as stale if it has not been checked again
+- `refresh_cadence`: `weekly`, `fight-week`, `daily`, or `manual`
+
+The public preview board hides cancelled and completed cards, and labels scheduled cards as fresh, check soon, re-check, postponed, or stale based on those dates. That way an old rumor does not look like a current betting-style card.
+
 ## What comes next
 
 Good next backend features:
 
-1. Verified fight history sync
-2. Community voting
-3. Supabase storage for fighter images
-4. Automated research queue for new real fights
+1. Community voting
+2. Supabase storage for fighter images
+3. Automated research queue for new real fights

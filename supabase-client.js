@@ -187,7 +187,7 @@ async function loadVerifiedFights(){
 async function loadUpcomingFights({includeCancelled=false}={}){
  if(!isConfigured())return {skipped:true,reason:"RINGSIDE services are not connected yet.",data:[]};
  const filter=includeCancelled?"":"&status=neq.cancelled";
- return request(`upcoming_fights?select=id,event_name,fight_date,venue,promoter,broadcast,bout_order,red_fighter_id,blue_fighter_id,red_name,blue_name,division,scheduled_rounds,status,card_note,market,sources,updated_at${filter}&order=fight_date.asc,bout_order.asc&limit=250`);
+ return request(`upcoming_fights?select=id,event_name,fight_date,venue,promoter,broadcast,bout_order,red_fighter_id,blue_fighter_id,red_name,blue_name,division,scheduled_rounds,status,source_checked_at,expires_at,refresh_cadence,card_note,market,sources,updated_at${filter}&order=fight_date.asc,bout_order.asc&limit=250`);
 }
 async function isRosterAdmin(){
  const user=currentUser();

@@ -149,6 +149,9 @@ function normalizeUpcomingFight(row={}){
   division:row.division||"Welterweight",
   scheduledRounds:Number(row.scheduledRounds??row.scheduled_rounds??12),
   status:row.status||"scheduled",
+  sourceCheckedAt:row.sourceCheckedAt||row.source_checked_at||null,
+  expiresAt:row.expiresAt||row.expires_at||null,
+  refreshCadence:row.refreshCadence||row.refresh_cadence||"weekly",
   cardNote:row.cardNote||row.card_note||"",
   market:row.market||{},
   sources:row.sources||[]
@@ -157,7 +160,7 @@ function normalizeUpcomingFight(row={}){
 function upcomingFightList(){
  const today=new Date().toISOString().slice(0,10);
  const byId=new Map();
- [...(window.RINGSIDE_UPCOMING_FIGHTS||[]),...upcomingFightRows].map(normalizeUpcomingFight).filter(row=>row.id&&row.status!=="cancelled").forEach(row=>byId.set(row.id,row));
+ [...(window.RINGSIDE_UPCOMING_FIGHTS||[]),...upcomingFightRows].map(normalizeUpcomingFight).filter(row=>row.id&&!["cancelled","completed"].includes(row.status)).forEach(row=>byId.set(row.id,row));
  return [...byId.values()].filter(row=>!row.fightDate||row.fightDate>=today).sort((a,b)=>(a.fightDate||"9999").localeCompare(b.fightDate||"9999")||a.boutOrder-b.boutOrder);
 }
 async function syncUpcomingFightsFromSupabase(force=false,includeCancelled=false){
@@ -789,6 +792,9 @@ function fillCardForm(card=null){
  $("#card-broadcast").value=card?.broadcast||"";
  $("#card-bout-order").value=card?.boutOrder||1;
  $("#card-status").value=card?.status||"scheduled";
+ $("#card-source-checked").value=card?.sourceCheckedAt||today;
+ $("#card-expires").value=card?.expiresAt||"";
+ $("#card-refresh-cadence").value=card?.refreshCadence||"weekly";
  $("#card-red-name").value=card?.redName||fighters.find(f=>f.id===redId)?.name||"";
  $("#card-blue-name").value=card?.blueName||fighters.find(f=>f.id===blueId)?.name||"";
  $("#card-rounds").value=card?.scheduledRounds||scheduled||12;
@@ -835,6 +841,9 @@ function cardPayload(statusOverride=null){
   division:$("#card-division").value||null,
   scheduled_rounds:Number($("#card-rounds").value)||null,
   status:statusOverride||$("#card-status").value||"scheduled",
+  source_checked_at:$("#card-source-checked").value||null,
+  expires_at:$("#card-expires").value||null,
+  refresh_cadence:$("#card-refresh-cadence").value||"weekly",
   card_note:$("#card-note").value.trim()||null,
   market:parseJsonField("#card-market",{}),
   sources:parseJsonField("#card-sources",[])
@@ -890,6 +899,22 @@ function longDate(value){
  try{return new Intl.DateTimeFormat(undefined,{weekday:"short",month:"short",day:"numeric",year:"numeric"}).format(new Date(value))}
  catch{return value||"Date TBA"}
 }
+function daysBetween(start,end){
+ if(!start||!end)return null;
+ const a=new Date(`${start}T00:00:00`),b=new Date(`${end}T00:00:00`);
+ if(Number.isNaN(a.getTime())||Number.isNaN(b.getTime()))return null;
+ return Math.floor((b-a)/86400000);
+}
+function cardFreshness(card){
+ const today=new Date().toISOString().slice(0,10);
+ const age=daysBetween(card.sourceCheckedAt,today),daysToExpiry=daysBetween(today,card.expiresAt);
+ if(card.status==="postponed")return {state:"watch",label:"POSTPONED",copy:"Details changed — re-check before simulating."};
+ if(daysToExpiry!=null&&daysToExpiry<0)return {state:"stale",label:"STALE",copy:"Past re-check date — update or hide this card."};
+ if(age==null)return {state:"watch",label:"NEEDS CHECK",copy:"No source-check date saved yet."};
+ if(age>10)return {state:"stale",label:"RE-CHECK",copy:`Last checked ${age} days ago.`};
+ if(age>6)return {state:"watch",label:"CHECK SOON",copy:`Last checked ${age} days ago.`};
+ return {state:"fresh",label:"FRESH",copy:`Checked ${age===0?"today":`${age} day${age===1?"":"s"} ago`}.`};
+}
 function fighterById(id){return fighters.find(f=>f.id===id)}
 function matchupPreview(card){
  const red=fighterById(card.red),blue=fighterById(card.blue);
@@ -913,17 +938,19 @@ function renderFightCards(){
  status.classList.add("hidden");
  list.innerHTML=rows.map(card=>{
   const red=fighterById(card.red),blue=fighterById(card.blue),preview=matchupPreview(card),ready=!!(red&&blue);
+  const freshness=cardFreshness(card);
   const sources=(card.sources||[]).map(source=>source.url?`<a href="${source.url}" target="_blank" rel="noreferrer">${source.label||"Source"} ↗</a>`:`<span>${source.label||"Source noted"}</span>`).join("");
-  return `<article class="fight-card-preview ${ready?"ready":"needs-roster"}">
+  return `<article class="fight-card-preview ${ready?"ready":"needs-roster"} freshness-${freshness.state}">
    <div class="fight-card-date">
     <small>${card.broadcast||card.promoter||"Preview"}</small>
     <b>${longDate(card.fightDate)}</b>
+    <em>${freshness.label}</em>
     <span>${card.venue||"Venue TBA"}</span>
    </div>
    <div class="fight-card-main">
     <small>${card.eventName}</small>
     <h3>${red?.last||card.redName} <em>vs</em> ${blue?.last||card.blueName}</h3>
-    <p>${card.division} · ${card.scheduledRounds} rounds${card.cardNote?` · ${card.cardNote}`:""}</p>
+    <p>${card.division} · ${card.scheduledRounds} rounds · ${freshness.copy}${card.cardNote?` · ${card.cardNote}`:""}</p>
     <div class="fight-card-meta">
      <span>${preview.label}</span>
      <span>${card.market?.label||"Preview lean"}: ${preview.lean}</span>
