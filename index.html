@@ -206,6 +206,32 @@
         <button id="seed-roster">PUBLISH BUILT-IN ROSTER</button>
         <button id="reload-roster">REFRESH ROSTER DATA</button>
       </div>
+      <div class="live-data-workflow" id="live-data-workflow">
+        <div class="workflow-intro">
+          <small>LIVE DATA PROCESS</small>
+          <h3>After a real fight happens</h3>
+          <p>Use this queue to update the fighter, add the new version if needed, then publish the verified result so the simulator replays history instead of guessing.</p>
+        </div>
+        <div class="workflow-grid">
+          <article>
+            <small>RECENT ROSTER UPDATES</small>
+            <div id="workflow-recent-fighters">Loading roster queue…</div>
+          </article>
+          <article>
+            <small>NEEDS ATTENTION</small>
+            <div id="workflow-attention">Checking live cards…</div>
+          </article>
+          <article>
+            <small>FIGHT-NIGHT CHECKLIST</small>
+            <ol>
+              <li>Update record, division, image, and active status.</li>
+              <li>Add the new version or mark the best current version as default.</li>
+              <li>Add official result, cards, knockdowns, deductions, and fan consensus.</li>
+              <li>Cancel or complete the matching upcoming card.</li>
+            </ol>
+          </article>
+        </div>
+      </div>
       <div class="roster-editor">
         <div class="roster-picker-card">
           <label>FIGHTER<select id="roster-fighter"></select></label>

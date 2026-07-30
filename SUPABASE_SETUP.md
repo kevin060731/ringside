@@ -90,6 +90,18 @@ The Roster tab is the browser editor for this workflow:
 
 The **Sync Current App Roster to Supabase** button copies the full built-in app roster into Supabase. Use this when you want every fighter and version to become editable in Supabase. It replaces the Supabase version rows for those fighters with the current app versions, so avoid clicking it while you have unsaved manual version edits you still need to preserve somewhere else.
 
+### Live data process
+
+The Roster tab includes a live update queue so you have a simple repeatable process after real fights happen:
+
+1. Open **Roster** and check **Recent Roster Updates**.
+2. Use **Needs Attention** to find stale fight cards, completed cards, postponed cards, or fighters that still need live portrait URLs.
+3. Update the fighter record, version, weight, image, ratings, and best performance.
+4. Open **History** and publish the verified result with official cards, knockdowns, deductions, stats, fan consensus, and sources.
+5. Open **Fight Cards** or **Card Admin** and cancel, complete, or refresh the matching upcoming card.
+
+Once those pieces are saved, the public simulator uses the latest roster/version data and verified history automatically.
+
 ### Updating an existing fighter
 
 Use the fighter's existing `id`, then update the main fighter row and one or more version rows.

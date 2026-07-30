@@ -509,6 +509,43 @@ function renderRosterPickers(){
  const f=rosterFighter();
  versionSelect.innerHTML=(f.years||[]).map((v,i)=>`<option value="${i}">${v.label}</option>`).join("");
 }
+function shortAdminDate(value){
+ if(!value)return "Not dated";
+ try{return new Intl.DateTimeFormat(undefined,{month:"short",day:"numeric",year:"numeric"}).format(new Date(value))}
+ catch{return value}
+}
+function renderLiveDataWorkflow(){
+ const recent=$("#workflow-recent-fighters"),attention=$("#workflow-attention");
+ if(!recent||!attention)return;
+ const updated=[...fighters].sort((a,b)=>String(b.updated||"").localeCompare(String(a.updated||""))).slice(0,5);
+ recent.innerHTML=updated.length?updated.map(f=>{
+  const latest=f.years?.[0]||{};
+  return `<button type="button" data-workflow-fighter="${f.id}">
+   <b>${f.name}</b>
+   <span>${latest.label||f.division} · ${shortAdminDate(f.updated)}</span>
+  </button>`;
+ }).join(""):"<p>No roster updates are loaded yet.</p>";
+ const today=new Date().toISOString().slice(0,10);
+ const staleCards=upcomingCardAdminList().filter(card=>{
+  const freshness=cardFreshness(card);
+  return ["stale","watch"].includes(freshness.state)||card.status==="postponed"||card.status==="completed"||daysBetween(card.fightDate,today)>0;
+ }).slice(0,5);
+ const imageIssues=fighters.filter(f=>!f.syncedImage&&!/^https?:\/\//.test(f.img||"")).slice(0,3);
+ const items=[
+  ...staleCards.map(card=>{
+   const freshness=cardFreshness(card);
+   return `<button type="button" data-workflow-card="${card.id}">
+    <b>${card.redName||card.red} vs ${card.blueName||card.blue}</b>
+    <span>${freshness.label} · ${card.fightDate||"Date TBA"}</span>
+   </button>`;
+  }),
+  ...imageIssues.map(f=>`<button type="button" data-workflow-fighter="${f.id}">
+   <b>${f.name}</b>
+   <span>Portrait needs a live image URL</span>
+  </button>`)
+ ];
+ attention.innerHTML=items.length?items.join(""):"<p>Nothing urgent. Roster, cards, and images look current.</p>";
+}
 function fillRosterForm(){
  fillDivisionOptions();
  const f=rosterFighter(),v=f.years[rosterVersionIndex()]||f.years[0]||{};
@@ -536,6 +573,7 @@ function fillRosterForm(){
 async function renderRosterManager(){
  renderRosterPickers();
  fillRosterForm();
+ renderLiveDataWorkflow();
  const user=authUser(),status=$("#roster-admin-status"),meta=$("#roster-admin-user");
  if(!user){if(status){status.textContent="SIGN IN REQUIRED";setManagerAccess(status,"warn")}setManagerMeta(meta,null,"Sign in first. Then add your profile ID to the access list.");rosterStatus("Sign in before editing the roster.","error");return}
  setManagerMeta(meta,user);
@@ -591,6 +629,7 @@ async function saveRosterEdit(){
   await window.RINGSIDE_SUPABASE.replaceFighterVersion(payload.version);
   await syncRosterFromSupabase();
   renderRosterPickers();$("#roster-fighter").value=payload.fighter.id;fillRosterForm();
+  renderLiveDataWorkflow();
   rosterStatus("Published. Refresh the public app to see this roster update everywhere.","ok");
  }catch(error){
   rosterStatus(error.message||"Could not save roster update.","error");
@@ -611,6 +650,7 @@ async function deleteRosterVersion(){
   versions.b=Math.min(versions.b,selected.b.years.length-1);
   await syncRosterFromSupabase();
   renderRosterPickers();$("#roster-fighter").value=f.id;fillRosterForm();
+  renderLiveDataWorkflow();
   rosterStatus("Deleted that live roster version. If it was a built-in era, the local fallback may still appear.","ok");
  }catch(error){
   rosterStatus(error.message||"Could not delete that version.","error");
@@ -623,7 +663,7 @@ async function seedRosterToSupabase(){
   const result=await window.RINGSIDE_SUPABASE.seedRoster(fighters);
   rosterStatus(`Published ${result.data.fighterCount} fighters and ${result.data.versionCount} versions to the live archive.`,"ok");
   await syncRosterFromSupabase();
-  renderRosterPickers();fillRosterForm();
+  renderRosterPickers();fillRosterForm();renderLiveDataWorkflow();
  }catch(error){
   rosterStatus(error.message||"Could not publish roster. Make sure your profile ID has admin access.","error");
  }
@@ -1262,6 +1302,17 @@ $("#roster-form").onsubmit=e=>{e.preventDefault();saveRosterEdit()};
 $("#delete-roster-version").onclick=deleteRosterVersion;
 $("#seed-roster").onclick=seedRosterToSupabase;
 $("#reload-roster").onclick=async()=>{rosterStatus("Refreshing roster data…");await syncRosterFromSupabase();renderRosterManager()};
+$("#live-data-workflow").onclick=e=>{
+ const fighter=e.target.closest("[data-workflow-fighter]"),card=e.target.closest("[data-workflow-card]");
+ if(fighter){
+  $("#roster-fighter").value=fighter.dataset.workflowFighter;
+  renderRosterPickers();$("#roster-fighter").value=fighter.dataset.workflowFighter;fillRosterForm();
+ }
+ if(card){
+  setView("card-manager");
+  renderCardPickers(card.dataset.workflowCard);$("#card-fight").value=card.dataset.workflowCard;fillCardForm(upcomingCardAdminList().find(f=>f.id===card.dataset.workflowCard));
+ }
+};
 $("#history-fight").onchange=()=>{const id=$("#history-fight").value;fillVerifiedForm(id==="__new"?null:verifiedFightList().find(f=>f.id===id))};
 $("#history-form").onsubmit=e=>{e.preventDefault();saveVerifiedFight()};
 $("#delete-verified-fight").onclick=deleteVerifiedFight;
