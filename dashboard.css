@@ -2082,17 +2082,17 @@ button,input,select,textarea{
 
 @media(max-width:760px){
  .sport-nav{
-  height:44px;
-  padding:0 14px
+  display:none!important
  }
  .public-status{
-  margin:8px 12px 12px!important;
+  margin:10px 12px 12px!important;
   padding:0!important
  }
  .public-status>.status-card.primary{
   min-height:unset!important;
   grid-template-columns:1fr!important;
-  padding:13px 14px!important
+  padding:14px 15px!important;
+  border-radius:18px!important
  }
  .public-status>.status-card.primary small{
   grid-row:auto!important
@@ -2101,33 +2101,28 @@ button,input,select,textarea{
   font-size:19px!important
  }
  .status-metrics{
-  grid-template-columns:1fr 1fr!important;
-  gap:7px!important
- }
- .status-metrics span{
-  min-height:50px!important;
-  padding:9px 10px!important
- }
- .status-metrics span:last-child{
   display:none!important
  }
  .research-desk{
-  margin-top:12px!important;
+  margin-top:10px!important;
   margin-bottom:12px!important
+ }
+ .desk-compact{
+  padding:14px 15px!important;
+  border-radius:18px!important
  }
  .desk-compact-meta{
   display:grid!important;
   grid-template-columns:1fr!important;
   gap:7px!important
  }
- .desk-compact-meta span,.desk-compact-meta em{
+ .desk-compact-meta span{
+  display:none!important
+ }
+ .desk-compact-meta em{
   min-width:0!important
  }
  .data-panel{
-  margin-top:12px!important
- }
- .data-heading{
-  min-height:66px!important;
-  padding:14px 16px!important
+  display:none!important
  }
 }
