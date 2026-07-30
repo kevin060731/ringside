@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,500;0,600;0,700;0,800;0,900;1,700&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=matt-polish-1" />
-  <link rel="stylesheet" href="dashboard.css?v=design-polish-1" />
+  <link rel="stylesheet" href="dashboard.css?v=auth-polish-1" />
   <link rel="stylesheet" href="playback.css?v=demo-polish-2" />
 </head>
 <body>
@@ -462,7 +462,12 @@
       <button class="auth-close" id="close-auth" value="cancel" aria-label="Close">×</button>
       <small>RINGSIDE PROFILE</small>
       <h2>Your Fight Vault</h2>
+      <div class="auth-profile-chip" id="auth-profile-chip">GitHub recommended</div>
       <p id="auth-message">Continue with GitHub to save fights privately. It is the recommended sign-in path for this demo.</p>
+      <div class="auth-benefits" aria-label="Profile benefits">
+        <span><b>Private vault</b><small>Saved fights stay tied to your profile.</small></span>
+        <span><b>Replay links</b><small>Copy share links after the final result.</small></span>
+      </div>
       <button type="button" id="github-signin-button" class="github-auth-button"><span>GH</span>Continue with GitHub</button>
       <details class="email-auth-panel">
         <summary>Email backup</summary>
@@ -495,6 +500,6 @@
   <script src="rummy-corner-data.js?v=matt-polish-1"></script>
   <script src="research-desk.js?v=matt-polish-1"></script>
   <script src="roster-sync.js?v=matt-polish-1"></script>
-  <script src="app.js?v=mobile-polish-1"></script>
+  <script src="app.js?v=auth-polish-1"></script>
 </body>
 </html>

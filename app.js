@@ -404,11 +404,21 @@ function userLabel(user){
  return email?email.split("@")[0].slice(0,10).toUpperCase():"PROFILE";
 }
 function renderAuthState(){
- const user=authUser(),button=$("#auth-button"),copy=$("#my-fights-copy"),card=document.querySelector(".auth-card"),message=$("#auth-message");
+ const user=authUser(),button=$("#auth-button"),copy=$("#my-fights-copy"),card=document.querySelector(".auth-card"),message=$("#auth-message"),chip=$("#auth-profile-chip"),emailPanel=document.querySelector(".email-auth-panel");
  if(button)button.textContent=user?userLabel(user):"SIGN IN";
+ if(button)button.setAttribute("aria-label",user?`Profile for ${user.email}`:"Sign in to RINGSIDE");
  if(copy)copy.textContent=user?`Signed in as ${user.email}. These saved fights belong to your profile.`:"Sign in to keep your saved replays private. Share links still work for anyone with the link.";
  card?.classList.toggle("signed-in",!!user);
+ document.body.classList.toggle("signed-in",!!user);
+ if(chip){
+  chip.textContent=user?`Signed in · ${user.email}`:"GitHub recommended";
+  chip.classList.toggle("signed-in",!!user);
+ }
+ if(user)emailPanel?.removeAttribute("open");
  if(message)message.textContent=user?`Signed in as ${user.email}. Your fight vault is now private to this profile.`:"Continue with GitHub to save fights privately. It is the recommended sign-in path for this demo.";
+}
+function signedOutVaultHtml(reason="Sign in to view your private fight vault."){
+ return `<div class="vault-empty auth-required-card"><small>PRIVATE VAULT</small><b>Sign in to see My Fights</b><span>${reason} GitHub is the fastest path; email is only a backup.</span><button class="inline-auth" data-open-auth>Continue with GitHub</button></div>`;
 }
 function openAuthDialog(message=""){
  const dialog=$("#auth-dialog");
@@ -511,7 +521,7 @@ async function renderRosterManager(){
  fillRosterForm();
  const user=authUser(),status=$("#roster-admin-status"),meta=$("#roster-admin-user");
  if(!user){if(status)status.textContent="SIGN IN REQUIRED";if(meta)meta.textContent="Sign in first. Then add your profile ID to the admin list.";rosterStatus("Sign in before editing the roster.","error");return}
- if(meta)meta.textContent=`${user.email} · User ID: ${user.id}`;
+ if(meta)meta.textContent=`${user.email} · Profile ID: ${user.id}`;
  try{
   const result=await window.RINGSIDE_SUPABASE?.isRosterAdmin?.();
   rosterAdmin=!!result?.data;
@@ -667,7 +677,7 @@ async function renderVerifiedManager(){
  fillVerifiedForm(selectedId&&selectedId!=="__new"?verifiedFightList().find(f=>f.id===selectedId):null);
  const user=authUser(),status=$("#history-admin-status"),meta=$("#history-admin-user");
  if(!user){if(status)status.textContent="SIGN IN REQUIRED";if(meta)meta.textContent="Sign in first. History editing uses the same admin access as roster editing.";verifiedStatus("Sign in before editing verified fight history.","error");return}
- if(meta)meta.textContent=`${user.email} · User ID: ${user.id}`;
+ if(meta)meta.textContent=`${user.email} · Profile ID: ${user.id}`;
  try{
   const result=await window.RINGSIDE_SUPABASE?.isRosterAdmin?.();
   rosterAdmin=!!result?.data;
@@ -780,7 +790,7 @@ async function renderCardManager(){
  fillCardForm(selectedId&&selectedId!=="__new"?upcomingCardAdminList().find(f=>f.id===selectedId):null);
  const user=authUser(),status=$("#card-admin-status"),meta=$("#card-admin-user");
  if(!user){if(status)status.textContent="SIGN IN REQUIRED";if(meta)meta.textContent="Sign in first. Fight card editing uses the same admin access as roster editing.";cardStatus("Sign in before editing upcoming fight cards.","error");return}
- if(meta)meta.textContent=`${user.email} · User ID: ${user.id}`;
+ if(meta)meta.textContent=`${user.email} · Profile ID: ${user.id}`;
  try{
   const result=await window.RINGSIDE_SUPABASE?.isRosterAdmin?.();
   rosterAdmin=!!result?.data;
@@ -970,11 +980,12 @@ async function loadMyFights(){
  const status=$("#my-fights-status"),list=$("#my-fights-list");
  if(!status||!list)return;
  status.classList.remove("hidden");status.textContent="Loading saved fights…";list.innerHTML="";
+ status.classList.remove("auth-required");
  if(!window.RINGSIDE_SUPABASE?.isConfigured?.()){status.textContent="Saved fights are not connected yet. You can still run simulations and open shared replays.";return}
- if(!authUser()){status.innerHTML=`Sign in to view your private fight vault. <button class="inline-auth" data-open-auth>Sign in</button>`;return}
+ if(!authUser()){status.classList.add("auth-required");status.innerHTML=signedOutVaultHtml();return}
  try{
   const result=await window.RINGSIDE_SUPABASE.listSavedFights(24);
-  if(result.authRequired){status.innerHTML=`${result.reason} <button class="inline-auth" data-open-auth>Sign in</button>`;return}
+  if(result.authRequired){status.classList.add("auth-required");status.innerHTML=signedOutVaultHtml(result.reason);return}
   savedFightRows=result.data||[];
   applyMyFightsFilter();
  }catch(error){
@@ -987,7 +998,7 @@ function setSaveStatus(state,row=null,message=""){
  box.classList.remove("saved","error");
  const title=box.querySelector("b"),text=box.querySelector("span"),view=$("#view-saved-fight"),copy=$("#copy-share-link");
  if(state==="saving"){title.textContent="Saving fight…";text.textContent="Adding this replay to My Fights.";view.textContent="VIEW IN MY FIGHTS";view.disabled=true;copy.disabled=true;lastSavedFight=null;return}
- if(state==="auth"){title.textContent="Sign in to save";text.textContent=message||"Create a profile to save this replay privately.";view.textContent="SIGN IN TO SAVE";view.disabled=false;copy.disabled=true;lastSavedFight=null;return}
+ if(state==="auth"){title.textContent="Save this replay";text.textContent=message||"Sign in with GitHub and RINGSIDE will add it to your private fight vault automatically.";view.textContent="SIGN IN";view.disabled=false;copy.disabled=true;lastSavedFight=null;return}
  if(state==="saved"&&row){box.classList.add("saved");title.textContent="Fight saved";text.textContent=`Saved to My Fights as ${row.share_slug}. Copy the replay link or reopen it later.`;view.textContent="VIEW IN MY FIGHTS";view.disabled=false;copy.disabled=false;lastSavedFight=row;return}
  if(state==="replay"){box.classList.add("saved");title.textContent="Saved replay";text.textContent=message||"You are viewing a fight from My Fights.";view.textContent="VIEW IN MY FIGHTS";view.disabled=false;copy.disabled=!row?.share_slug;lastSavedFight=row;return}
  box.classList.add("error");title.textContent="Save unavailable";text.textContent=message||"The fight finished, but it could not be saved.";view.textContent="VIEW IN MY FIGHTS";view.disabled=false;copy.disabled=true;lastSavedFight=null;
@@ -1176,7 +1187,7 @@ $("#github-signin-button").onclick=async()=>{
   setAuthBusy(true,"Opening GitHub sign-in…");
   window.RINGSIDE_SUPABASE.signInWithGitHub();
  }catch(error){
-  $("#auth-message").textContent=error.message||"GitHub sign-in is not ready yet.";
+  $("#auth-message").textContent=error.message||"GitHub sign-in needs one more setup step.";
   setAuthBusy(false);
  }
 };
