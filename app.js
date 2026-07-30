@@ -1084,7 +1084,7 @@ function renderLive(){
  const played=fight.rounds.slice(0,current),last=played.at(-1),totalA=played.reduce((n,r)=>n+r.scoreA,0),totalB=played.reduce((n,r)=>n+r.scoreB,0);
  $("#scorecard").innerHTML=played.map(r=>`<div class="score-row"><span>${String(r.number).padStart(2,"0")}</span><b>${r.scoreA}</b><b>${r.scoreB}</b></div>`).join("");
  $("#total-a").textContent=totalA;$("#total-b").textContent=totalB;
- const base=researchDesk?.engineHints?.preFightProbabilityA??((active("a").iq+active("a").speed)/(active("a").iq+active("a").speed+active("b").iq+active("b").speed)*100);
+ const base=researchDesk?.engineHints?.preFightProbabilityA??fight?.matchup?.preFightProbabilityA??((active("a").iq+active("a").speed)/(active("a").iq+active("a").speed+active("b").iq+active("b").speed)*100);
  const scoreSwing=(totalA-totalB)*(current?3.4:0);
  const damageSwing=last?((last.damageB||0)-(last.damageA||0))*5:0;
  const knockSwing=(last?.knockB?14:0)-(last?.knockA?14:0);

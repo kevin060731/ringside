@@ -360,6 +360,22 @@ test("Davis versus Teofimo Lopez remains hypothetical and cannot borrow another 
   assert.equal(fight.rounds[0].stoppage,null);
  }
 });
+test("pre-fight probability exposes true mismatch strength",()=>{
+ const fury={...a,id:"fury",last:"Fury",division:"Heavyweight",stance:"Orthodox",weight:262,power:92,speed:83,chin:96,defense:88,iq:95,footwork:88,cardio:88,accuracy:87,aggression:78};
+ const bam={...b,id:"rodriguez",last:"Rodriguez",division:"Junior Bantamweight",stance:"Southpaw",weight:115,power:82,speed:96,chin:92,defense:93,iq:96,footwork:97,cardio:98,accuracy:96,aggression:84};
+ const fight=BoxingEngine.buildFight(fury,bam,{rounds:12,ring:20,weight:"Open Weight",championship:true,neutral:true,narrationSalt:"mismatch-probability"});
+ assert.ok(fight.matchup.preFightProbabilityA>=80);
+ assert.equal(fight.matchup.preFightProbabilityB,100-fight.matchup.preFightProbabilityA);
+});
+test("round memory and corner adaptation influence later rounds",()=>{
+ const boxer={...a,id:"memory-a",last:"MemoryA",power:89,speed:92,chin:90,defense:93,iq:96,footwork:94,cardio:94,accuracy:94,aggression:82};
+ const puncher={...b,id:"memory-b",last:"MemoryB",power:96,speed:88,chin:91,defense:86,iq:88,footwork:86,cardio:90,accuracy:88,aggression:95};
+ const fight=BoxingEngine.buildFight(boxer,puncher,{rounds:8,ring:20,weight:"Open Weight",championship:false,neutral:true,narrationSalt:"round-memory"});
+ assert.equal(fight.rounds[0].tactics.incomingMomentumA,0);
+ assert.ok(fight.rounds.slice(1).some(round=>Math.abs(round.tactics.incomingMomentumA)>0));
+ assert.ok(fight.rounds.slice(1).some(round=>round.tactics.adaptA!==0||round.tactics.adaptB!==0));
+ assert.ok(new Set(fight.rounds.map(round=>Number(round.tactics.momentumA.toFixed(2)))).size>1);
+});
 test("neutral officials setting can shade close scorecards",()=>{
  const evenA={...a,id:"even-a",last:"EvenA",power:90,speed:90,chin:90,defense:90,iq:90,footwork:90,cardio:90,accuracy:90,aggression:90};
  const evenB={...b,id:"even-b",last:"EvenB",power:90,speed:90,chin:90,defense:90,iq:90,footwork:90,cardio:90,accuracy:90,aggression:90};

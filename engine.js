@@ -145,6 +145,17 @@ function eliteDurability(f,calc){
  const historyBonus=history.tier==="never"?.18:history.tier==="rare"?.09:0;
  return clamp(((Number(calc.chin)||Number(f.chin)||85)*.4+(Number(calc.defense)||Number(f.defense)||85)*.34+(Number(calc.iq)||Number(f.iq)||85)*.18+(Number(calc.footwork)||Number(f.footwork)||85)*.08-82)/20+historyBonus,0,1.25);
 }
+function engineRating(f){
+ return (Number(f.power)||82)*.14+(Number(f.speed)||82)*.14+(Number(f.chin)||82)*.11+(Number(f.defense)||82)*.16+(Number(f.iq)||82)*.18+(Number(f.footwork)||82)*.12+(Number(f.cardio)||82)*.08+(Number(f.accuracy)||82)*.13+(Number(f.aggression)||82)*.04;
+}
+function preFightProbability(a,b,calcA,calcB,weightA,weightB,settings={}){
+ const ratingEdge=(engineRating(calcA)-engineRating(calcB))*1.05;
+ const massEdge=Math.log(weightA/weightB)*(settings.weight==="Open Weight"||settings.weight==="Heavyweight"?42:22);
+ const powerChinEdge=(Number(calcA.power)-Number(calcB.chin))*.16-(Number(calcB.power)-Number(calcA.chin))*.16;
+ const cleanBoxingEdge=((Number(calcA.defense)+Number(calcA.iq)+Number(calcA.accuracy))-(Number(calcB.defense)+Number(calcB.iq)+Number(calcB.accuracy)))*.065;
+ const enduranceEdge=(Number(calcA.cardio)-Number(calcB.cardio))*.05;
+ return clamp(Math.round(50+ratingEdge+massEdge+powerChinEdge+cleanBoxingEdge+enduranceEdge),5,95);
+}
 function knockdownCeiling(attackerProfile,defender,defenderCalc,attackerWeight,defenderWeight,sizeMismatch,damage=0,fatigue=0){
  const elite=eliteDurability(defender,defenderCalc);
  const history=knockdownHistoryProfile(defender);
@@ -532,7 +543,7 @@ function buildFight(a,b,settings){
   if(historical)return buildHistoricalFight(a,b,settings,historical);
   const seed=hash(`${a.id}${a.year}${b.id}${b.year}${settings.rounds}${settings.ring}${settings.weight}${settings.venue}${settings.championship}${settings.neutral}${settings.ruleset}${settings.environment}${settings.weighin}${settings.equipment}`);
   const narrationSalt=settings.narrationSalt?hash(`${settings.narrationSalt}:${a.id}:${b.id}:${settings.rounds}`):0;
-  const rnd=seeded(seed), rounds=[]; let staminaA=100,staminaB=100,damageA=0,damageB=0,kdA=0,kdB=0,ended=false;
+  const rnd=seeded(seed), rounds=[]; let staminaA=100,staminaB=100,damageA=0,damageB=0,kdA=0,kdB=0,ended=false,momentumA=0,momentumB=0,adaptA=0,adaptB=0;
   const era=eraProfile(settings);
   const targetWeight=contractLimit(settings.weight);
   const weightPlanA=weightPlan(a,targetWeight),weightPlanB=weightPlan(b,targetWeight),calcA=adjustedFighter(a,weightPlanA,era),calcB=adjustedFighter(b,weightPlanB,era);
@@ -556,6 +567,7 @@ function buildFight(a,b,settings){
   const powerMassA=clamp(Math.pow(massRatio,.62),.48,2),powerMassB=clamp(Math.pow(1/massRatio,.62),.48,2);
   const resistanceA=clamp(Math.pow(massRatio,.38),.65,1.45),resistanceB=clamp(Math.pow(1/massRatio,.38),.65,1.45);
   const sizeMismatch=sizeGap>.18,big=weightA>=weightB?a:b,small=big===a?b:a;
+  const preFightProbabilityA=preFightProbability(a,b,calcA,calcB,weightA,weightB,settings);
   const identityA=fighterIdentity(a),identityB=fighterIdentity(b);
   const extremeMismatch=Math.max(massRatio,1/massRatio)>1.8;
   const mismatchStopRound=extremeMismatch?Math.min(settings.rounds,5+(seed%4)):null;
@@ -609,8 +621,9 @@ function buildFight(a,b,settings){
     const roughA=(calcA.aggression*.35+calcA.chin*.2+weightA*.08+calcA.power*.15-calcB.defense*.2)*era.roughness;
     const roughB=(calcB.aggression*.35+calcB.chin*.2+weightB*.08+calcB.power*.15-calcA.defense*.2)*era.roughness;
 	    const deepWaterPenaltyA=deepWaterA*(settings.rounds>maxRoundsA?7.5:0),deepWaterPenaltyB=deepWaterB*(settings.rounds>maxRoundsB?7.5:0);
-	    const initiativeA=calcA.aggression*.25+calcA.speed*.18+calcA.iq*.17+calcA.accuracy*.2+ringA+stanceA+counterEdgeA+filmA+(roughA-roughB)*.32-deepWaterPenaltyA-handDragA*18-cutDragA*12+(Number(cbA.plusMinus)||0)*.18+(rnd()-.5)*16;
-	    const initiativeB=calcB.aggression*.25+calcB.speed*.18+calcB.iq*.17+calcB.accuracy*.2+ringB+stanceB+counterEdgeB+filmB+(roughB-roughA)*.32-deepWaterPenaltyB-handDragB*18-cutDragB*12+(Number(cbB.plusMinus)||0)*.18+(rnd()-.5)*16;
+	    const memoryA=momentumA*.38+adaptA*.52,memoryB=momentumB*.38+adaptB*.52;
+	    const initiativeA=calcA.aggression*.25+calcA.speed*.18+calcA.iq*.17+calcA.accuracy*.2+ringA+stanceA+counterEdgeA+filmA+memoryA+(roughA-roughB)*.32-deepWaterPenaltyA-handDragA*18-cutDragA*12+(Number(cbA.plusMinus)||0)*.18+(rnd()-.5)*16;
+	    const initiativeB=calcB.aggression*.25+calcB.speed*.18+calcB.iq*.17+calcB.accuracy*.2+ringB+stanceB+counterEdgeB+filmB+memoryB+(roughB-roughA)*.32-deepWaterPenaltyB-handDragB*18-cutDragB*12+(Number(cbB.plusMinus)||0)*.18+(rnd()-.5)*16;
 	    const defenseA=calcA.defense*.48+calcA.footwork*.28+calcA.iq*.24-(damageA*.22)-deepWaterA*4.5-cutDragA*26+(pct(cbA.opponentConnectPct)!=null?(.28-pct(cbA.opponentConnectPct))*28:0);
 	    const defenseB=calcB.defense*.48+calcB.footwork*.28+calcB.iq*.24-(damageB*.22)-deepWaterB*4.5-cutDragB*26+(pct(cbB.opponentConnectPct)!=null?(.28-pct(cbB.opponentConnectPct))*28:0);
     const championshipStress=(settings.championship&&fatigue>.66?1.12:settings.championship?1:.92)*era.heatTax*era.longFightTax;
@@ -666,6 +679,13 @@ function buildFight(a,b,settings){
     let scoreA=10,scoreB=10;
     const edge=landedA-landedB+(powerA*powerMassA-powerB*powerMassB)*.85+(initiativeA-initiativeB)*.06+(roughA-roughB)*era.oldSchoolScoring;
     if(knockA){scoreA=8;scoreB=10}else if(knockB){scoreA=10;scoreB=8}else if(edge>=0){scoreA=10;scoreB=Math.abs(edge)>14?8:9}else{scoreA=Math.abs(edge)>14?8:9;scoreB=10}
+    const incomingMomentumA=momentumA,incomingMomentumB=momentumB,incomingAdaptA=adaptA,incomingAdaptB=adaptB;
+    const roundSignalA=(scoreA-scoreB)*2+(landedA-landedB)*.08+(powerA*powerMassA-powerB*powerMassB)*.12+(knockB?5.5:0)-(knockA?5.5:0);
+    const roundSignalB=-roundSignalA;
+    momentumA=clamp(momentumA*.58+roundSignalA,-7,7);
+    momentumB=clamp(momentumB*.58+roundSignalB,-7,7);
+    adaptA=clamp(adaptA*.56+(scoreA<scoreB?Math.max(0,(calcA.iq+calcA.defense+calcA.footwork-258)*.018):0)-(scoreA>scoreB?Math.max(0,(calcB.iq+calcB.defense+calcB.footwork-258)*.008):0),-4,4);
+    adaptB=clamp(adaptB*.56+(scoreB<scoreA?Math.max(0,(calcB.iq+calcB.defense+calcB.footwork-258)*.018):0)-(scoreB>scoreA?Math.max(0,(calcA.iq+calcA.defense+calcA.footwork-258)*.008):0),-4,4);
     const statisticalLeader=edge>=0?a:b;
     const leader=knockA?b:knockB?a:statisticalLeader, trailer=leader===a?b:a;
     const leaderIdentity=leader===a?identityA:identityB,trailerIdentity=trailer===a?identityA:identityB;
@@ -717,6 +737,14 @@ function buildFight(a,b,settings){
 	    if(!injuryEvents.length&&r>5&&injuryStateB.hand)lines.push(`${b.last}'s hand issue is subtly changing the offense: fewer fully committed power shots, more touch-jabs, traps and scoring exits.`);
 	    if(!injuryEvents.length&&r>5&&injuryStateA.cut)lines.push(`${a.last}'s cut/swelling is changing the defensive read; the guard is a little higher and the exits have to protect the damaged side.`);
 	    if(!injuryEvents.length&&r>5&&injuryStateB.cut)lines.push(`${b.last}'s cut/swelling is changing the defensive read; the guard is a little higher and the exits have to protect the damaged side.`);
+	    if(r>1&&Math.abs(incomingMomentumA)>3){
+	      const surge=incomingMomentumA>0?a:b,answer=surge===a?b:a;
+	      lines.push(`${surge.last} enters the round with the cleaner recent pattern, so ${answer.last} is not just solving a punch—he is solving the memory of the last few exchanges.`);
+	    }
+	    if(r>1&&(incomingAdaptA>1||incomingAdaptB>1)){
+	      const adapter=incomingAdaptA>incomingAdaptB?a:b;
+	      lines.push(`${adapter.last}'s corner has made an adjustment that shows up in the first minute: fewer repeated entries, more attention to the reset after contact.`);
+	    }
 	    if(knockA||knockB){
       const down=knockA?a:b,puncher=knockA?b:a;
       lines.push(`${puncher.last} times ${down.last}'s entry and lands the decisive counter, sending ${down.last} to the canvas.`);
@@ -806,10 +834,10 @@ function buildFight(a,b,settings){
       positionalLanes[positionalIndex],
       finalRound?finalCornerLanes[finalCornerIndex]:cornerLanes[cornerIndex]
     ],narrationSalt,r);
-			    rounds.push({number:r,thrownA,thrownB,landedA,landedB,powerA,powerB,scoreA,scoreB,knockA,knockB,damageA,damageB,staminaA,staminaB,lines,report,tactics:{openStance,stanceMatchup,activeStanceA,activeStanceB,identityA,identityB,pressureA,pressureB,moverA,moverB,styleCaseA,styleCaseB,settingEffects,weightPlanA,weightPlanB,era,roughA,roughB,maxRoundsA,maxRoundsB,deepWaterA,deepWaterB,stoppingPowerA,stoppingPowerB,knockdownHistoryA,knockdownHistoryB,kdCapA,kdCapB,kdChanceA,kdChanceB,canStopA,canStopB,injuryProfileA,injuryProfileB,injuryStateA:{...injuryStateA,events:[...injuryStateA.events]},injuryStateB:{...injuryStateB,events:[...injuryStateB.events]},injuryEvents},headline:knockA||knockB?"DOWN GOES "+(knockA?a.last:b.last).toUpperCase():Math.abs(edge)<5?evolution.title:leader.last.toUpperCase()+" TAKES CONTROL",stoppage});
+			    rounds.push({number:r,thrownA,thrownB,landedA,landedB,powerA,powerB,scoreA,scoreB,knockA,knockB,damageA,damageB,staminaA,staminaB,lines,report,tactics:{openStance,stanceMatchup,activeStanceA,activeStanceB,identityA,identityB,pressureA,pressureB,moverA,moverB,styleCaseA,styleCaseB,settingEffects,weightPlanA,weightPlanB,era,roughA,roughB,maxRoundsA,maxRoundsB,deepWaterA,deepWaterB,stoppingPowerA,stoppingPowerB,knockdownHistoryA,knockdownHistoryB,kdCapA,kdCapB,kdChanceA,kdChanceB,canStopA,canStopB,injuryProfileA,injuryProfileB,injuryStateA:{...injuryStateA,events:[...injuryStateA.events]},injuryStateB:{...injuryStateB,events:[...injuryStateB.events]},injuryEvents,incomingMomentumA,incomingMomentumB,momentumA,momentumB,incomingAdaptA,incomingAdaptB,adaptA,adaptB,roundSignalA},headline:knockA||knockB?"DOWN GOES "+(knockA?a.last:b.last).toUpperCase():Math.abs(edge)<5?evolution.title:leader.last.toUpperCase()+" TAKES CONTROL",stoppage});
     if(stoppage)ended=true;
   }
-		  return finalize({a,b,settings,rounds,seed,settingEffects,conditions:{era,ruleset:settings.ruleset,environment:settings.environment,weighin:settings.weighin,equipment:settings.equipment},matchup:{weightA,weightB,naturalWeightA:weightPlanA.natural,naturalWeightB:weightPlanB.natural,targetWeight,weightPlanA,weightPlanB,maxRoundsA,maxRoundsB,massRatio,sizeMismatch}});
+		  return finalize({a,b,settings,rounds,seed,settingEffects,conditions:{era,ruleset:settings.ruleset,environment:settings.environment,weighin:settings.weighin,equipment:settings.equipment},matchup:{weightA,weightB,naturalWeightA:weightPlanA.natural,naturalWeightB:weightPlanB.natural,targetWeight,weightPlanA,weightPlanB,maxRoundsA,maxRoundsB,massRatio,sizeMismatch,preFightProbabilityA,preFightProbabilityB:100-preFightProbabilityA}});
 }
 function finalize(f){
  const sum=k=>f.rounds.reduce((n,r)=>n+r[k],0), last=f.rounds.at(-1),stoppage=last.stoppage;
