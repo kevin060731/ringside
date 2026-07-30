@@ -3,8 +3,56 @@ const fallback="https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?auto=f
 const lastName=name=>name.split(" ").filter(part=>!["Jr.","Jr","Sr.","Sr","II","III","IV"].includes(part)).at(-1);
 const divisionWeights={Heavyweight:224,Cruiserweight:200,"Light Heavyweight":175,"Super Middleweight":168,Middleweight:160,"Junior Middleweight":154,Welterweight:147,"Junior Welterweight":140,Lightweight:135,"Junior Lightweight":130,Featherweight:126,"Junior Featherweight":122,Bantamweight:118,"Junior Bantamweight":115,Flyweight:112,"Junior Flyweight":108,Strawweight:105};
 const heavyweightWeights={louis:200,marciano:184,frazier:205,foreman:217,lewis:242,klitschko:242,wilder:219,joshua:250,dubois:248,langford:185,fitzsimmons:167};
-const mk=(id,name,nickname,country,stance,division,year,label,s,wiki=name)=>({id,name,last:lastName(name),nickname,country,stance,division,wiki,years:[{year,label,weight:heavyweightWeights[id]||divisionWeights[division],...s}],img:fallback});
 const S=(power,speed,chin,defense,iq,footwork,cardio,accuracy,aggression)=>({power,speed,chin,defense,iq,footwork,cardio,accuracy,aggression});
+const P=(opponent,result,note)=>({opponent,result,note});
+const bestPerformances={
+ louis:P("Max Schmeling","KO 1","defining prime statement: fast, brutal correction of his most famous defeat"),
+ marciano:P("Jersey Joe Walcott","KO 13","championship proof of late power, stamina and one-punch danger after adversity"),
+ frazier:P("Muhammad Ali","UD 15","Fight of the Century version: pressure, left-hook timing and deep-water endurance"),
+ foreman:P("Joe Frazier","TKO 2","prime destroyer statement: physical force overwhelmed an undefeated champion"),
+ lewis:P("Evander Holyfield","UD 12","undisputed heavyweight proof: jab, size and tactical discipline over twelve"),
+ klitschko:P("David Haye","UD 12","control king template: distance management, clinch geography and risk denial"),
+ wilder:P("Luis Ortiz","KO 10","late-erasing power: lost stretches tactically, then ended the fight with one right hand"),
+ joshua:P("Wladimir Klitschko","TKO 11","defining heavyweight arrival: survived crisis and found the championship finish"),
+ dubois:P("Anthony Joshua","KO 5","career-changing heavyweight statement: jab, power and authority against an elite star"),
+ qawi:P("Matthew Saad Muhammad","TKO 6","Camden Buzzsaw peak: pressure, compact defense and relentless counters"),
+ jones:P("James Toney","UD 12","168-lb supernova carried upward: reflex dominance against an elite technician"),
+ moore:P("Yvon Durelle","KO 11","old-master survival and finishing craft after early knockdowns"),
+ langford:P("Joe Jeanette","KO 8","all-time range of power and craft against elite heavyweight opposition"),
+ fitzsimmons:P("James J. Corbett","KO 14","historic heavyweight title win built on timing, feints and body-shot power"),
+ kovalev:P("Jean Pascal","TKO 8","Krusher prime: jab authority and punishing long-range power"),
+ calzaghe:P("Mikkel Kessler","UD 12","undisputed super-middle proof: pace, angles and adjustment against an unbeaten champion"),
+ froch:P("Lucian Bute","TKO 5","career-best home demolition with pressure, durability and power"),
+ robinson:P("Jake LaMotta","TKO 13","St. Valentine’s Day Massacre: elite pace, combinations and late championship separation"),
+ greb:P("Gene Tunney","W 15","windmill prime evidence: pace and volume strong enough to trouble a larger great"),
+ monzon:P("José Nápoles","RTD 6","champion template: long-range calm, right-hand timing and suffocating control"),
+ hopkins:P("Félix Trinidad","TKO 12","undisputed middleweight masterclass: timing, traps and late finish"),
+ mccallum:P("Donald Curry","KO 5","Body Snatcher classic: patience, body pressure and sudden finishing"),
+ jackson:P("Herol Graham","KO 4","one-shot danger in its purest form: losing the geography until the lights went out"),
+ delahoya:P("Julio César Chávez","RTD 8","welterweight prime control: jab, cuts and speed against a legendary pressure fighter"),
+ duran:P("Esteban De Jesús","TKO 12","lightweight king version: pressure, body punching and technical violence"),
+ gans:P("Battling Nelson","DQ 42","old-master lightweight craft and stamina in a brutal long-distance title fight"),
+ trinidad:P("Oscar De La Hoya","MD 12","signature welterweight night: pressure, late urgency and title-stage power"),
+ mosley:P("Oscar De La Hoya","SD 12","welterweight prime win built on speed, body work and championship-round urgency"),
+ pryor:P("Alexis Argüello","TKO 14","140-lb classic: pressure pace, chin and late finishing through elite fire"),
+ taylor:P("José Ramírez","UD 12","undisputed 140-lb win with knockdowns, southpaw timing and championship grit"),
+ lomachenko:P("Jorge Linares","TKO 10","lightweight prime: survived a knockdown, adjusted and finished with body work"),
+ stevenson:P("Shuichiro Yoshino","TKO 6","best lightweight offensive statement without abandoning defensive safety"),
+ arguello:P("Rubén Olivares","KO 13","elite feather/junior-lightweight proof: patience, precision and finishing power"),
+ armstrong:P("Barney Ross","UD 15","three-division terror at full tilt: pressure, pace and historic ambition"),
+ pep:P("Sandy Saddler","UD 15","prime defensive genius: footwork, angles and survival against a brutal rival"),
+ sanchez:P("Wilfredo Gómez","TKO 8","featherweight masterpiece: timing and poise under elite pressure"),
+ hamed:P("Kevin Kelley","KO 4","Prince at his most chaotic and dangerous: knockdowns, power and theater"),
+ barrera:P("Naseem Hamed","UD 12","career-defining tactical discipline against an unbeaten puncher"),
+ jofre:P("José Medel","KO 10","bantamweight great at peak balance: power, accuracy and finishing craft"),
+ donaire:P("Fernando Montiel","KO 2","bantamweight flash: iconic left-hook power against an elite champion"),
+ gonzalez:P("Brian Viloria","TKO 9","P4P king snapshot: volume, body work and relentless elite offense"),
+ estrada:P("Román González","MD 12","elite small-man chess: timing, counters and championship grit"),
+ wilde:P("Joe Symonds","KO 12","flyweight finishing legend: tiny frame, massive power and old-era endurance"),
+ chang:P("Sot Chitalada","UD 12","junior-flyweight pressure and speed against elite championship opposition"),
+ lopezfinito:P("Rosendo Álvarez","D 8","perfect technical base tested by danger and controversy")
+};
+const mk=(id,name,nickname,country,stance,division,year,label,s,wiki=name)=>({id,name,last:lastName(name),nickname,country,stance,division,wiki,years:[{year,label,weight:heavyweightWeights[id]||divisionWeights[division],...s,bestPerformance:bestPerformances[id]}],img:fallback});
 global.EXTRA_FIGHTERS.push(
  mk("louis","Joe Louis","The Brown Bomber","USA","Orthodox","Heavyweight",1938,"1938 · PRIME",S(97,91,94,92,97,92,97,96,94)),
  mk("marciano","Rocky Marciano","The Brockton Blockbuster","USA","Orthodox","Heavyweight",1952,"1952 · CHAMPION",S(98,84,99,84,92,85,100,89,100)),

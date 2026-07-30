@@ -60,11 +60,52 @@ const divisionLimits={"Heavyweight":"200+ lb","Cruiserweight":"200 lb","Light He
 const divisionWeightsLb={Heavyweight:224,Cruiserweight:200,"Light Heavyweight":175,"Super Middleweight":168,"Middleweight":160,"Junior Middleweight":154,Welterweight:147,"Junior Welterweight":140,Lightweight:135,"Junior Lightweight":130,Featherweight:126,"Junior Featherweight":122,Bantamweight:118,"Junior Bantamweight":115,Flyweight:112,"Junior Flyweight":108,Strawweight:105};
 decorateRoster();
 const bioJobs=new Map();
-const boxrecPhysicals={tyson:{height_cm:178,reach_cm:180},usyk:{height_cm:191,reach_cm:198}};
-const shortMeasure=s=>{const clean=(s||"").replace(/\[[^\]]+\]/g,"").trim();return clean.match(/\d+\s*ft\s*\d+(?:[+.]\d+)?\s*in/i)?.[0]||clean.match(/\d+(?:\.\d+)?\s*in/i)?.[0]||clean.split("(")[0].trim()||"—"};
+const boxrecPhysicals={
+ tyson:{height_cm:178,reach_cm:180},usyk:{height_cm:191,reach_cm:198},ali:{height_cm:191,reach_cm:198},wilder:{height_cm:201,reach_cm:211},fury:{height_cm:206,reach_cm:216},
+ mayweather:{height_cm:173,reach_cm:183},pacquiao:{height_cm:166,reach_cm:170},canelo:{height_cm:171,reach_cm:179},crawford:{height_cm:173,reach_cm:188},spence:{height_cm:177,reach_cm:183},
+ haney:{height_cm:173,reach_cm:180},stevenson:{height_cm:173,reach_cm:173},lomachenko:{height_cm:170,reach_cm:166},davis:{height_cm:166,reach_cm:171},lopez:{height_cm:173,reach_cm:174},
+ ennis:{height_cm:178,reach_cm:188},ryangarcia:{height_cm:178,reach_cm:178},benavidez:{height_cm:188,reach_cm:189},rodriguez:{height_cm:163,reach_cm:170},inoue:{height_cm:165,reach_cm:171},
+ delahoya:{height_cm:179,reach_cm:185},whitaker:{height_cm:168,reach_cm:175},duran:{height_cm:170,reach_cm:168},leonard:{height_cm:179,reach_cm:188},hearns:{height_cm:185,reach_cm:198},hagler:{height_cm:177,reach_cm:191}
+};
+const vulgarFractions={"½":.5,"¼":.25,"¾":.75,"⅓":1/3,"⅔":2/3,"⅛":.125,"⅜":.375,"⅝":.625,"⅞":.875};
+function inchesFromMeasure(value){
+ if(value==null||value==="")return null;
+ if(typeof value==="number")return Number.isFinite(value)?value:null;
+ const clean=String(value).replace(/\[[^\]]+\]/g,"").replace(/[′’]/g,"'").replace(/[″”]/g,'"').replace(/⁄/g,"/").trim();
+ let match=clean.match(/(\d+)\s*(?:ft|')\s*(\d+)?(?:\s*(?:in|\"))?/i);
+ if(match)return Number(match[1])*12+Number(match[2]||0);
+ match=clean.match(/(\d+)\s*(?:\+|\s)?\s*(\d+)\s*\/\s*(\d+)\s*(?:in|\")?/i);
+ if(match)return Number(match[1])+Number(match[2])/Number(match[3]);
+ match=clean.match(/(\d+)\s*([½¼¾⅓⅔⅛⅜⅝⅞])\s*(?:in|\")?/i);
+ if(match)return Number(match[1])+(vulgarFractions[match[2]]||0);
+ match=clean.match(/(\d+(?:\.\d+)?)\s*(?:in|\")/i);
+ if(match)return Number(match[1]);
+ return null;
+}
+function formatHeight(value){
+ const inches=inchesFromMeasure(value);
+ if(!inches||inches<54||inches>84)return "—";
+ const rounded=Math.round(inches);
+ return `${Math.floor(rounded/12)} ft ${rounded%12} in`;
+}
+function formatReach(value){
+ const inches=inchesFromMeasure(value);
+ if(!inches||inches<50||inches>90)return "—";
+ const rounded=Math.round(inches*2)/2;
+ return `${Number.isInteger(rounded)?rounded:rounded.toFixed(1)} in`;
+}
+const shortMeasure=(s,type="generic")=>{
+ const clean=(s||"").replace(/\[[^\]]+\]/g,"").trim();
+ if(!clean)return "—";
+ const formatted=type==="height"?formatHeight(clean):type==="reach"?formatReach(clean):"";
+ if(formatted&&formatted!=="—")return formatted;
+ return clean.split("(")[0].replace(/\s+/g," ").trim()||"—";
+};
 function drawBio(side,f,bio={}){
  const actualWeight=f.weight?`${Math.round(f.weight)} lb`:divisionLimits[f.division]||f.division;
- const items=[["HEIGHT",bio.height||"—"],["REACH",bio.reach||"—"],["FIGHT WEIGHT",actualWeight],["STANCE",f.stance],["CAREER RECORD",bio.record||"—"]];
+ const height=formatHeight(bio.height||f.height)||"—";
+ const reach=formatReach(bio.reach||f.reach)||"—";
+ const items=[["HEIGHT",height],["REACH",reach],["FIGHT WEIGHT",actualWeight],["STANCE",f.stance],["CAREER RECORD",bio.record||f.record||"—"]];
  $(`#physical-${side}`).innerHTML=items.map(([k,v])=>`<div><small>${k}</small><b>${v}</b></div>`).join("");
  $(`#physical-${side}`).classList.toggle("source-boxrec",bio.source==="BoxRec");
 }
@@ -82,7 +123,7 @@ async function loadBio(f,side){
   }
   const wikiHtml=wikipedia?.parse?.text?.["*"],doc=wikiHtml?new DOMParser().parseFromString(wikiHtml,"text/html"):null,rows=doc?[...doc.querySelectorAll("table.infobox tr")]:[];
   const val=label=>rows.find(r=>r.querySelector("th")?.textContent.trim().toLowerCase()===label)?.querySelector("td")?.textContent.trim();
-  if(height==="—")height=shortMeasure(val("height"));if(reach==="—")reach=shortMeasure(val("reach"));
+  if(height==="—")height=shortMeasure(val("height"),"height");if(reach==="—")reach=shortMeasure(val("reach"),"reach");
   const wins=(val("wins")||"").match(/\d+/)?.[0],losses=(val("losses")||"").match(/\d+/)?.[0],draws=(val("draws")||"").match(/\d+/)?.[0];
   return {height,reach,record:wins&&losses?`${wins}-${losses}${draws&&draws!=="0"?`-${draws}`:""}`:"—",source};
  }).catch(()=>({})));

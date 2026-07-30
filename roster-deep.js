@@ -51,7 +51,13 @@ const bestPerformances={
  ajagba:P("Stephan Shaw","UD 10","disciplined heavyweight boxing win after early-career volatility"),
  torrez:P("Brandon Moore","TKO 5","young heavyweight pressure and fast-handed finishing"),
  vianello:P("Arslanbek Makhmudov","TKO 8","career-best upset: size, jab and damage accumulation"),
- makhmudov:P("Carlos Takam","UD 10","best proven win: power threat maintained against a durable veteran")
+ makhmudov:P("Carlos Takam","UD 10","best proven win: power threat maintained against a durable veteran"),
+ thurman:P("Danny García","SD 12","welterweight title-unification proof: movement, power and early-round separation"),
+ porter:P("Danny García","UD 12","career-defining pressure-boxing win for the vacant welterweight title"),
+ dannygarcia:P("Lucas Matthysse","UD 12","signature upset: chin, timing and left-hook counters against elite power"),
+ kellbrook:P("Shawn Porter","MD 12","world-title breakthrough: strength, clinch control and accurate right hands on the road"),
+ broner:P("Antonio DeMarco","TKO 8","best lightweight performance: sharp counters, speed and mean finishing"),
+ albertopuello:P("Batyr Akhmedov","SD 12","title-level southpaw evidence: range, movement and enough clean scoring under pressure")
 };
 const mk=(id,name,nickname,country,stance,division,level,style="balanced",wiki=name,active=true)=>{
  const penalty=Math.min(6,(level-1)*1.15),ratings={};
@@ -103,6 +109,7 @@ global.EXTRA_FIGHTERS.push(
  mk("torrez","Richard Torrez Jr.","Kiki","USA","Southpaw","Heavyweight",7,"pressure","Richard Torrez Jr."),
  mk("vianello","Guido Vianello","The Gladiator","ITA","Orthodox","Heavyweight",7,"balanced"),
  mk("makhmudov","Arslanbek Makhmudov","Lion","CAN","Orthodox","Heavyweight",7,"puncher"),
+ mk("albertopuello","Alberto Puello","La Avispa","DOM","Southpaw","Junior Welterweight",3,"boxer","Alberto Puello"),
  mk("thurman","Keith Thurman","One Time","USA","Orthodox","Welterweight",2,"puncher","Keith Thurman",false),
  mk("porter","Shawn Porter","Showtime","USA","Orthodox","Welterweight",2,"pressure","Shawn Porter",false),
  mk("dannygarcia","Danny García","Swift","USA","Orthodox","Welterweight",2,"counter","Danny García",false),

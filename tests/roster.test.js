@@ -58,3 +58,32 @@ test("version pack adds important career phases and weight-class versions",()=>{
   }
  }
 });
+
+test("full local data set has no missing signature notes or dangling upcoming-card fighters",()=>{
+ const context={window:{EXTRA_FIGHTERS:[],WEIGHT_CLASSES:null}};
+ context.global=context.window;
+ vm.createContext(context);
+ for(const file of ["roster.js","roster-expanded.js","roster-active.js","roster-deep.js","roster-versions.js","upcoming-fights.js"]){
+  vm.runInContext(fs.readFileSync(file,"utf8"),context,{filename:file});
+ }
+ const app=fs.readFileSync("app.js","utf8");
+ const baseText=app.match(/const fighters=\[([\s\S]*?)\];\nfighters\.push/)?.[1]||"";
+ const baseFighters=[...baseText.matchAll(/\{id:"([^"]+)",name:"([^"]+)"/g)].map(match=>({id:match[1],name:match[2],years:[]}));
+ const fighters=[...baseFighters,...context.window.EXTRA_FIGHTERS];
+ const pack=context.window.ROSTER_VERSION_PACK||{};
+ for(const fighter of fighters){
+  if(pack[fighter.id])fighter.years=pack[fighter.id];
+ }
+ const fighterIds=new Set(fighters.map(f=>f.id));
+ assert.ok(fighterIds.has("albertopuello"),"Alberto Puello should be selectable for upcoming 140-lb cards");
+ for(const fighter of fighters){
+  for(const version of fighter.years||[]){
+   assert.ok(version.bestPerformance?.opponent,`${fighter.id} ${version.label} is missing signature-performance evidence`);
+   assert.ok(Number.isFinite(Number(version.weight)),`${fighter.id} ${version.label} is missing a usable version weight`);
+  }
+ }
+ for(const card of context.window.RINGSIDE_UPCOMING_FIGHTS||[]){
+  assert.ok(fighterIds.has(card.red),`${card.id} references missing red fighter ${card.red}`);
+  assert.ok(fighterIds.has(card.blue),`${card.id} references missing blue fighter ${card.blue}`);
+ }
+});
