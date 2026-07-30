@@ -1151,3 +1151,419 @@ dialog{border-radius:20px}
  .round-nav{grid-template-columns:1fr}
  .round-nav .prev-btn{border-right:0}
 }
+
+/* Typography / design refinement pass */
+:root{
+ --ringside-bg:#0d1220;
+ --ringside-surface:#151b2a;
+ --ringside-surface-2:#1b2234;
+ --ringside-line:rgba(151,164,195,.18);
+ --ringside-line-strong:rgba(151,164,195,.28);
+ --ringside-text:#f6f7fb;
+ --ringside-muted:#9aa5bb;
+ --ringside-soft:#c7cfdd;
+ --ringside-red:#ff4055;
+ --ringside-blue:#4f9cff;
+ --ringside-gold:#d7b16a;
+ --ringside-radius:24px;
+ --ringside-shadow:0 24px 70px rgba(0,0,0,.28)
+}
+html{
+ -webkit-font-smoothing:antialiased;
+ text-rendering:optimizeLegibility
+}
+body{
+ background:
+  radial-gradient(circle at 20% -10%,rgba(255,64,85,.16),transparent 36%),
+  radial-gradient(circle at 85% 8%,rgba(79,156,255,.12),transparent 34%),
+  linear-gradient(180deg,#111730 0%,var(--ringside-bg) 42%,#090d17 100%);
+ color:var(--ringside-text);
+ font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif
+}
+button,input,select,textarea{
+ font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif
+}
+.topbar{
+ height:64px;
+ background:linear-gradient(90deg,#f1213e 0%,#ff493f 100%);
+ box-shadow:0 12px 32px rgba(241,33,62,.2)
+}
+.brand{
+ font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+ font-size:21px;
+ font-weight:950;
+ letter-spacing:-.055em
+}
+.brand-mark{
+ border-radius:4px;
+ font-weight:950;
+ letter-spacing:-.08em
+}
+.utility-nav button{
+ position:relative;
+ font-size:12px;
+ font-weight:850;
+ letter-spacing:-.01em;
+ opacity:.86;
+ transition:background .16s ease,opacity .16s ease
+}
+.utility-nav button:hover,.utility-nav button.active{
+ opacity:1;
+ background:rgba(0,0,0,.14)
+}
+.header-actions button{
+ transition:transform .16s ease,background .16s ease
+}
+.header-actions button:hover{
+ transform:translateY(-1px);
+ background:rgba(0,0,0,.22)
+}
+.sport-nav{
+ height:48px;
+ background:rgba(16,22,36,.92);
+ border-color:var(--ringside-line);
+ backdrop-filter:blur(14px)
+}
+.sport-nav button{
+ color:var(--ringside-muted);
+ font-size:11px;
+ font-weight:850;
+ letter-spacing:-.01em
+}
+.sport-nav button.active{color:#fff}
+.sport-nav button.active:after{
+ height:3px;
+ left:22px;
+ right:22px;
+ background:linear-gradient(90deg,var(--ringside-red),#ff7a45);
+ box-shadow:0 -5px 16px rgba(255,64,85,.35)
+}
+.hero{
+ padding-top:42px;
+ padding-bottom:22px
+}
+.eyebrow,.result-kicker,.round-kicker,.corner-label,.matchup-header small,.section-title small,.data-heading small,.desk-compact-title small,.panel-head,.physical-row small,.version-scout small,.mini-rating small,.source-card small,.fight-cards-head small,.roster-manager-head small,.roster-form label,.wide-label{
+ font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+ font-weight:900!important;
+ letter-spacing:.12em!important;
+ text-transform:uppercase
+}
+.hero h1{
+ color:#fff;
+ max-width:660px;
+ font-size:clamp(48px,6.8vw,86px);
+ font-weight:950;
+ letter-spacing:-.08em;
+ line-height:.9
+}
+.hero h1 em{
+ color:var(--ringside-red);
+ font-style:normal
+}
+.hero p{
+ max-width:480px;
+ color:var(--ringside-soft);
+ font-size:15px;
+ font-weight:650
+}
+.season-chip,.status-card,.status-metrics span,.demo-brief,.matchup-shell,.research-desk,.data-panel,.settings-panel,.fight-cards,.my-fights,.roster-manager,.commentary-card,.panel,.saved-fight-card,.fight-card-preview{
+ border-color:var(--ringside-line)!important;
+ box-shadow:var(--ringside-shadow)
+}
+.season-chip,.status-card,.status-metrics span,.matchup-shell,.research-desk,.data-panel,.settings-panel,.commentary-card,.panel{
+ background:linear-gradient(145deg,rgba(27,34,52,.94),rgba(15,21,34,.94))!important
+}
+.season-chip{
+ border-radius:18px;
+ box-shadow:0 18px 44px rgba(0,0,0,.2)
+}
+.season-chip small,.status-card small,.status-metrics small{
+ color:#8f9ab0
+}
+.public-status>.status-card.primary{
+ background:linear-gradient(135deg,rgba(30,38,58,.95),rgba(17,23,37,.9))!important
+}
+.public-status>.status-card.primary b{
+ font-size:22px;
+ font-weight:900;
+ letter-spacing:-.045em
+}
+.public-status>.status-card.primary span,.status-card span{
+ color:#aeb8ca;
+ font-weight:650
+}
+.status-metrics b{
+ color:#fff;
+ font-weight:950;
+ letter-spacing:-.055em
+}
+.demo-copy h2,.fight-cards-head h2,.my-fights-head h2,.roster-manager-head h2,.data-heading h2,.matchup-header h2,.section-title h2{
+ font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+ font-weight:950!important;
+ letter-spacing:-.06em!important;
+ text-transform:none!important
+}
+.demo-copy h2,.fight-cards-head h2,.my-fights-head h2,.roster-manager-head h2{
+ line-height:.98
+}
+.demo-copy p,.fight-cards-head p,.my-fights-head p,.roster-manager-head p,.source-note{
+ color:#aab4c8;
+ font-weight:650;
+ line-height:1.55
+}
+.matchup-shell,.settings-panel,.research-desk,.data-panel,.fight-cards,.my-fights,.roster-manager{
+ border-radius:var(--ringside-radius)
+}
+.matchup-header,.section-title,.data-heading,.fight-cards-head,.my-fights-head,.roster-manager-head{
+ background:linear-gradient(90deg,rgba(31,39,59,.96),rgba(22,29,45,.92))!important;
+ border-color:var(--ringside-line)!important
+}
+.matchup-header>span{
+ color:#efd081;
+ border-color:rgba(215,177,106,.38);
+ background:rgba(215,177,106,.1);
+ font-weight:900
+}
+.fighter-card{
+ background:linear-gradient(145deg,rgba(24,31,48,.95),rgba(16,22,36,.96))!important
+}
+.corner-label{
+ color:#ff6a7a;
+ border-color:var(--ringside-line)
+}
+.blue-corner .corner-label{color:#79b8ff}
+.portrait-wrap{
+ filter:none;
+ background:#111827;
+ border-color:#20283b;
+ box-shadow:0 0 0 2px rgba(255,64,85,.75),0 20px 50px rgba(0,0,0,.26)
+}
+.blue-corner .portrait-wrap{
+ box-shadow:0 0 0 2px rgba(79,156,255,.78),0 20px 50px rgba(0,0,0,.26)
+}
+.fighter-info small{
+ color:#8995aa;
+ font-weight:850
+}
+.fighter-info strong{
+ font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+ font-weight:950!important;
+ letter-spacing:-.075em!important;
+ line-height:.96;
+ text-transform:none!important
+}
+.fighter-info span{
+ color:#b5becd;
+ font-weight:700
+}
+.year-label select,.settings-grid select,.roster-picker-card select,.roster-form input,.roster-form select,.roster-form textarea,.auth-card input,#fighter-search{
+ background:#111827!important;
+ border:1px solid var(--ringside-line-strong)!important;
+ color:#f3f6fb!important;
+ border-radius:13px!important;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.03)
+}
+.year-label select:focus,.settings-grid select:focus,.roster-form input:focus,.roster-form select:focus,.roster-form textarea:focus,.auth-card input:focus,#fighter-search:focus{
+ border-color:rgba(79,156,255,.62)!important;
+ box-shadow:0 0 0 4px rgba(79,156,255,.12),inset 0 1px 0 rgba(255,255,255,.04)!important
+}
+.version-scout,.physical-row,.rating-row,.settings-grid{
+ border-color:var(--ringside-line)!important;
+ background:rgba(10,15,27,.3)!important
+}
+.version-scout>div,.physical-row>div,.rating-row>div{
+ background:rgba(17,24,39,.68)!important;
+ border-color:var(--ringside-line)!important
+}
+.version-scout b,.physical-row b,.mini-rating b{
+ font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+ color:#f5f7fb;
+ letter-spacing:-.04em!important;
+ text-transform:none!important
+}
+.mini-rating b{
+ font-weight:950;
+ font-size:28px
+}
+.versus b{
+ font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+ font-style:normal;
+ font-weight:950;
+ letter-spacing:-.08em;
+ background:linear-gradient(135deg,var(--ringside-red),#8567ff);
+ box-shadow:0 12px 36px rgba(133,103,255,.28)
+}
+.segmented button,.auth-actions button,.signout-button,.github-auth-button,.simulate-btn,.next-btn,.prev-btn,.roster-tools button,.roster-save-row button,#refresh-fight-cards,.fight-card-preview button,.save-actions button,.play-by-play-toggle{
+ font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+ font-weight:900!important;
+ letter-spacing:-.01em!important;
+ text-transform:none!important
+}
+.segmented button{
+ border-radius:12px!important;
+ transition:transform .16s ease,border-color .16s ease,background .16s ease
+}
+.segmented button:hover{
+ transform:translateY(-1px);
+ border-color:rgba(151,164,195,.38)
+}
+.segmented button.active{
+ background:linear-gradient(135deg,#7564ff,var(--ringside-blue))!important;
+ box-shadow:0 12px 26px rgba(79,156,255,.18)
+}
+.toggle-row label{
+ padding:8px 0
+}
+.toggle-row b{
+ color:#eef3fa;
+ font-weight:850;
+ letter-spacing:-.02em
+}
+.toggle-row small{
+ color:#8e99ae;
+ font-weight:600
+}
+.simulate-btn{
+ border-radius:18px!important;
+ background:linear-gradient(90deg,var(--ringside-red),#ff7445)!important;
+ box-shadow:0 18px 44px rgba(255,64,85,.28)!important
+}
+.simulate-btn:hover{
+ transform:translateY(-1px);
+ filter:none
+}
+.engine-note{
+ color:#8b96aa;
+ font-weight:700
+}
+.desk-compact p,.desk-key-list span,.desk-summary p,.desk-summary li,.desk-fighter p,.round-copy,.comment-line,.report-line,.source-card p,.fight-card-main p,.save-status span,.highlight{
+ font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important
+}
+.round-copy h2,.results h2,.poster-corner b,.poster-center strong,.fight-card-main h3,.saved-fight-info h3{
+ font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+ font-weight:950!important;
+ letter-spacing:-.075em!important;
+ text-transform:none!important
+}
+.round-copy h2{
+ color:#f8fafc;
+ line-height:.96
+}
+.comment-line,.report-line{
+ color:#c2cad8;
+ font-weight:620
+}
+.comment-line b,.report-line b{
+ color:#ff6878;
+ font-weight:950
+}
+.panel-head{
+ color:#f2f5fb
+}
+.panel-head small{
+ color:#8c96aa
+}
+.score-strip b{
+ font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+ font-weight:950;
+ letter-spacing:-.06em;
+ text-transform:none
+}
+.round-clock strong{
+ font-family:"DM Mono",ui-monospace,monospace;
+ font-weight:900
+}
+.prob-labels b,.judge-card b,.stat-row span:first-child,.stat-row span:last-child{
+ font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+ font-weight:950;
+ letter-spacing:-.045em
+}
+.fight-poster{
+ background:
+  linear-gradient(90deg,rgba(255,64,85,.12),rgba(8,12,20,.98) 37%,rgba(215,177,106,.08) 50%,rgba(8,12,20,.98) 63%,rgba(79,156,255,.12))!important
+}
+.poster-center strong{
+ letter-spacing:-.14em!important
+}
+.poster-center span,.poster-center em{
+ font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+ font-weight:950!important;
+ letter-spacing:-.02em!important;
+ text-transform:none!important
+}
+.source-card,.demo-picks button,.archive-fighter,.saved-fight-card,.fight-card-preview{
+ border-radius:18px!important;
+ background:linear-gradient(145deg,rgba(29,37,57,.82),rgba(17,24,39,.78))!important;
+ border-color:var(--ringside-line)!important;
+ transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease
+}
+.source-card:hover,.demo-picks button:hover,.archive-fighter:hover,.saved-fight-card:hover,.fight-card-preview:hover{
+ transform:translateY(-2px);
+ border-color:rgba(151,164,195,.35)!important;
+ box-shadow:0 22px 54px rgba(0,0,0,.28)
+}
+.source-card b,.demo-picks b,.archive-fighter b,.fight-card-date b{
+ font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+ font-weight:900!important;
+ letter-spacing:-.05em!important;
+ text-transform:none!important
+}
+.auth-card{
+ border-radius:24px;
+ background:
+  radial-gradient(circle at 0 0,rgba(255,64,85,.12),transparent 34%),
+  radial-gradient(circle at 100% 0,rgba(79,156,255,.12),transparent 34%),
+  #151b2a!important
+}
+.auth-card h2{
+ font-weight:950;
+ letter-spacing:-.07em
+}
+.github-auth-button{
+ border:0!important;
+ background:#f8fafc!important;
+ color:#111827!important;
+ box-shadow:0 14px 32px rgba(0,0,0,.18)
+}
+.bottom-nav{
+ background:rgba(15,21,34,.96)!important;
+ backdrop-filter:blur(16px);
+ border-color:var(--ringside-line)!important
+}
+.bottom-nav button{
+ font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+ font-weight:850
+}
+.bottom-nav button.active{
+ color:#ff6171!important
+}
+
+@media(max-width:760px){
+ .topbar{height:54px}
+ .brand{font-size:18px}
+ .sport-nav button{font-size:10px}
+ .hero{
+  padding-top:20px;
+  padding-bottom:10px
+ }
+ .hero h1{
+  max-width:330px;
+  font-size:clamp(42px,12.5vw,56px)
+ }
+ .matchup-shell,.settings-panel,.research-desk,.data-panel,.fight-cards,.my-fights,.roster-manager{
+  border-radius:20px
+ }
+ .fighter-info strong{
+  font-size:clamp(22px,7.4vw,30px)
+ }
+ .mini-rating b{font-size:24px}
+ .round-copy h2{
+  font-size:clamp(28px,9vw,38px)
+ }
+ .results h2{
+  font-size:clamp(40px,12vw,58px)
+ }
+ .poster-corner b{
+  font-size:clamp(24px,7.6vw,32px)
+ }
+}
