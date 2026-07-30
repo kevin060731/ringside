@@ -979,25 +979,35 @@ function renderFightCards(){
  list.innerHTML=rows.map(card=>{
   const red=fighterById(card.red),blue=fighterById(card.blue),preview=matchupPreview(card),ready=!!(red&&blue);
   const freshness=cardFreshness(card);
-  const sources=(card.sources||[]).map(source=>source.url?`<a href="${source.url}" target="_blank" rel="noreferrer">${source.label||"Source"} ↗</a>`:`<span>${source.label||"Source noted"}</span>`).join("");
+  const sourceItems=(card.sources||[]).filter(source=>source?.url||source?.label);
+  const sourceChip=sourceItems.length?(sourceItems[0].url?`<a href="${sourceItems[0].url}" target="_blank" rel="noreferrer">${sourceItems.length} source${sourceItems.length===1?"":"s"} ↗</a>`:`<span>${sourceItems.length} source${sourceItems.length===1?"":"s"}</span>`):"";
+  const roundsText=card.scheduledRounds?`${card.scheduledRounds} rounds`:"Rounds TBA";
+  const venueText=card.venue||"Venue TBA";
   return `<article class="fight-card-preview ${ready?"ready":"needs-roster"} freshness-${freshness.state}">
    <div class="fight-card-date">
     <small>${card.broadcast||card.promoter||"Preview"}</small>
     <b>${longDate(card.fightDate)}</b>
     <em>${freshness.label}</em>
-    <span>${card.venue||"Venue TBA"}</span>
+    <span>${venueText}</span>
    </div>
    <div class="fight-card-main">
-    <small>${card.eventName}</small>
+    <div class="fight-card-statusline">
+     <small>${card.eventName}</small>
+     <em>${freshness.copy}</em>
+    </div>
     <h3>${red?.last||card.redName} <em>vs</em> ${blue?.last||card.blueName}</h3>
-    <p>${card.division} · ${card.scheduledRounds} rounds · ${freshness.copy}${card.cardNote?` · ${card.cardNote}`:""}</p>
+    <p>${card.division||"Division TBA"} · ${roundsText} · ${venueText}</p>
     <div class="fight-card-meta">
      <span>${preview.label}</span>
-     <span>${card.market?.label||"Preview lean"}: ${preview.lean}</span>
-     ${sources}
+     <span>${card.market?.label||"Simulation lean"}</span>
+     ${sourceChip}
     </div>
    </div>
-   <button ${ready?`data-load-card="${card.id}"`:"disabled"}>${ready?"LOAD PREVIEW":"ADD FIGHTERS"}</button>
+   <div class="fight-card-action">
+    <small>${preview.ready?"Engine lean":"Roster gap"}</small>
+    <b>${preview.lean}</b>
+    <button ${ready?`data-load-card="${card.id}"`:"disabled"}>${ready?"SIMULATE":"ADD FIGHTERS"}</button>
+   </div>
   </article>`;
  }).join("");
 }

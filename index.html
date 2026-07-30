@@ -60,12 +60,15 @@
 
     <section class="fight-cards hidden" id="fight-cards">
       <div class="fight-cards-head">
-        <div>
-          <small>RINGSIDE PREVIEW BOARD</small>
-          <h2>Upcoming Fight Cards</h2>
-          <p>Browse scheduled fights, load the matchup, and run a simulation preview. These are not betting odds — they’re style leans from the RINGSIDE engine.</p>
+        <div class="fight-cards-copy">
+          <small>RINGSIDE SCHEDULE BOARD</small>
+          <h2>Fight Cards</h2>
+          <p>Upcoming matchups you can send straight into Fight Lab. Simulation leans only — not betting odds.</p>
         </div>
-        <button id="refresh-fight-cards">REFRESH CARDS</button>
+        <div class="fight-cards-tools">
+          <span>Live preview board</span>
+          <button id="refresh-fight-cards">REFRESH</button>
+        </div>
       </div>
       <div class="fight-cards-status" id="fight-cards-status">Loading upcoming cards…</div>
       <div class="fight-cards-list" id="fight-cards-list"></div>

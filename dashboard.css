@@ -2227,3 +2227,288 @@ button,input,select,textarea{
   display:none!important
  }
 }
+
+/* Fight Cards polish pass */
+.fight-cards{
+ max-width:1120px!important;
+ margin:0 auto 30px!important;
+ padding:0 22px!important;
+ border:0!important;
+ box-shadow:none!important;
+ background:transparent!important
+}
+.fight-cards-head{
+ border:1px solid rgba(151,164,195,.18)!important;
+ border-radius:24px!important;
+ background:linear-gradient(135deg,rgba(29,37,57,.9),rgba(14,21,34,.82))!important;
+ box-shadow:0 24px 70px rgba(0,0,0,.18)!important;
+ padding:24px!important;
+ display:grid!important;
+ grid-template-columns:minmax(0,1fr) auto!important;
+ align-items:center!important;
+ gap:18px!important
+}
+.fight-cards-copy h2{
+ margin:5px 0 7px!important;
+ font-size:clamp(36px,5.4vw,58px)!important;
+ letter-spacing:-.075em!important
+}
+.fight-cards-copy p{
+ max-width:560px!important;
+ color:#aab5c8!important;
+ font-size:13px!important;
+ line-height:1.5!important
+}
+.fight-cards-tools{
+ display:flex;
+ align-items:center;
+ gap:10px;
+ justify-content:flex-end
+}
+.fight-cards-tools span{
+ border:1px solid rgba(54,206,134,.22);
+ border-radius:999px;
+ background:rgba(54,206,134,.08);
+ color:#7ee5aa;
+ padding:10px 13px;
+ font:900 10px/1 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+ letter-spacing:.04em;
+ text-transform:uppercase;
+ white-space:nowrap
+}
+.fight-cards-head button{
+ min-height:40px;
+ padding:0 16px!important;
+ background:rgba(255,255,255,.07)!important;
+ border-color:rgba(151,164,195,.18)!important;
+ color:#f4f6fb!important
+}
+.fight-cards-list{
+ margin-top:14px!important;
+ display:grid!important;
+ gap:12px!important;
+ border:0!important;
+ border-radius:0!important;
+ overflow:visible!important;
+ background:transparent!important
+}
+.fight-card-preview{
+ position:relative;
+ grid-template-columns:150px minmax(0,1fr) 165px!important;
+ gap:18px!important;
+ padding:18px!important;
+ border:1px solid rgba(151,164,195,.18)!important;
+ border-radius:22px!important;
+ background:
+  linear-gradient(90deg,rgba(255,73,63,.06),transparent 30%,rgba(85,168,255,.07)),
+  linear-gradient(145deg,rgba(26,34,54,.9),rgba(12,18,29,.86))!important;
+ box-shadow:0 18px 54px rgba(0,0,0,.18)!important;
+ overflow:hidden
+}
+.fight-card-preview::before{
+ content:"";
+ position:absolute;
+ inset:0;
+ pointer-events:none;
+ background:radial-gradient(circle at 18% 20%,rgba(255,73,63,.12),transparent 28%),radial-gradient(circle at 92% 15%,rgba(85,168,255,.11),transparent 30%);
+ opacity:.75
+}
+.fight-card-preview>*{
+ position:relative;
+ z-index:1
+}
+.fight-card-preview:hover{
+ transform:translateY(-1px)!important;
+ border-color:rgba(151,164,195,.28)!important
+}
+.fight-card-date{
+ align-self:stretch;
+ border:1px solid rgba(151,164,195,.12);
+ border-radius:18px;
+ padding:14px;
+ background:rgba(6,10,18,.24)
+}
+.fight-card-date small,.fight-card-main small,.fight-card-action small{
+ color:#ff6674!important;
+ font:900 9px/1 "DM Mono",monospace!important;
+ letter-spacing:1.4px!important;
+ text-transform:uppercase!important
+}
+.fight-card-date b{
+ margin:8px 0!important;
+ font:900 20px/1.05 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+ letter-spacing:-.055em!important
+}
+.fight-card-date em{
+ margin:0 0 10px!important
+}
+.fight-card-date span{
+ display:block;
+ color:#94a0b5!important;
+ font-size:12px!important;
+ line-height:1.35!important
+}
+.fight-card-statusline{
+ display:flex;
+ align-items:center;
+ gap:10px;
+ min-width:0
+}
+.fight-card-statusline small{
+ overflow:hidden;
+ text-overflow:ellipsis;
+ white-space:nowrap
+}
+.fight-card-statusline em{
+ color:#7ee5aa;
+ font:850 11px/1 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+ font-style:normal;
+ white-space:nowrap
+}
+.fight-card-main h3{
+ margin:9px 0 8px!important;
+ color:#fff!important;
+ font-size:clamp(34px,4.6vw,52px)!important;
+ letter-spacing:-.045em!important
+}
+.fight-card-main p{
+ color:#a8b3c7!important;
+ font-size:13px!important
+}
+.fight-card-meta{
+ margin-top:13px!important
+}
+.fight-card-meta span,.fight-card-meta a{
+ border-radius:999px!important;
+ padding:8px 10px!important;
+ background:rgba(255,255,255,.055)!important;
+ color:#c2cadd!important;
+ border-color:rgba(151,164,195,.15)!important;
+ font:850 10px/1 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important
+}
+.fight-card-meta span:first-child{
+ color:#7ee5aa!important;
+ background:rgba(54,206,134,.08)!important;
+ border-color:rgba(54,206,134,.22)!important
+}
+.fight-card-action{
+ align-self:stretch;
+ display:grid;
+ align-content:center;
+ gap:9px;
+ border:1px solid rgba(151,164,195,.12);
+ border-radius:18px;
+ padding:14px;
+ background:rgba(6,10,18,.28);
+ text-align:right
+}
+.fight-card-action b{
+ color:#fff;
+ font:900 22px/1 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+ letter-spacing:-.06em
+}
+.fight-card-action button{
+ width:100%;
+ min-height:42px;
+ background:linear-gradient(135deg,#ff3558,#ff6541)!important;
+ border:0!important;
+ color:#fff!important;
+ box-shadow:0 16px 34px rgba(255,73,63,.22)!important
+}
+.fight-card-action button:disabled{
+ box-shadow:none!important;
+ background:rgba(151,164,195,.1)!important;
+ color:#8994aa!important
+}
+.fight-cards-status{
+ margin-top:14px!important;
+ border:1px solid rgba(151,164,195,.18)!important;
+ border-radius:22px!important
+}
+
+@media(max-width:900px){
+ .fight-cards-head{
+  grid-template-columns:1fr!important
+ }
+ .fight-cards-tools{
+  justify-content:flex-start
+ }
+ .fight-card-preview{
+  grid-template-columns:1fr!important
+ }
+ .fight-card-date,.fight-card-action{
+  align-self:auto
+ }
+ .fight-card-action{
+  text-align:left;
+  grid-template-columns:1fr auto;
+  align-items:center
+ }
+ .fight-card-action button{
+  grid-column:1/-1
+ }
+}
+
+@media(max-width:760px){
+ .fight-cards{
+  margin:0 12px 86px!important;
+  padding:0!important
+ }
+ .fight-cards-head{
+  padding:17px!important;
+  border-radius:20px!important
+ }
+ .fight-cards-copy h2{
+  font-size:38px!important
+ }
+ .fight-cards-tools{
+  display:grid;
+  grid-template-columns:1fr auto;
+  width:100%
+ }
+ .fight-cards-tools span{
+  min-width:0;
+  text-align:center;
+  padding-inline:10px
+ }
+ .fight-card-preview{
+  padding:14px!important;
+  border-radius:19px!important;
+  gap:10px!important
+ }
+ .fight-card-date{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:6px 10px;
+  padding:12px
+ }
+ .fight-card-date b{
+  font-size:17px!important
+ }
+ .fight-card-date em{
+  justify-self:end;
+  margin:0!important
+ }
+ .fight-card-date span{
+  grid-column:1/-1
+ }
+ .fight-card-statusline{
+  align-items:flex-start;
+  flex-direction:column;
+  gap:6px
+ }
+ .fight-card-statusline em{
+  white-space:normal;
+  font-size:10px
+ }
+ .fight-card-main h3{
+  font-size:34px!important;
+  line-height:.92!important
+ }
+ .fight-card-meta a{
+  display:none
+ }
+ .fight-card-action{
+  padding:12px
+ }
+}
