@@ -1961,3 +1961,173 @@ button,input,select,textarea{
   padding:10px;
  }
 }
+
+/* Fight Lab calm-top polish */
+.sport-nav button:not([data-view="home"]){
+ display:none
+}
+.sport-nav{
+ height:52px;
+ justify-content:flex-start;
+ padding:0 72px
+}
+.public-status{
+ max-width:1132px!important;
+ margin:-8px auto 16px!important;
+ padding:0 24px!important;
+ display:grid!important;
+ grid-template-columns:minmax(0,1fr) auto!important;
+ gap:10px!important;
+ align-items:center!important
+}
+.public-status>.status-card.primary{
+ min-height:64px!important;
+ padding:14px 18px!important;
+ border-radius:20px!important;
+ grid-template-columns:170px minmax(0,1fr)!important;
+ gap:4px 18px!important;
+ background:linear-gradient(90deg,rgba(22,28,42,.92),rgba(15,21,33,.74))!important
+}
+.public-status>.status-card.primary small{
+ grid-row:1/3!important;
+ align-self:center!important
+}
+.public-status>.status-card.primary b{
+ font-size:24px!important;
+ letter-spacing:-.04em!important
+}
+.status-metrics{
+ gap:7px!important
+}
+.status-metrics span{
+ min-width:108px!important;
+ min-height:64px!important;
+ padding:10px 12px!important;
+ border-radius:17px!important;
+ align-content:center!important
+}
+.status-metrics b{
+ font-size:20px!important
+}
+.demo-brief{
+ display:none!important
+}
+.research-desk{
+ margin-top:16px!important;
+ margin-bottom:16px!important
+}
+.desk-compact{
+ min-height:70px!important;
+ padding:14px 18px!important;
+ grid-template-columns:210px minmax(0,1fr) auto!important;
+ gap:16px!important
+}
+.desk-compact-title h2{
+ font-size:18px!important
+}
+.desk-compact p{
+ font-size:12px!important;
+ -webkit-line-clamp:1!important
+}
+.desk-compact-meta{
+ display:flex!important;
+ justify-content:flex-end!important;
+ min-width:230px!important
+}
+.desk-compact-meta span{
+ min-width:122px!important;
+ text-align:center!important
+}
+.desk-compact-meta em{
+ min-width:118px!important;
+ text-align:center!important
+}
+.data-panel{
+ margin-top:18px!important
+}
+.data-heading{
+ min-height:78px!important;
+ height:auto!important;
+ padding:18px 22px!important
+}
+.source-grid,.source-note{
+ display:none!important
+}
+
+@media(max-width:960px){
+ .sport-nav{padding:0 18px}
+ .public-status{
+  grid-template-columns:1fr!important;
+  padding:0 18px!important
+ }
+ .status-metrics{
+  display:grid!important;
+  grid-template-columns:repeat(3,1fr)!important
+ }
+ .status-metrics span{
+  min-width:0!important
+ }
+ .desk-compact{
+  grid-template-columns:1fr!important;
+  gap:8px!important
+ }
+ .desk-compact-meta{
+  justify-content:flex-start!important;
+  min-width:0!important
+ }
+ .desk-compact p{
+  -webkit-line-clamp:2!important
+ }
+}
+
+@media(max-width:760px){
+ .sport-nav{
+  height:44px;
+  padding:0 14px
+ }
+ .public-status{
+  margin:8px 12px 12px!important;
+  padding:0!important
+ }
+ .public-status>.status-card.primary{
+  min-height:unset!important;
+  grid-template-columns:1fr!important;
+  padding:13px 14px!important
+ }
+ .public-status>.status-card.primary small{
+  grid-row:auto!important
+ }
+ .public-status>.status-card.primary b{
+  font-size:19px!important
+ }
+ .status-metrics{
+  grid-template-columns:1fr 1fr!important;
+  gap:7px!important
+ }
+ .status-metrics span{
+  min-height:50px!important;
+  padding:9px 10px!important
+ }
+ .status-metrics span:last-child{
+  display:none!important
+ }
+ .research-desk{
+  margin-top:12px!important;
+  margin-bottom:12px!important
+ }
+ .desk-compact-meta{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:7px!important
+ }
+ .desk-compact-meta span,.desk-compact-meta em{
+  min-width:0!important
+ }
+ .data-panel{
+  margin-top:12px!important
+ }
+ .data-heading{
+  min-height:66px!important;
+  padding:14px 16px!important
+ }
+}
