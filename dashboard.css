@@ -1134,9 +1134,10 @@ dialog{border-radius:20px}
  }
  .prob-labels b{font-size:24px}
  .round-nav{
-  grid-template-columns:1fr 1.2fr
+  grid-template-columns:1fr 1fr
  }
- .round-nav .prev-btn,.round-nav .next-btn{
+ .round-nav .next-btn{grid-column:1/-1}
+ .round-nav .prev-btn,.round-nav .next-btn,.round-nav .synopsis-btn{
   height:56px;
   font-size:13px;
   letter-spacing:.7px
@@ -1179,7 +1180,8 @@ dialog{border-radius:20px}
  .score-strip img{display:none}
  .round-clock strong{font-size:19px}
  .round-nav{grid-template-columns:1fr}
- .round-nav .prev-btn{border-right:0}
+ .round-nav .next-btn{grid-column:auto}
+ .round-nav .prev-btn,.round-nav .synopsis-btn{border-right:0}
 }
 
 /* Typography / design refinement pass */

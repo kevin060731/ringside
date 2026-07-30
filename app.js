@@ -1246,6 +1246,57 @@ function renderPostfightRounds(){
   </details>`;
  }).join("");
 }
+function sentenceFromRound(round){
+ const source=(round.report||round.lines||[]).find(Boolean)||round.headline||"";
+ return String(source).split(/(?<=[.!?])\s+/).find(Boolean)||source;
+}
+function buildFightSynopsis(){
+ if(!fight)return "";
+ const a=fight.a||active("a"),b=fight.b||active("b"),rounds=fight.rounds||[],t=fight.totals||{};
+ const winner=fight.winner==="draw"?null:(fight[fight.winner]||active(fight.winner));
+ const loser=winner?.id===a.id?b:a;
+ const totalA=rounds.reduce((n,r)=>n+(Number(r.scoreA)||0),0),totalB=rounds.reduce((n,r)=>n+(Number(r.scoreB)||0),0);
+ const leader=totalA===totalB?null:totalA>totalB?a:b;
+ const early=rounds.slice(0,Math.min(3,rounds.length));
+ const middle=rounds.slice(Math.max(0,Math.floor(rounds.length/2)-1),Math.min(rounds.length,Math.floor(rounds.length/2)+2));
+ const late=rounds.slice(Math.max(0,rounds.length-3));
+ const events=rounds.filter(r=>r.knockA||r.knockB||r.deduction||r.stoppage);
+ const swingRounds=[...events,...rounds.filter(r=>Math.abs((r.landedA||0)-(r.landedB||0))>=8||Math.abs((r.damageA||0)-(r.damageB||0))>=1.4)].filter(Boolean);
+ const uniqueSwings=[...new Map(swingRounds.map(r=>[r.number,r])).values()].slice(0,4);
+ const mode=fight.historical?"Verified replay synopsis":"Fight synopsis";
+ const resultText=winner?`${winner.name} wins by ${fight.decision}.`:`The fight ends as a draw by ${fight.decision}.`;
+ const arcLead=fight.historical
+  ?`Because this matchup already exists in the archive, RINGSIDE summarizes the verified result instead of inventing a new winner.`
+  :`This is the quick read on how the engine says the fantasy fight unfolded, without making you click through every round.`;
+ const earlyText=early.length?sentenceFromRound(early[early.length-1]):"The opening phase stays cautious while both corners test range.";
+ const middleText=middle.length?sentenceFromRound(middle[Math.floor(middle.length/2)]):"The middle rounds decide which style can repeat clean work.";
+ const lateText=late.length?sentenceFromRound(late[late.length-1]):"The final phase is shaped by score pressure, damage and stamina.";
+ const eventText=uniqueSwings.length
+  ?uniqueSwings.map(r=>{
+    const tag=r.stoppage?`${r.stoppage.type} stoppage`:r.knockA?`${a.last} down`:r.knockB?`${b.last} down`:r.deduction?"point deduction":"swing round";
+    return `<li><b>Round ${r.number}</b><span>${tag}: ${r.headline}. ${sentenceFromRound(r)}</span></li>`;
+   }).join("")
+  :`<li><b>No single crash point</b><span>The fight turns on accumulated clean work, judging optics and who controls the resets between exchanges.</span></li>`;
+ const stoppageRound=rounds.find(r=>r.stoppage);
+ const cardText=stoppageRound
+  ?`The official endpoint arrives in round ${stoppageRound.number}.`
+  :leader?`${leader.last} edges the working round ledger ${totalA}–${totalB} before the official cards are read.`:`The round ledger is level at ${totalA}–${totalB}, so the result comes down to the official judging lens.`;
+ const statsText=t.landedA!=null&&t.landedB!=null
+  ?`${a.last} lands ${t.landedA ?? "—"} total punches${t.powerA!=null?`, ${t.powerA} of them power shots`:""}; ${b.last} lands ${t.landedB ?? "—"}${t.powerB!=null?`, including ${t.powerB} power shots`:""}.`
+  :`Official punch totals are not available for this replay, so the synopsis leans on scorecards, events and the tactical archive.`;
+ const whyText=winner
+  ?`${winner.last} gets there because the cleaner winning moments become more repeatable than ${loser.last}'s best answers. ${cardText}`
+  :`Neither corner separates cleanly enough across the full fight. ${cardText}`;
+ return `<div class="synopsis-head"><small>${mode}</small><h3>${resultText}</h3></div>
+  <p>${arcLead}</p>
+  <div class="synopsis-grid">
+   <article><small>EARLY</small><p>${earlyText}</p></article>
+   <article><small>MIDDLE</small><p>${middleText}</p></article>
+   <article><small>LATE</small><p>${lateText}</p></article>
+  </div>
+  <ul>${eventText}</ul>
+  <p class="synopsis-verdict">${whyText} ${statsText}</p>`;
+}
 async function saveResultToSupabase(){
  if(replayingSavedFight)return;
  setSaveStatus("saving");
@@ -1279,6 +1330,7 @@ function showResults(){
   :fight.judges.map(j=>`<div class="judge-card"><small>${j.name}</small><b>${j.a} — ${j.b}</b></div>`).join("");
  const t=fight.totals,stats=fight.historical&&!fight.officialStats?[["OFFICIAL PUNCH STATS","—","—"],["KNOCKDOWNS",t.kdA,t.kdB],["POINT DEDUCTIONS",fight.event.events?.filter(e=>e.type==="deduction"&&e.fighter===fight.a.id).length||0,fight.event.events?.filter(e=>e.type==="deduction"&&e.fighter===fight.b.id).length||0]]:[["TOTAL PUNCHES LANDED",t.landedA,t.landedB],["JABS & POWER LANDED",t.landedA-t.powerA+" / "+t.powerA,t.landedB-t.powerB+" / "+t.powerB],["ACCURACY",Math.round(t.landedA/t.thrownA*100)+"%",Math.round(t.landedB/t.thrownB*100)+"%"],["KNOCKDOWNS",t.kdA,t.kdB]];
  $("#stats-table").innerHTML=stats.map(r=>`<div class="stat-row"><span>${r[1]}</span><span>${r[0]}</span><span>${r[2]}</span></div>`).join("");
+ $("#fight-synopsis").innerHTML=buildFightSynopsis();
  const consensus=fight.event?.fanConsensus;
  $("#fan-consensus").classList.toggle("hidden",!consensus);
  $("#fan-consensus").innerHTML=consensus?`<div class="fan-consensus-head"><small>r/BOXING · FAN CONSENSUS</small><b>${consensus.label}</b></div><h3>${consensus.tone}</h3><p>${consensus.summary}</p><div class="fan-themes">${consensus.themes.map(t=>`<span>${t}</span>`).join("")}</div><div class="fan-sources">${consensus.sources.map(s=>`<a href="${s.url}" target="_blank" rel="noreferrer">${s.label} ↗</a>`).join("")}</div>`:"";
@@ -1294,6 +1346,7 @@ $("#division-filters").onclick=e=>{const btn=e.target.closest("[data-division]")
 $("#fighter-search").oninput=e=>renderArchive(e.target.value);$("#close-picker").onclick=()=>$("#picker").close();$("#simulate").onclick=setupFight;
 $("#next-round").onclick=()=>{if(current>=fight.rounds.length||fight.rounds[current-1]?.stoppage)showResults();else{current++;renderLive()}};
 $("#prev-round").onclick=()=>{if(!fight||current<=0)return;current--;renderLive()};
+$("#skip-to-synopsis").onclick=()=>{if(!fight)return;current=fight.rounds.length;showResults();setTimeout(()=>$("#fight-synopsis")?.scrollIntoView({behavior:"smooth",block:"center"}),100)};
 $("#new-fight").onclick=()=>location.reload();$("#run-again").onclick=()=>{if(replayingSavedFight&&lastSavedFight)hydrateSavedMatchup(lastSavedFight);setupFight()};
 $("#refresh-my-fights").onclick=loadMyFights;
 $("#refresh-fight-cards").onclick=async()=>{const status=$("#fight-cards-status");if(status){status.textContent="Refreshing preview board…";status.classList.remove("hidden")}await syncUpcomingFightsFromSupabase(true);renderFightCards()};
