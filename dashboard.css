@@ -2984,6 +2984,46 @@ body[data-view="results"] .fight-synopsis{
  }
 }
 
+/* Result-state hard override: keep pre-fight cards out of the final screen */
+body[data-view="results"] .hero,
+body[data-view="results"] #public-status,
+body[data-view="results"] .public-status,
+body[data-view="results"] .demo-brief,
+body[data-view="results"] #setup,
+body[data-view="results"] .matchup-shell,
+body[data-view="results"] #research-desk,
+body[data-view="results"] .research-desk,
+body[data-view="results"] .settings-panel,
+body[data-view="results"] .data-panel{
+ display:none!important
+}
+body[data-view="results"] .results{
+ padding-top:38px!important
+}
+body[data-view="results"] .result-glow{
+ top:54px!important;
+ height:250px!important
+}
+body[data-view="results"] .results::before{
+ top:68px!important;
+ height:250px!important;
+ width:min(660px,82vw)!important
+}
+@media(max-width:760px){
+ body[data-view="results"] .results{
+  padding-top:30px!important
+ }
+ body[data-view="results"] .result-glow{
+  top:42px!important;
+  height:220px!important
+ }
+ body[data-view="results"] .results::before{
+  top:58px!important;
+  height:210px!important;
+  width:88vw!important
+ }
+}
+
 /* Typography / design final pass */
 :root{
  --final-bg:#0b1020;
