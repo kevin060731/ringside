@@ -43,10 +43,16 @@ function setImage(img,src,alt=""){
 const fightLabSections=[".hero","#public-status",".demo-brief","#setup","#research-desk",".settings-panel",".data-panel"];
 function isGenericImage(src=""){return /images\.unsplash\.com|Profile_avatar_placeholder|avatar_placeholder|placeholder/i.test(src)}
 const wikiAliases={
- "Saúl Álvarez":"Canelo Álvarez","Gennadiy Golovkin":"Gennady Golovkin","Jesse Rodriguez":"Jesse Rodríguez (boxer)","Oleksandr Usyk":"Oleksandr Usyk","Floyd Mayweather":"Floyd Mayweather Jr.","Julio César Chávez":"Julio César Chávez","Teófimo López":"Teófimo López",
+ "Saúl Álvarez":"Canelo Álvarez","Gennadiy Golovkin":"Gennady Golovkin","Jesse Rodriguez":"Jesse Rodríguez (boxer)","Jesse Rodríguez":"Jesse Rodríguez (boxer)","Oleksandr Usyk":"Oleksandr Usyk","Floyd Mayweather":"Floyd Mayweather Jr.","Julio César Chávez":"Julio César Chávez","Teófimo López":"Teófimo López",
  "Manny Pacquiao":"Manny Pacquiao","Sugar Ray Robinson":"Sugar Ray Robinson","Sugar Ray Leonard":"Sugar Ray Leonard","Roberto Durán":"Roberto Durán","Pernell Whitaker":"Pernell Whitaker","Oscar De La Hoya":"Oscar De La Hoya","Marvin Hagler":"Marvelous Marvin Hagler",
- "Thomas Hearns":"Thomas Hearns","Naoya Inoue":"Naoya Inoue","Vasiliy Lomachenko":"Vasiliy Lomachenko","Gervonta Davis":"Gervonta Davis","Devin Haney":"Devin Haney","Shakur Stevenson":"Shakur Stevenson","Ryan Garcia":"Ryan Garcia","Errol Spence Jr.":"Errol Spence Jr.",
- "Jaron Ennis":"Jaron Ennis","Vergil Ortiz Jr.":"Vergil Ortiz Jr.","Brian Norman Jr.":"Brian Norman Jr.","David Benavidez":"David Benavidez","Artur Beterbiev":"Artur Beterbiev","Dmitry Bivol":"Dmitry Bivol","Anthony Joshua":"Anthony Joshua","Deontay Wilder":"Deontay Wilder"
+ "Thomas Hearns":"Thomas Hearns","Naoya Inoue":"Naoya Inoue","Vasiliy Lomachenko":"Vasiliy Lomachenko","Gervonta Davis":"Gervonta Davis","Devin Haney":"Devin Haney","Shakur Stevenson":"Shakur Stevenson","Ryan Garcia":"Ryan Garcia","Errol Spence":"Errol Spence Jr.","Errol Spence Jr.":"Errol Spence Jr.",
+ "Jaron Ennis":"Jaron Ennis","Vergil Ortiz":"Vergil Ortiz Jr.","Vergil Ortiz Jr.":"Vergil Ortiz Jr.","Brian Norman Jr.":"Brian Norman Jr.","David Benavidez":"David Benavidez","Artur Beterbiev":"Artur Beterbiev","Dmitry Bivol":"Dmitry Bivol","Anthony Joshua":"Anthony Joshua","Deontay Wilder":"Deontay Wilder",
+ "Mike Tyson":"Mike Tyson","Tyson Fury":"Tyson Fury","Terence Crawford":"Terence Crawford","Lennox Lewis":"Lennox Lewis","Evander Holyfield":"Evander Holyfield","Wladimir Klitschko":"Wladimir Klitschko","Vitali Klitschko":"Vitali Klitschko","Joe Louis":"Joe Louis","Rocky Marciano":"Rocky Marciano","Joe Frazier":"Joe Frazier","George Foreman":"George Foreman",
+ "Bernard Hopkins":"Bernard Hopkins","Roy Jones Jr.":"Roy Jones Jr.","Andre Ward":"Andre Ward","Sergey Kovalev":"Sergey Kovalev","Shane Mosley":"Shane Mosley","Juan Manuel Márquez":"Juan Manuel Márquez","Miguel Cotto":"Miguel Cotto","Erik Morales":"Erik Morales","Marco Antonio Barrera":"Marco Antonio Barrera",
+ "Junto Nakatani":"Junto Nakatani","Kazuto Ioka":"Kazuto Ioka","Juan Francisco Estrada":"Juan Francisco Estrada","Roman Gonzalez":"Román González (boxer)","Román González":"Román González (boxer)","Nonito Donaire":"Nonito Donaire","Fernando Martinez":"Fernando Martínez (boxer)","Fernando Martínez":"Fernando Martínez (boxer)",
+ "David Morrell":"David Morrell Jr.","David Morrell Jr.":"David Morrell Jr.","Caleb Plant":"Caleb Plant","Jermall Charlo":"Jermall Charlo","Jermell Charlo":"Jermell Charlo","Sebastian Fundora":"Sebastian Fundora","Tim Tszyu":"Tim Tszyu","Xander Zayas":"Xander Zayas",
+ "Joseph Parker":"Joseph Parker (boxer)","Zhilei Zhang":"Zhilei Zhang","Daniel Dubois":"Daniel Dubois","Agit Kabayel":"Agit Kabayel","Jai Opetaia":"Jai Opetaia","Gilberto Ramírez":"Gilberto Ramírez","Derek Chisora":"Derek Chisora","Andy Ruiz Jr.":"Andy Ruiz Jr.",
+ "José Valenzuela":"José Valenzuela (boxer)","Jose Valenzuela":"José Valenzuela (boxer)","Frank Martin":"Frank Martin (boxer)","Nahir Albright":"Nahir Albright","Keyshawn Davis":"Keyshawn Davis","Andy Cruz":"Andy Cruz Gómez","Richardson Hitchins":"Richardson Hitchins","Subriel Matías":"Subriel Matías","Jack Catterall":"Jack Catterall","Josh Taylor":"Josh Taylor (boxer)"
 };
 const portraitJobs=new Map();
 async function resolvePortrait(f){
@@ -1211,7 +1217,10 @@ async function setupFight(){
  await Promise.allSettled([resolvePortrait(selected.a),resolvePortrait(selected.b)]);
  button.disabled=false;button.innerHTML="<span>SIMULATE THE FIGHT</span><b>→</b>";
  if(fight.historical)scheduled=fight.rounds.length;
- current=0;$("#setup").classList.add("hidden");$(".settings-panel").classList.add("hidden");$(".hero").classList.add("hidden");$("#broadcast").classList.remove("hidden");$("#results").classList.add("hidden");
+ current=0;
+ document.body.dataset.view="broadcast";
+ fightLabSections.forEach(selector=>document.querySelector(selector)?.classList.add("hidden"));
+ $("#broadcast").classList.remove("hidden");$("#results").classList.add("hidden");
  for(const s of ["a","b"]){const fighter=active(s);$(`#live-name-${s}`).textContent=fighter.name;setImage($(`#live-img-${s}`),fighter.portrait||fighter.img,fighter.name);$(`#score-head-${s}`).textContent=fighter.last.toUpperCase();$(`#prob-name-${s}`).textContent=fighter.last.toUpperCase()}
  $("#venue-display").textContent=$("#venue").value.toUpperCase();renderFightPoster();renderLive();window.scrollTo({top:0,behavior:"smooth"});
 }

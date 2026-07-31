@@ -209,3 +209,5 @@ Good next backend features:
 1. Community voting
 2. Supabase storage for fighter images
 3. Automated research queue for new real fights
+
+For the current no-code operating process, use [`RINGSIDE_OPERATIONS.md`](./RINGSIDE_OPERATIONS.md). That file covers weekly roster sync, verified fight updates, fighter image cleanup, upcoming-card freshness, and the no-cost Vercel domain path.

@@ -2984,7 +2984,17 @@ body[data-view="results"] .fight-synopsis{
  }
 }
 
-/* Result-state hard override: keep pre-fight cards out of the final screen */
+/* Fight-state hard overrides: keep pre-fight cards out of broadcast/result screens */
+body[data-view="broadcast"] .hero,
+body[data-view="broadcast"] #public-status,
+body[data-view="broadcast"] .public-status,
+body[data-view="broadcast"] .demo-brief,
+body[data-view="broadcast"] #setup,
+body[data-view="broadcast"] .matchup-shell,
+body[data-view="broadcast"] #research-desk,
+body[data-view="broadcast"] .research-desk,
+body[data-view="broadcast"] .settings-panel,
+body[data-view="broadcast"] .data-panel,
 body[data-view="results"] .hero,
 body[data-view="results"] #public-status,
 body[data-view="results"] .public-status,
