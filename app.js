@@ -1332,6 +1332,8 @@ async function saveResultToSupabase(){
  }
 }
 function showResults(){
+ document.body.dataset.view="results";
+ [".hero","#public-status",".demo-brief","#setup",".settings-panel","#research-desk",".data-panel"].forEach(selector=>document.querySelector(selector)?.classList.add("hidden"));
  $("#broadcast").classList.add("hidden");$("#results").classList.remove("hidden");$("#result-kicker").textContent=replayingSavedFight?"SAVED FIGHT REPLAY":"OFFICIAL RESULT";const w=fight.winner==="draw"?null:fight[fight.winner]||active(fight.winner);
  const verifiedLabel=window.BOXING_FIGHT_HISTORY?.qualityLabel?.(fight.event)||(fight.officialScorecards?"OFFICIAL REPLAY":"VERIFIED OUTCOME");
  const resultMode=$("#result-mode-pill");
