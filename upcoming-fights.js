@@ -84,7 +84,7 @@ global.RINGSIDE_UPCOMING_FIGHTS=[
   sourceCheckedAt:"2026-07-29",
   expiresAt:"2026-08-12",
   refreshCadence:"weekly",
-  cardNote:"Source checked July 29, 2026. Add Alberto Puello to the roster to make this card playable.",
+  cardNote:"Source checked July 29, 2026. Playable preview built from the synced roster and current schedule board.",
   market:{"label":"Style market","angle":"Smith's timing and domestic momentum versus Puello's southpaw range craft"},
   sources:[{label:"ESPN schedule",url:"https://www.espn.com/boxing/story/_/id/12508267/boxing-fight-schedule"}]
  },
@@ -106,7 +106,7 @@ global.RINGSIDE_UPCOMING_FIGHTS=[
   sourceCheckedAt:"2026-07-29",
   expiresAt:"2026-08-12",
   refreshCadence:"weekly",
-  cardNote:"Source checked July 29, 2026. Add Andy Cruz to the roster to make this card playable.",
+  cardNote:"Source checked July 29, 2026. Playable preview built from the synced roster and current schedule board.",
   market:{"label":"Style market","angle":"Muratalla's pro pressure and punch placement versus Cruz's amateur-school distance and angles"},
   sources:[{label:"ESPN schedule",url:"https://www.espn.com/boxing/story/_/id/12508267/boxing-fight-schedule"}]
  }
