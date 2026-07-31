@@ -37,23 +37,38 @@ function setImage(img,src,alt=""){
  img.classList.remove("image-missing");
  img.alt=alt;
  img.onerror=()=>img.classList.add("image-missing");
- img.src=src||"";
+ if(!src||isGenericImage(src)){img.removeAttribute("src");img.classList.add("image-missing");return}
+ img.src=src;
 }
 const fightLabSections=[".hero","#public-status",".demo-brief","#setup","#research-desk",".settings-panel",".data-panel"];
-const wikiAliases={"Saúl Álvarez":"Canelo Álvarez","Gennadiy Golovkin":"Gennady Golovkin","Jesse Rodriguez":"Jesse Rodríguez (boxer)","Oleksandr Usyk":"Oleksandr Usyk","Floyd Mayweather":"Floyd Mayweather Jr.","Julio César Chávez":"Julio César Chávez","Teófimo López":"Teófimo López"};
+function isGenericImage(src=""){return /images\.unsplash\.com|Profile_avatar_placeholder|avatar_placeholder|placeholder/i.test(src)}
+const wikiAliases={
+ "Saúl Álvarez":"Canelo Álvarez","Gennadiy Golovkin":"Gennady Golovkin","Jesse Rodriguez":"Jesse Rodríguez (boxer)","Oleksandr Usyk":"Oleksandr Usyk","Floyd Mayweather":"Floyd Mayweather Jr.","Julio César Chávez":"Julio César Chávez","Teófimo López":"Teófimo López",
+ "Manny Pacquiao":"Manny Pacquiao","Sugar Ray Robinson":"Sugar Ray Robinson","Sugar Ray Leonard":"Sugar Ray Leonard","Roberto Durán":"Roberto Durán","Pernell Whitaker":"Pernell Whitaker","Oscar De La Hoya":"Oscar De La Hoya","Marvin Hagler":"Marvelous Marvin Hagler",
+ "Thomas Hearns":"Thomas Hearns","Naoya Inoue":"Naoya Inoue","Vasiliy Lomachenko":"Vasiliy Lomachenko","Gervonta Davis":"Gervonta Davis","Devin Haney":"Devin Haney","Shakur Stevenson":"Shakur Stevenson","Ryan Garcia":"Ryan Garcia","Errol Spence Jr.":"Errol Spence Jr.",
+ "Jaron Ennis":"Jaron Ennis","Vergil Ortiz Jr.":"Vergil Ortiz Jr.","Brian Norman Jr.":"Brian Norman Jr.","David Benavidez":"David Benavidez","Artur Beterbiev":"Artur Beterbiev","Dmitry Bivol":"Dmitry Bivol","Anthony Joshua":"Anthony Joshua","Deontay Wilder":"Deontay Wilder"
+};
 const portraitJobs=new Map();
-async function loadPortrait(f,img){
- if(f.syncedImage&&f.img){img.src=f.img;return}
- if(f.portrait){img.src=f.portrait;return}
+async function resolvePortrait(f){
+ if(!f)return null;
+ if(f.syncedImage&&f.img&&!isGenericImage(f.img))return f.img;
+ if(f.portrait&&!isGenericImage(f.portrait))return f.portrait;
  if(!portraitJobs.has(f.id))portraitJobs.set(f.id,(async()=>{
-  const title=f.wiki||wikiAliases[f.name]||f.name;
+  const title=wikiAliases[f.name]||f.wiki||f.name;
   const summary=await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`).then(r=>r.ok?r.json():null).catch(()=>null);
   if(summary?.thumbnail?.source)return summary.thumbnail.source;
   const commons=await fetch(`https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrnamespace=6&gsrlimit=6&gsrsearch=${encodeURIComponent(`"${f.name}" boxer`)}&prop=imageinfo&iiprop=url&iiurlwidth=500&format=json&origin=*`).then(r=>r.ok?r.json():null).catch(()=>null);
   const pages=Object.values(commons?.query?.pages||{});
   return pages.find(page=>/\.(jpg|jpeg|png)$/i.test(page.title))?.imageinfo?.[0]?.thumburl||null;
  })());
- const src=await portraitJobs.get(f.id);if(src){f.portrait=src;f.img=src;img.src=src}
+ const src=await portraitJobs.get(f.id);
+ if(src){f.portrait=src;f.img=src;return src}
+ return f.img&&!isGenericImage(f.img)?f.img:null;
+}
+async function loadPortrait(f,img){
+ if(!img)return;
+ const src=await resolvePortrait(f);
+ if(src)setImage(img,src,f.name);
 }
 const portraitObserver=new IntersectionObserver(entries=>entries.forEach(entry=>{if(!entry.isIntersecting)return;const f=fighters.find(x=>x.id===entry.target.dataset.fighter);if(f)loadPortrait(f,entry.target);portraitObserver.unobserve(entry.target)}),{rootMargin:"180px"});
 const divisionLimits={"Heavyweight":"200+ lb","Cruiserweight":"200 lb","Light Heavyweight":"175 lb","Super Middleweight":"168 lb","Middleweight":"160 lb","Junior Middleweight":"154 lb","Welterweight":"147 lb","Junior Welterweight":"140 lb","Lightweight":"135 lb","Junior Lightweight":"130 lb","Featherweight":"126 lb","Junior Featherweight":"122 lb","Bantamweight":"118 lb","Junior Bantamweight":"115 lb","Flyweight":"112 lb","Junior Flyweight":"108 lb","Strawweight":"105 lb"};
@@ -237,7 +252,7 @@ function versionProfile(f,v){
 }
 function renderFighter(side){
  const f=selected[side],v=active(side);
- $(`#portrait-${side}`).src=f.img;$(`#portrait-${side}`).alt=f.name;$(`#name-${side}`).textContent=f.name;
+ setImage($(`#portrait-${side}`),f.portrait||f.img,f.name);$(`#name-${side}`).textContent=f.name;
  $(`#meta-${side}`).textContent=`${f.country} · ${v.stance||f.stance} · ${v.division||f.division}`;
  $(`#year-${side}`).innerHTML=f.years.map((y,i)=>`<option value="${i}" ${i===versions[side]?"selected":""}>${y.label}</option>`).join("");
  const profile=versionProfile(f,v);
@@ -339,8 +354,9 @@ function renderArchive(q=""){
  $("#fighter-grid").innerHTML=list.length?list.map(f=>{
   const latest=f.years[0]||{};
   const verifiedCount=window.BOXING_FIGHT_HISTORY?.fights?.filter(record=>record.red===f.id||record.blue===f.id).length||0;
+  const imageSrc=f.portrait||(!isGenericImage(f.img)?f.img:"");
   return `<button class="archive-fighter" data-id="${f.id}">
-    <img src="${f.img}" data-fighter="${f.id}" alt="${f.name}" onerror="this.classList.add('image-missing')">
+    <img ${imageSrc?`src="${imageSrc}"`:""} data-fighter="${f.id}" alt="${f.name}" class="${imageSrc?"":"image-missing"}" onerror="this.classList.add('image-missing')">
     <span>
       <b>${f.name}</b>
       <small>${f.nickname?`“${f.nickname}” · `:""}${f.division}</small>
@@ -1175,7 +1191,7 @@ async function openSavedFight(slug){
 }
 function renderFightPoster(last=null){
  const a=active("a"),b=active("b"),round=last?.number||1;
- setImage($("#poster-img-a"),a.img,a.name);setImage($("#poster-img-b"),b.img,b.name);
+ setImage($("#poster-img-a"),a.portrait||a.img,a.name);setImage($("#poster-img-b"),b.portrait||b.img,b.name);
  $("#poster-name-a").textContent=a.last;$("#poster-name-b").textContent=b.last;
  $("#poster-bg-a").textContent=a.last;$("#poster-bg-b").textContent=b.last;
  $("#poster-version-a").textContent=a.label||`${a.year||""}`;$("#poster-version-b").textContent=b.label||`${b.year||""}`;
@@ -1192,10 +1208,11 @@ async function setupFight(){
  const deskSettings=fightSettings();
  researchDesk=window.BOXING_RESEARCH_DESK?.create(a,b,deskSettings);
  fight=BoxingEngine.buildFight(a,b,{...deskSettings,narrationSalt:`${Date.now()}-${Math.random()}`,researchDesk});
+ await Promise.allSettled([resolvePortrait(selected.a),resolvePortrait(selected.b)]);
  button.disabled=false;button.innerHTML="<span>SIMULATE THE FIGHT</span><b>→</b>";
  if(fight.historical)scheduled=fight.rounds.length;
  current=0;$("#setup").classList.add("hidden");$(".settings-panel").classList.add("hidden");$(".hero").classList.add("hidden");$("#broadcast").classList.remove("hidden");$("#results").classList.add("hidden");
- for(const s of ["a","b"]){$(`#live-name-${s}`).textContent=active(s).name;setImage($(`#live-img-${s}`),active(s).img,active(s).name);$(`#score-head-${s}`).textContent=active(s).last.toUpperCase();$(`#prob-name-${s}`).textContent=active(s).last.toUpperCase()}
+ for(const s of ["a","b"]){const fighter=active(s);$(`#live-name-${s}`).textContent=fighter.name;setImage($(`#live-img-${s}`),fighter.portrait||fighter.img,fighter.name);$(`#score-head-${s}`).textContent=fighter.last.toUpperCase();$(`#prob-name-${s}`).textContent=fighter.last.toUpperCase()}
  $("#venue-display").textContent=$("#venue").value.toUpperCase();renderFightPoster();renderLive();window.scrollTo({top:0,behavior:"smooth"});
 }
 function renderLive(){
