@@ -40,7 +40,7 @@ function setImage(img,src,alt=""){
  if(!src||isGenericImage(src)){img.removeAttribute("src");img.classList.add("image-missing");return}
  img.src=src;
 }
-const fightLabSections=[".hero","#public-status",".demo-brief","#setup","#research-desk",".settings-panel",".data-panel"];
+const fightLabSections=[".hero","#public-status","#quick-start",".demo-brief","#setup","#research-desk",".settings-panel",".data-panel"];
 function isGenericImage(src=""){return /images\.unsplash\.com|Profile_avatar_placeholder|avatar_placeholder|placeholder/i.test(src)}
 const wikiAliases={
  "Saúl Álvarez":"Canelo Álvarez","Gennadiy Golovkin":"Gennady Golovkin","Jesse Rodriguez":"Jesse Rodríguez (boxer)","Jesse Rodríguez":"Jesse Rodríguez (boxer)","Oleksandr Usyk":"Oleksandr Usyk","Floyd Mayweather":"Floyd Mayweather Jr.","Julio César Chávez":"Julio César Chávez","Teófimo López":"Teófimo López",
@@ -1372,6 +1372,16 @@ for(const s of ["a","b"])$(`#year-${s}`).onchange=e=>{versions[s]=+e.target.valu
 $("#fighter-grid").onclick=e=>{const btn=e.target.closest("[data-id]");if(!btn)return;selected[pickerSide]=fighters.find(f=>f.id===btn.dataset.id);versions[pickerSide]=0;renderFighter(pickerSide);renderResearchDesk();$("#picker").close()};
 $("#division-filters").onclick=e=>{const btn=e.target.closest("[data-division]");if(!btn)return;archiveDivision=btn.dataset.division;renderArchive($("#fighter-search").value)};
 $("#fighter-search").oninput=e=>renderArchive(e.target.value);$("#close-picker").onclick=()=>$("#picker").close();$("#simulate").onclick=setupFight;
+$("#quick-start").onclick=e=>{
+ const target=e.target.closest("[data-guide-target]")?.dataset.guideTarget;
+ if(!target)return;
+ const element=$(target);
+ element?.scrollIntoView({behavior:"smooth",block:target==="#simulate"?"center":"start"});
+};
+$("#quick-start-dismiss").onclick=()=>{
+ $("#quick-start")?.classList.add("hidden");
+ try{localStorage.setItem("ringsideQuickStartHidden","1")}catch{}
+};
 $("#next-round").onclick=()=>{if(current>=fight.rounds.length||fight.rounds[current-1]?.stoppage)showResults();else{current++;renderLive()}};
 $("#prev-round").onclick=()=>{if(!fight||current<=0)return;current--;renderLive()};
 $("#skip-to-synopsis").onclick=()=>{if(!fight)return;current=fight.rounds.length;showResults();setTimeout(()=>$("#fight-synopsis")?.scrollIntoView({behavior:"smooth",block:"center"}),100)};
@@ -1467,6 +1477,7 @@ $("#weight").innerHTML=(window.WEIGHT_CLASSES||[]).map(d=>`<option>${d}</option>
 $("#weight").onchange=renderResearchDesk;
 ["ring","venue","championship","neutral","ruleset","environment","weighin","equipment"].forEach(id=>{const el=$(`#${id}`);if(el)el.onchange=renderResearchDesk});
 renderFighter("a");renderFighter("b");renderArchive();
+try{if(localStorage.getItem("ringsideQuickStartHidden")==="1")$("#quick-start")?.classList.add("hidden")}catch{}
 renderFightCards();
 renderAuthState();
 window.RINGSIDE_SUPABASE?.completeOAuthFromUrl?.().then(session=>{

@@ -19,6 +19,36 @@ Do this once a week, and again during fight week for major cards.
 4. Open **Roster** and update any fighters who changed division, record, image, or best-version note.
 5. Refresh the public site and confirm the homepage count and Fight Cards page look right.
 
+## First-time user journey
+
+The public app should guide a new visitor through this path without you explaining it:
+
+1. **Understand the promise**
+   - History when it exists.
+   - Simulation when it does not.
+   - Saved/shareable replays after the result.
+
+2. **Pick a matchup**
+   - Choose the red-corner fighter.
+   - Choose the blue-corner fighter.
+   - Pick the right fighter version, not just the fighter name.
+
+3. **Tune the fight**
+   - Weight class
+   - scheduled rounds
+   - rules era
+   - ring size
+   - environment
+   - equipment
+   - neutral/championship settings
+
+4. **Choose how deep to watch**
+   - Use the quick synopsis if they only want the answer.
+   - Use round-by-round playback if they want the full broadcast-style simulation.
+   - Save/share the result if signed in.
+
+If a tester cannot understand that flow in under a minute, the fix should be copy/layout before adding more data.
+
 ## After a real fight happens
 
 Use this order so the simulator stops guessing as soon as possible.
@@ -45,6 +75,26 @@ Use this order so the simulator stops guessing as soon as possible.
 4. **Check the public app**
    - Select the same two fighters in Fight Lab.
    - The app should show a verified matchup and replay the real result.
+
+## 20-minute live-data maintenance loop
+
+When you only have a short window, use this order:
+
+1. **Fight Cards**
+   - Remove cancelled fights.
+   - Mark completed fights.
+   - Refresh source dates for anything still upcoming.
+
+2. **Verified History**
+   - Add the result for completed cards first, even if the first pass is only `verified_outcome`.
+   - Upgrade later to exact scorecards/events when you have them.
+
+3. **Roster**
+   - Update the fighters who just fought.
+   - Add a new version only if the fight meaningfully changed how that fighter should simulate.
+
+4. **Images**
+   - Fix missing portraits for fighters currently appearing on the homepage, Fight Cards, or common demo matchups.
 
 ## Fighter image process
 
@@ -124,4 +174,3 @@ Before sending the app to someone:
 6. Open **My Fights** and confirm only that profile’s saved fights appear.
 7. Copy a share link and open it in a private/incognito window.
 8. Open **Fight Cards** and confirm no stale or cancelled card is being promoted as live.
-
