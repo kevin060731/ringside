@@ -1239,10 +1239,10 @@ function renderLive(){
  renderFightPoster(last);
  const prevButton=$("#prev-round");
  if(prevButton){prevButton.disabled=current===0;prevButton.querySelector("span").textContent=current>1?`BACK TO ROUND ${current-1}`:"PREVIOUS ROUND"}
- if(!last){$("#round-label").textContent=`ROUND 1 OF ${scheduled}`;$("#round-watermark").textContent="01";$("#round-kicker").textContent="TALE OF THE TAPE";$("#round-headline").textContent="THE FIGHT AWAITS";$("#commentary-lines").innerHTML=`<div class="comment-line"><b>READY</b><span>The officials are in position. Both fighters are awaiting the opening bell.</span></div>`;$("#next-round span").textContent="BEGIN ROUND 1";return}
+ if(!last){$("#round-label").textContent=`ROUND 1 OF ${scheduled}`;$("#round-watermark").textContent="01";$("#round-kicker").textContent="TALE OF THE TAPE";$("#round-headline").textContent="THE FIGHT AWAITS";$("#commentary-lines").innerHTML=`<div class="comment-line"><b>READY</b><span>The officials are in position. Tap <strong>Get Quick Verdict</strong> for the 30-second answer, or begin round one for the full broadcast.</span></div>`;$("#next-round span").textContent="BEGIN ROUND 1";$("#skip-to-synopsis span").textContent="GET QUICK VERDICT";return}
  const report=last.report||last.lines,labels=report.length>=5?["OPENING 0:00–1:00","MIDDLE 1:00–2:00","CLOSING 2:00–3:00","POSITIONAL MAP","CORNER READ"]:["POSITION","MECHANICS","ADJUSTMENT"];
  $("#round-label").textContent=`ROUND ${last.number} OF ${scheduled}`;$("#round-watermark").textContent=String(last.number).padStart(2,"0");$("#round-kicker").textContent=`ROUND ${last.number} · ${last.knockA||last.knockB?"KNOCKDOWN":"FILM ROOM ANALYSIS"}`;$("#round-headline").textContent=last.headline;$("#commentary-lines").innerHTML=report.map((l,i)=>`<div class="comment-line report-line"><b>${labels[i]||String(i+1).padStart(2,"0")}</b><span>${l}</span></div>`).join("");
- const finished=current>=fight.rounds.length||last.stoppage;$("#next-round span").textContent=finished?"VIEW OFFICIAL RESULT":`ADVANCE TO ROUND ${current+1}`;
+ const finished=current>=fight.rounds.length||last.stoppage;$("#next-round span").textContent=finished?"VIEW OFFICIAL RESULT":`ADVANCE TO ROUND ${current+1}`;$("#skip-to-synopsis span").textContent="GET QUICK VERDICT";
 }
 function renderPostfightRounds(){
  const official=fight.event?.scorecards?.some(card=>card.rounds);
@@ -1323,6 +1323,86 @@ function buildFightSynopsis(){
   <ul>${eventText}</ul>
   <p class="synopsis-verdict">${whyText} ${statsText}</p>`;
 }
+function sideLabel(side){
+ return side==="a"?"red":side==="b"?"blue":"draw";
+}
+function scoreTextForSide(side){
+ if(!fight?.judges?.length||side==="draw")return "";
+ return fight.judges.map(j=>side==="a"?`${j.a}-${j.b}`:`${j.b}-${j.a}`).join(", ");
+}
+function verdictProbability(){
+ const a=fight?.a||active("a"),b=fight?.b||active("b");
+ const base=Number(researchDesk?.engineHints?.preFightProbabilityA??fight?.matchup?.preFightProbabilityA);
+ const probA=Number.isFinite(base)?Math.max(5,Math.min(95,Math.round(base))):Math.round((a.iq+a.speed)/(a.iq+a.speed+b.iq+b.speed)*100);
+ return {a:probA,b:100-probA};
+}
+function buildVerdictReasons(){
+ if(!fight)return [];
+ const a=fight.a||active("a"),b=fight.b||active("b"),t=fight.totals||{},rounds=fight.rounds||[];
+ const winnerSide=fight.winner,winner=winnerSide==="draw"?null:(fight[winnerSide]||active(winnerSide));
+ const loser=winner?.id===a.id?b:winner?.id===b.id?a:null;
+ const reasons=[],stoppage=rounds.find(r=>r.stoppage),events=rounds.filter(r=>r.knockA||r.knockB||r.deduction);
+ if(fight.historical){
+  reasons.push("Verified archive mode: this matchup already happened, so RINGSIDE replays the stored result instead of creating a fantasy winner.");
+  if(scoreTextForSide(winnerSide))reasons.push(`Official card lens: ${winner?.last||"the winner"} is supported by the stored cards (${scoreTextForSide(winnerSide)} from the winner's side).`);
+  if(fight.event?.fanConsensus?.tone)reasons.push(`Public-reaction layer: ${fight.event.fanConsensus.tone}.`);
+  if(events.length)reasons.push(`Fight events matter here: ${events.slice(0,2).map(r=>`round ${r.number} ${r.knockA||r.knockB?"knockdown":r.deduction?"deduction":"event"}`).join("; ")}.`);
+  return reasons.slice(0,4);
+ }
+ if(winner&&loser){
+  const landedWinner=winnerSide==="a"?t.landedA:t.landedB,landedLoser=winnerSide==="a"?t.landedB:t.landedA;
+  const powerWinner=winnerSide==="a"?t.powerA:t.powerB,powerLoser=winnerSide==="a"?t.powerB:t.powerA;
+  if(stoppage)reasons.push(`${winner.last} creates the decisive endpoint in round ${stoppage.number}; the finish comes after the simulator has already priced in damage, stamina and repeatable access.`);
+  if(Number.isFinite(landedWinner)&&Number.isFinite(landedLoser))reasons.push(`Punch footprint: ${winner.last} lands ${landedWinner} total shots${Number.isFinite(powerWinner)?`, including ${powerWinner} power punches`:""}, while ${loser.last} lands ${landedLoser}${Number.isFinite(powerLoser)?` with ${powerLoser} power shots`:""}.`);
+  if(researchDesk?.mismatch?.type&&!["competitive","lean"].includes(researchDesk.mismatch.type))reasons.push(`Mismatch logic: ${researchDesk.mismatch.reasons?.[0]||`${winner.last}'s advantages are large enough that ${loser.last} needs an early tactical answer.`}`);
+  else if(researchDesk?.quickKeys?.[0])reasons.push(`Style key: ${researchDesk.quickKeys[0]}`);
+  const setting=fight.settingEffects?.find(Boolean);
+  if(setting)reasons.push(`Conditions layer: ${setting}`);
+  if(researchDesk?.quickKeys?.[1]&&reasons.length<4)reasons.push(researchDesk.quickKeys[1]);
+  if(!stoppage&&scoreTextForSide(winnerSide))reasons.push(`Card read: the judges land at ${scoreTextForSide(winnerSide)}, so the pick is about cleaner repeatable rounds rather than one single crash moment.`);
+ }else{
+  reasons.push("RINGSIDE does not separate them cleanly enough; the simulation lands on a draw because neither style owns enough repeatable, judge-friendly stretches.");
+  if(fight.judges?.length)reasons.push(`The cards stay narrow across the full route: ${fight.judges.map(j=>`${j.a}-${j.b}`).join(", ")}.`);
+  if(researchDesk?.quickKeys?.[0])reasons.push(`Swing factor: ${researchDesk.quickKeys[0]}`);
+ }
+ return [...new Set(reasons.filter(Boolean))].slice(0,4);
+}
+function buildVerdictShareText(){
+ if(!fight)return "";
+ const probs=verdictProbability(),winnerSide=fight.winner,winner=winnerSide==="draw"?null:(fight[winnerSide]||active(winnerSide));
+ const loser=winnerSide==="a"?fight.b:winnerSide==="b"?fight.a:null,probability=winnerSide==="a"?probs.a:winnerSide==="b"?probs.b:50;
+ const lines=[`RINGSIDE PICK: ${winner&&loser?`${winner.name} over ${loser.name}`:"Draw"}`,`${fight.decision} · ${probability}% path`];
+ buildVerdictReasons().slice(0,3).forEach((reason,i)=>lines.push(`${i+1}. ${reason}`));
+ return lines.join("\n");
+}
+function buildInstantVerdict(){
+ if(!fight)return "";
+ const a=fight.a||active("a"),b=fight.b||active("b"),winnerSide=fight.winner,winner=winnerSide==="draw"?null:(fight[winnerSide]||active(winnerSide)),loser=winner?.id===a.id?b:winner?.id===b.id?a:null;
+ const probs=verdictProbability(),winnerProb=winnerSide==="a"?probs.a:winnerSide==="b"?probs.b:50,loserProb=winnerSide==="a"?probs.b:winnerSide==="b"?probs.a:50;
+ const confidence=Number(researchDesk?.confidence||researchDesk?.engineHints?.confidenceFloor||0),gap=Math.abs(probs.a-probs.b);
+ const confidenceLabel=fight.historical?"Verified replay":confidence>=85||gap>=28?"High confidence":confidence>=68||gap>=14?"Medium confidence":"Debatable lean";
+ const title=winner?`${winner.name} over ${loser.name}`:"RINGSIDE calls this a draw";
+ const probabilityLine=fight.historical?`Stored real result · ${confidenceLabel}`:winner?`${winner.last} ${winnerProb}% · ${loser.last} ${loserProb}%`:`${a.last} 50% · ${b.last} 50%`;
+ return `<div class="verdict-main ${sideLabel(winnerSide)}">
+   <div><small>${fight.historical?"VERIFIED RESULT":"RINGSIDE PICK"}</small><h3>${title}</h3><p>${fight.decision}</p></div>
+   <div class="verdict-meter"><span>${probabilityLine}</span><b>${confidenceLabel}</b></div>
+  </div>
+  <div class="verdict-why"><small>WHY THE ENGINE LEANS THIS WAY</small><ol>${buildVerdictReasons().map(reason=>`<li>${reason}</li>`).join("")}</ol></div>
+  <div class="verdict-actions"><button id="verdict-full-report">FULL BREAKDOWN</button><button id="verdict-rounds">ROUND-BY-ROUND</button><button id="verdict-copy">COPY VERDICT</button></div>`;
+}
+function bindInstantVerdictActions(){
+ $("#verdict-full-report")?.addEventListener("click",()=>$("#fight-synopsis")?.scrollIntoView({behavior:"smooth",block:"start"}));
+ $("#verdict-rounds")?.addEventListener("click",()=>{
+  $("#postfight-rounds")?.classList.remove("hidden");
+  $("#view-play-by-play").innerHTML="HIDE ROUND-BY-ROUND PLAY BY PLAY <b>↑</b>";
+  $("#postfight-rounds")?.scrollIntoView({behavior:"smooth",block:"start"});
+ });
+ $("#verdict-copy")?.addEventListener("click",async e=>{
+  await copyText(buildVerdictShareText());
+  e.currentTarget.textContent="COPIED";
+  setTimeout(()=>e.currentTarget.textContent="COPY VERDICT",1200);
+ });
+}
 async function saveResultToSupabase(){
  if(replayingSavedFight)return;
  setSaveStatus("saving");
@@ -1353,6 +1433,8 @@ function showResults(){
   else {resultMode.textContent="HYPOTHETICAL SIMULATION";resultMode.classList.add("fantasy")}
  }
  $("#winner-name").textContent=w?.name||"DRAW";$("#decision").textContent=fight.historical?`${fight.decision} · ${verifiedLabel}`:fight.decision;
+ $("#instant-verdict").innerHTML=buildInstantVerdict();
+ bindInstantVerdictActions();
  $("#official-cards").innerHTML=fight.historical&&!fight.officialScorecards
   ?`<div class="judge-card"><small>OFFICIAL CARDS</small><b>NOT AVAILABLE</b></div>`
   :fight.judges.map(j=>`<div class="judge-card"><small>${j.name}</small><b>${j.a} — ${j.b}</b></div>`).join("");
@@ -1384,7 +1466,7 @@ $("#quick-start-dismiss").onclick=()=>{
 };
 $("#next-round").onclick=()=>{if(current>=fight.rounds.length||fight.rounds[current-1]?.stoppage)showResults();else{current++;renderLive()}};
 $("#prev-round").onclick=()=>{if(!fight||current<=0)return;current--;renderLive()};
-$("#skip-to-synopsis").onclick=()=>{if(!fight)return;current=fight.rounds.length;showResults();setTimeout(()=>$("#fight-synopsis")?.scrollIntoView({behavior:"smooth",block:"center"}),100)};
+$("#skip-to-synopsis").onclick=()=>{if(!fight)return;current=fight.rounds.length;showResults();setTimeout(()=>$("#instant-verdict")?.scrollIntoView({behavior:"smooth",block:"center"}),100)};
 $("#new-fight").onclick=()=>location.reload();$("#run-again").onclick=()=>{if(replayingSavedFight&&lastSavedFight)hydrateSavedMatchup(lastSavedFight);setupFight()};
 $("#refresh-my-fights").onclick=loadMyFights;
 $("#refresh-fight-cards").onclick=async()=>{const status=$("#fight-cards-status");if(status){status.textContent="Refreshing preview board…";status.classList.remove("hidden")}await syncUpcomingFightsFromSupabase(true);renderFightCards()};
