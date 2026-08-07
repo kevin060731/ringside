@@ -9,7 +9,7 @@ const fighters=[
  {id:"fury",name:"Tyson Fury",last:"Fury",nickname:"Gypsy King",country:"GBR",stance:"Orthodox",division:"Heavyweight",years:[{year:2020,label:"2020 · WILDER II",power:90,speed:87,chin:93,defense:92,iq:95,footwork:93,cardio:94,accuracy:88,aggression:89}],img:"https://images.unsplash.com/photo-1552072092-7f9b8d63efcb?auto=format&fit=crop&w=500&q=85"}
 ];
 fighters.push(...(window.EXTRA_FIGHTERS||[]));
-const currentFighterIds=new Set(["usyk","canelo","fury","opetaia","beterbiev","bivol","davis","lopez","inoue","nakatani","rodriguez","teraji","yabuki","collazo","stevenson","benavidez","ennis","haney","ryangarcia"]);
+const currentFighterIds=new Set(["usyk","canelo","fury","joshua","wilder","opetaia","beterbiev","bivol","davis","lopez","inoue","nakatani","rodriguez","teraji","yabuki","collazo","stevenson","benavidez","ennis","haney","ryangarcia"]);
 if(window.ROSTER_VERSION_PACK){
  fighters.forEach(f=>{
   const versions=window.ROSTER_VERSION_PACK[f.id];
@@ -159,7 +159,21 @@ function applyDynamicCurrentForms(){
   if(generated)f.years.unshift(generated);
  });
 }
+function applyRatingCalibrations(){
+ fighters.forEach(f=>{
+  if(f.id==="lopez"){
+   (f.years||[]).forEach(v=>{
+    if((v.division||f.division)==="Junior Welterweight"){
+     v.power=Math.min(Number(v.power)||87,87);
+     v.sourceNotes={...(v.sourceNotes||{}),calibration:"140-lb power capped: elite timing/counterpunching, not elite stoppage power"};
+     v.sourceNotes.simulation={...(v.sourceNotes.simulation||{}),stoppagePower:"moderate",powerCappedAt140:true};
+    }
+   });
+  }
+ });
+}
 decorateRoster();
+applyRatingCalibrations();
 applyDynamicCurrentForms();
 const bioJobs=new Map();
 const boxrecPhysicals={
@@ -240,6 +254,7 @@ async function syncRosterFromSupabase(){
   if(!rows.length)return;
   const summary=window.RINGSIDE_ROSTER_SYNC.mergeRoster(fighters,result.data);
   decorateRoster();
+  applyRatingCalibrations();
   applyDynamicCurrentForms();
   for(const side of ["a","b"]){
    selected[side]=fighters.find(f=>f.id===previous[side].id)||selected[side];

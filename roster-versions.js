@@ -141,8 +141,8 @@ global.ROSTER_VERSION_PACK={
  ],
  lopez:[
   {year:2020,label:"2020 · LIGHTWEIGHT TAKEOVER",...S("Lightweight",95,96,91,90,92,94,92,94,91),bestPerformance:P("Vasiliy Lomachenko","UD 12","career-best lightweight win: athletic explosiveness plus disciplined early-round restraint")},
-  {year:2023,label:"2023 · 140-LB TAYLOR FIGHT",...S("Junior Welterweight",92,96,91,92,94,95,93,94,86),bestPerformance:P("Josh Taylor","UD 12","best junior-welter performance: rhythm, confidence and counterpunching returned")},
-  {year:2024,label:"2024 · RING CHAMPION",...S("Junior Welterweight",92,95,90,91,92,94,92,93,88)}
+  {year:2023,label:"2023 · 140-LB TAYLOR FIGHT",...S("Junior Welterweight",87,96,91,92,94,95,93,94,86),bestPerformance:P("Josh Taylor","UD 12","best junior-welter performance: rhythm, confidence and counterpunching returned without proving elite stoppage power at 140")},
+  {year:2024,label:"2024 · RING CHAMPION",...S("Junior Welterweight",86,95,90,91,92,94,92,93,88)}
  ],
  ennis:[
   {year:2026,label:"2026 · 154-LB CHAMPION",...S("Junior Middleweight",94,95,93,94,98,95,96,96,89,154),bestPerformance:P("Xander Zayas","TKO 7","latest 154-lb statement: switch-hitting power and finishing confidence translated up to junior middleweight")},

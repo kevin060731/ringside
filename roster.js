@@ -43,7 +43,7 @@ global.EXTRA_FIGHTERS=[
  f("hagler","Marvin Hagler","Marvelous","USA","Southpaw","Middleweight",1985,"1985 · PRIME",{power:94,speed:91,chin:100,defense:92,iq:97,footwork:93,cardio:99,accuracy:94,aggression:96},1),
  f("hearns","Thomas Hearns","The Hitman","USA","Orthodox","Junior Middleweight",1984,"1984 · PRIME",{power:98,speed:96,chin:84,defense:90,iq:94,footwork:94,cardio:91,accuracy:96,aggression:92},2),
  f("leonard","Sugar Ray Leonard","Sugar","USA","Orthodox","Welterweight",1981,"1981 · UNDISPUTED",{power:90,speed:100,chin:94,defense:96,iq:99,footwork:99,cardio:98,accuracy:97,aggression:88},3),
- f("lopez","Teófimo López","The Takeover","USA","Orthodox","Junior Welterweight",2024,"2024 · RING CHAMPION",{power:92,speed:95,chin:90,defense:91,iq:92,footwork:94,cardio:92,accuracy:93,aggression:88},0),
+ f("lopez","Teófimo López","The Takeover","USA","Orthodox","Junior Welterweight",2024,"2024 · RING CHAMPION",{power:87,speed:95,chin:90,defense:91,iq:92,footwork:94,cardio:92,accuracy:93,aggression:88},0),
  f("chavez","Julio César Chávez","J.C. Superstar","MEX","Orthodox","Lightweight",1988,"1988 · RING CHAMPION",{power:94,speed:91,chin:100,defense:91,iq:96,footwork:92,cardio:100,accuracy:95,aggression:99},1),
  f("whitaker","Pernell Whitaker","Sweet Pea","USA","Southpaw","Lightweight",1988,"1988 · #1 CONTENDER",{power:77,speed:99,chin:92,defense:100,iq:99,footwork:100,cardio:97,accuracy:96,aggression:68},2),
  f("davis","Gervonta Davis","Tank","USA","Southpaw","Lightweight",2024,"2024 · #1 CONTENDER",{power:99,speed:95,chin:93,defense:94,iq:95,footwork:94,cardio:91,accuracy:97,aggression:87},3),
