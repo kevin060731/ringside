@@ -79,7 +79,88 @@ async function loadPortrait(f,img){
 const portraitObserver=new IntersectionObserver(entries=>entries.forEach(entry=>{if(!entry.isIntersecting)return;const f=fighters.find(x=>x.id===entry.target.dataset.fighter);if(f)loadPortrait(f,entry.target);portraitObserver.unobserve(entry.target)}),{rootMargin:"180px"});
 const divisionLimits={"Heavyweight":"200+ lb","Cruiserweight":"200 lb","Light Heavyweight":"175 lb","Super Middleweight":"168 lb","Middleweight":"160 lb","Junior Middleweight":"154 lb","Welterweight":"147 lb","Junior Welterweight":"140 lb","Lightweight":"135 lb","Junior Lightweight":"130 lb","Featherweight":"126 lb","Junior Featherweight":"122 lb","Bantamweight":"118 lb","Junior Bantamweight":"115 lb","Flyweight":"112 lb","Junior Flyweight":"108 lb","Strawweight":"105 lb"};
 const divisionWeightsLb={Heavyweight:224,Cruiserweight:200,"Light Heavyweight":175,"Super Middleweight":168,"Middleweight":160,"Junior Middleweight":154,Welterweight:147,"Junior Welterweight":140,Lightweight:135,"Junior Lightweight":130,Featherweight:126,"Junior Featherweight":122,Bantamweight:118,"Junior Bantamweight":115,Flyweight:112,"Junior Flyweight":108,Strawweight:105};
+const currentFormRatingKeys=["power","speed","chin","defense","iq","footwork","cardio","accuracy","aggression"];
+function currentFormLabel(){
+ const date=new Date();
+ return `Current Form · ${date.toLocaleDateString(undefined,{month:"short",year:"numeric"})}`;
+}
+function clampRating(value,min=55,max=100){
+ const number=Number(value);
+ if(!Number.isFinite(number))return 80;
+ return Math.max(min,Math.min(max,Math.round(number)));
+}
+function fixedVersionYears(f){
+ return (f.years||[]).filter(v=>!v.dynamicCurrentForm);
+}
+function isCurrentFormEligible(f){
+ return !!f?.active||currentFighterIds.has(f?.id);
+}
+function recentFormVersions(f){
+ const fixed=fixedVersionYears(f).filter(v=>Number(v.year)||/current|latest|campaign|champion/i.test(v.label||""));
+ const recent=fixed.filter(v=>Number(v.year)>=2023||/current|latest|2026|2025|2024|campaign|champion/i.test(v.label||""));
+ return (recent.length?recent:fixed).slice(0,4);
+}
+function weightedRecentRating(versions,key){
+ const weights=[.58,.24,.12,.06];
+ let total=0,weightTotal=0;
+ versions.forEach((version,index)=>{
+  const value=Number(version[key]);
+  if(!Number.isFinite(value))return;
+  const weight=weights[index]||.04;
+  total+=value*weight;
+  weightTotal+=weight;
+ });
+ return weightTotal?total/weightTotal:null;
+}
+function buildCurrentFormVersion(f){
+ if(!isCurrentFormEligible(f))return null;
+ const versions=recentFormVersions(f);
+ const latest=versions[0]||fixedVersionYears(f)[0];
+ if(!latest)return null;
+ const recentLabels=versions.map(v=>v.label).filter(Boolean);
+ const version={
+  ...latest,
+  dynamicCurrentForm:true,
+  generated:true,
+  synced:false,
+  year:Math.max(Number(latest.year)||new Date().getFullYear(),new Date().getFullYear()),
+  label:currentFormLabel(),
+  division:latest.division||f.division,
+  weight:Number(latest.weight)||divisionWeightsLb[latest.division||f.division]||160,
+  bestPerformance:{
+   opponent:latest.bestPerformance?.opponent||"Recent form layer",
+   result:latest.bestPerformance?.result||"CURRENT",
+   note:`Generated from the latest roster version${recentLabels.length>1?` plus ${recentLabels.length-1} recent reference version${recentLabels.length>2?"s":""}`:""}. Use this when you want ${f.last||f.name} as close to today as the roster currently supports.`
+  },
+  sourceNotes:{
+   ...(latest.sourceNotes||{}),
+   source:"RINGSIDE dynamic current form",
+   dynamic:true,
+   basedOn:recentLabels,
+   simulation:{
+    ...(latest.sourceNotes?.simulation||{}),
+    currentForm:true
+   }
+  }
+ };
+ currentFormRatingKeys.forEach(key=>{
+  const latestValue=Number(latest[key]);
+  const recentAverage=weightedRecentRating(versions,key);
+  const blended=Number.isFinite(latestValue)&&recentAverage!=null?latestValue*.7+recentAverage*.3:latestValue||recentAverage||80;
+  version[key]=clampRating(blended);
+ });
+ return version;
+}
+function applyDynamicCurrentForms(){
+ fighters.forEach(f=>{
+  if(!f?.years?.length)return;
+  f.years=fixedVersionYears(f);
+  const generated=buildCurrentFormVersion(f);
+  if(generated)f.years.unshift(generated);
+ });
+}
 decorateRoster();
+applyDynamicCurrentForms();
 const bioJobs=new Map();
 const boxrecPhysicals={
  tyson:{height_cm:178,reach_cm:180},usyk:{height_cm:191,reach_cm:198},ali:{height_cm:191,reach_cm:198},wilder:{height_cm:201,reach_cm:211},fury:{height_cm:206,reach_cm:216},
@@ -159,6 +240,7 @@ async function syncRosterFromSupabase(){
   if(!rows.length)return;
   const summary=window.RINGSIDE_ROSTER_SYNC.mergeRoster(fighters,result.data);
   decorateRoster();
+  applyDynamicCurrentForms();
   for(const side of ["a","b"]){
    selected[side]=fighters.find(f=>f.id===previous[side].id)||selected[side];
    const sameVersion=selected[side].years.findIndex(v=>(v.label||"")===previous[side].label);
@@ -246,7 +328,14 @@ async function syncUpcomingFightsFromSupabase(force=false,includeCancelled=false
 }
 function active(side){return {...selected[side],...selected[side].years[versions[side]]}}
 function versionProfile(f,v){
- const base=f.years[0]||v,parts=[];
+ if(v.dynamicCurrentForm){
+  const sourceCount=v.sourceNotes?.basedOn?.length||1;
+  return {
+   style:"current-form model",
+   notes:`generated from ${sourceCount} recent roster reference${sourceCount===1?"":"s"} · updates when live roster data changes`
+  };
+ }
+ const base=fixedVersionYears(f)[0]||v,parts=[];
  const compare=(key,up,down)=>{const diff=(v[key]||0)-(base[key]||0);if(diff>=4)parts.push(up);else if(diff<=-4)parts.push(down)};
  compare("power","more punching threat","less one-shot pop");
  compare("speed","faster feet/hands","slower veteran tempo");
@@ -687,6 +776,11 @@ async function saveRosterEdit(){
  if(!authUser()){openAuthDialog("Sign in before editing the roster.");return}
  try{
   rosterStatus("Publishing roster update…");
+  const currentVersion=rosterFighter().years[rosterVersionIndex()]||{};
+  if(currentVersion.dynamicCurrentForm&&$("#edit-version-label").value.trim()===currentVersion.label){
+   rosterStatus("Current Form is generated. Rename it first if you want to save it as a permanent version.","error");
+   return;
+  }
   const payload=rosterPayload();
   await window.RINGSIDE_SUPABASE.upsertFighter(payload.fighter);
   await window.RINGSIDE_SUPABASE.replaceFighterVersion(payload.version);
@@ -703,6 +797,7 @@ async function deleteRosterVersion(){
  if(!authUser()){openAuthDialog("Sign in before editing the roster.");return}
  const f=rosterFighter(),v=f.years[rosterVersionIndex()]||{};
  if(!v.label){rosterStatus("Pick a version before deleting.","error");return}
+ if(v.dynamicCurrentForm){rosterStatus("Current Form is generated automatically, so there is no live row to delete.","error");return}
  const ok=confirm(`Delete ${f.name} — ${v.label} from the live roster? This only removes the synced version row.`);
  if(!ok)return;
  try{

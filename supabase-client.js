@@ -237,7 +237,7 @@ async function seedRoster(localFighters=[]){
   active:!!f.active,
   model_data:{nickname:f.nickname||"",wiki:f.wiki||f.name,updated:new Date().toISOString().slice(0,10)}
  }));
- const versionRows=localFighters.flatMap(f=>(f.years||[]).map((v,index)=>({
+ const versionRows=localFighters.flatMap(f=>(f.years||[]).filter(v=>!v.dynamicCurrentForm&&!v.generated).map((v,index)=>({
   fighter_id:f.id,
   label:v.label||`${v.year||"Current"} · VERSION`,
   year:Number(v.year)||null,
