@@ -84,13 +84,18 @@ function currentFormLabel(){
  const date=new Date();
  return `Current Form · ${date.toLocaleDateString(undefined,{month:"short",year:"numeric"})}`;
 }
+function formMonthLabel(prefix,dateValue){
+ const date=dateValue?new Date(`${dateValue}T00:00:00`):new Date();
+ const safe=Number.isNaN(date.getTime())?new Date():date;
+ return `${prefix} · ${safe.toLocaleDateString(undefined,{month:"short",year:"numeric"})}`;
+}
 function clampRating(value,min=55,max=100){
  const number=Number(value);
  if(!Number.isFinite(number))return 80;
  return Math.max(min,Math.min(max,Math.round(number)));
 }
 function fixedVersionYears(f){
- return (f.years||[]).filter(v=>!v.dynamicCurrentForm);
+ return (f.years||[]).filter(v=>!v.dynamicCurrentForm&&!v.dynamicFightWeekForm);
 }
 function isCurrentFormEligible(f){
  return !!f?.active||currentFighterIds.has(f?.id);
@@ -154,8 +159,66 @@ function buildCurrentFormVersion(f){
 function applyDynamicCurrentForms(){
  fighters.forEach(f=>{
   if(!f?.years?.length)return;
-  f.years=fixedVersionYears(f);
+  f.years=(f.years||[]).filter(v=>!v.dynamicCurrentForm);
   const generated=buildCurrentFormVersion(f);
+  if(generated)f.years.unshift(generated);
+ });
+}
+function clearFightWeekForms(){
+ fighters.forEach(f=>{if(f?.years?.length)f.years=f.years.filter(v=>!v.dynamicFightWeekForm)});
+}
+function baseVersionIndexForCard(f,card,side){
+ const label=card[`${side}VersionLabel`];
+ if(label){
+  const exact=f.years.findIndex(v=>!v.dynamicFightWeekForm&&(v.label||"")===label);
+  if(exact>=0)return exact;
+ }
+ const division=card.division;
+ const currentSameDivision=f.years.findIndex(v=>v.dynamicCurrentForm&&(v.division||f.division)===division);
+ if(currentSameDivision>=0)return currentSameDivision;
+ const sameDivision=f.years.findIndex(v=>!v.dynamicFightWeekForm&&(v.division||f.division)===division);
+ return sameDivision>=0?sameDivision:0;
+}
+function buildFightWeekFormVersion(f,card,side){
+ const base=f.years[baseVersionIndexForCard(f,card,side)]||f.years[0];
+ if(!base)return null;
+ const label=formMonthLabel("Fight Week Form",card.fightDate);
+ return {
+  ...base,
+  dynamicFightWeekForm:true,
+  generated:true,
+  synced:false,
+  cardId:card.id,
+  label,
+  year:Number(card.fightDate?.slice(0,4))||base.year||new Date().getFullYear(),
+  division:card.division||base.division||f.division,
+  weight:Number(base.weight)||divisionWeightsLb[base.division||card.division||f.division]||160,
+  bestPerformance:{
+   opponent:base.bestPerformance?.opponent||"Recent card form",
+   result:base.bestPerformance?.result||"CURRENT",
+   note:`Card-specific form for ${card.redName||card.red} vs ${card.blueName||card.blue}. Built from ${base.label||"the latest version"} plus the ${card.broadcast||card.promoter||"upcoming-card"} schedule context.`
+  },
+  sourceNotes:{
+   ...(base.sourceNotes||{}),
+   source:"RINGSIDE fight week form",
+   dynamic:true,
+   cardId:card.id,
+   fightDate:card.fightDate||null,
+   broadcast:card.broadcast||card.promoter||"",
+   simulation:{
+    ...(base.sourceNotes?.simulation||{}),
+    fightWeekForm:true
+   }
+  }
+ };
+}
+function applyFightWeekFormsForCard(card){
+ clearFightWeekForms();
+ const sides={a:["red","a"],b:["blue","b"]};
+ Object.entries(sides).forEach(([side,[cardSide]])=>{
+  const f=selected[side];
+  if(!f?.years?.length)return;
+  const generated=buildFightWeekFormVersion(f,card,cardSide);
   if(generated)f.years.unshift(generated);
  });
 }
@@ -303,6 +366,8 @@ function normalizeUpcomingFight(row={}){
   boutOrder:Number(row.boutOrder??row.bout_order??1),
   red:row.red||row.red_fighter_id||"",
   blue:row.blue||row.blue_fighter_id||"",
+  redVersionLabel:row.redVersionLabel||row.red_version_label||row.market?.redVersionLabel||"",
+  blueVersionLabel:row.blueVersionLabel||row.blue_version_label||row.market?.blueVersionLabel||"",
   redName:row.redName||row.red_name||row.red_fighter_id||"Red corner",
   blueName:row.blueName||row.blue_name||row.blue_fighter_id||"Blue corner",
   division:row.division||"Welterweight",
@@ -343,6 +408,12 @@ async function syncUpcomingFightsFromSupabase(force=false,includeCancelled=false
 }
 function active(side){return {...selected[side],...selected[side].years[versions[side]]}}
 function versionProfile(f,v){
+ if(v.dynamicFightWeekForm){
+  return {
+   style:"fight-week form",
+   notes:`card-specific layer for ${v.sourceNotes?.broadcast||"the selected card"} · generated from the latest matching roster version`
+  };
+ }
  if(v.dynamicCurrentForm){
   const sourceCount=v.sourceNotes?.basedOn?.length||1;
   return {
@@ -523,6 +594,7 @@ function setView(view="home"){
 function setDemoMatchup(redId,blueId){
  const red=fighters.find(f=>f.id===redId),blue=fighters.find(f=>f.id===blueId);
  if(!red||!blue)return;
+ clearFightWeekForms();
  selected.a=red;selected.b=blue;versions.a=0;versions.b=0;
  renderFighter("a");renderFighter("b");renderResearchDesk();renderPublicStatus();
  setView("home");
@@ -544,14 +616,9 @@ function setRoundCount(rounds=12){
  document.querySelectorAll("[data-rounds]").forEach(button=>button.classList.toggle("active",Number(button.dataset.rounds)===scheduled));
 }
 function versionIndexForCard(f,card,side){
- const label=card[`${side}VersionLabel`];
- if(label){
-  const exact=f.years.findIndex(v=>(v.label||"")===label);
-  if(exact>=0)return exact;
- }
- const division=card.division;
- const sameDivision=f.years.findIndex(v=>(v.division||f.division)===division);
- return sameDivision>=0?sameDivision:0;
+ const fightWeek=f.years.findIndex(v=>v.dynamicFightWeekForm&&v.cardId===card.id);
+ if(fightWeek>=0)return fightWeek;
+ return baseVersionIndexForCard(f,card,side);
 }
 function loadFightCard(cardId){
  const card=upcomingFightList().find(row=>row.id===cardId);
@@ -559,8 +626,9 @@ function loadFightCard(cardId){
  const red=fighters.find(f=>f.id===card.red),blue=fighters.find(f=>f.id===card.blue);
  if(!red||!blue)return;
  selected.a=red;selected.b=blue;
- versions.a=versionIndexForCard(red,card,"red");
- versions.b=versionIndexForCard(blue,card,"blue");
+ applyFightWeekFormsForCard(card);
+ versions.a=versionIndexForCard(selected.a,card,"red");
+ versions.b=versionIndexForCard(selected.b,card,"blue");
  setRoundCount(card.scheduledRounds);
  setSelectOptionValue("#weight",card.division);
  setSelectOptionValue("#venue",card.venue);
@@ -1171,6 +1239,7 @@ function renderFightCards(){
     <h3>${red?.last||card.redName} <em>vs</em> ${blue?.last||card.blueName}</h3>
     <p>${card.division||"Division TBA"} · ${roundsText} · ${venueText}</p>
     <div class="fight-card-meta">
+     <span>${formMonthLabel("Fight Week Form",card.fightDate)}</span>
      <span>${preview.label}</span>
      <span>${card.market?.label||"Simulation lean"}</span>
      ${sourceChip}
@@ -1561,7 +1630,19 @@ function showResults(){
 document.querySelectorAll("[data-picker]").forEach(b=>b.onclick=()=>openPicker(b.dataset.picker));
 document.querySelectorAll("[data-rounds]").forEach(b=>b.onclick=()=>{scheduled=+b.dataset.rounds;document.querySelectorAll("[data-rounds]").forEach(x=>x.classList.toggle("active",x===b));renderResearchDesk()});
 for(const s of ["a","b"])$(`#year-${s}`).onchange=e=>{versions[s]=+e.target.value;renderFighter(s);renderResearchDesk()};
-$("#fighter-grid").onclick=e=>{const btn=e.target.closest("[data-id]");if(!btn)return;selected[pickerSide]=fighters.find(f=>f.id===btn.dataset.id);versions[pickerSide]=0;renderFighter(pickerSide);renderResearchDesk();$("#picker").close()};
+$("#fighter-grid").onclick=e=>{
+ const btn=e.target.closest("[data-id]");
+ if(!btn)return;
+ const other=pickerSide==="a"?"b":"a";
+ clearFightWeekForms();
+ selected[pickerSide]=fighters.find(f=>f.id===btn.dataset.id);
+ versions[pickerSide]=0;
+ versions[other]=Math.min(versions[other],selected[other].years.length-1);
+ renderFighter(pickerSide);
+ renderFighter(other);
+ renderResearchDesk();
+ $("#picker").close();
+};
 $("#division-filters").onclick=e=>{const btn=e.target.closest("[data-division]");if(!btn)return;archiveDivision=btn.dataset.division;renderArchive($("#fighter-search").value)};
 $("#fighter-search").oninput=e=>renderArchive(e.target.value);$("#close-picker").onclick=()=>$("#picker").close();$("#simulate").onclick=setupFight;
 $("#quick-start").onclick=e=>{
