@@ -558,12 +558,18 @@ function renderPublicStatus(){
  const a=active("a"),b=active("b");
  const known=window.BOXING_FIGHT_HISTORY?.find?.(a,b);
  status?.classList.toggle("verified-match",!!known);
- status?.classList.toggle("hypothetical-match",!known);
+ status?.classList.toggle("fight-week-match",!!activeFightCard&&!known);
+ status?.classList.toggle("hypothetical-match",!known&&!activeFightCard);
  if(known){
   const winner=known.winner?fighters.find(f=>f.id===known.winner)?.last||known.winner:"Draw";
   modeLabel.textContent="VERIFIED MATCHUP";
   modeTitle.textContent="Verified replay loaded";
   modeCopy.textContent=`${a.last} vs ${b.last} · ${winner} · ${known.method}${known.date?` · ${known.date}`:""}`;
+ }else if(activeFightCard){
+  const dateText=longDate(activeFightCard.fightDate);
+  modeLabel.textContent="FIGHT CARD MATCHUP";
+  modeTitle.textContent="Fight Week Form active";
+  modeCopy.textContent=`${a.last} vs ${b.last} · ${dateText} · ${activeFightCard.broadcast||activeFightCard.promoter||"upcoming card"} context loaded.`;
  }else{
   const mismatch=researchDesk?.mismatch;
   const mismatchText=mismatch?.type&&!["competitive","lean"].includes(mismatch.type)?` Mismatch watch: ${mismatch.type.replace("-"," ")}.`:"";

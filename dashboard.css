@@ -158,6 +158,8 @@ dialog{border-radius:20px}
 .status-card span{color:#9fa8ba;font:700 11px/1.5 Inter}
 .public-status.verified-match .status-card.primary{border-color:rgba(214,173,100,.52);box-shadow:0 0 0 1px rgba(214,173,100,.08) inset,0 18px 40px rgba(0,0,0,.16)}
 .public-status.verified-match .status-card.primary small,.public-status.verified-match .status-card.primary b{color:#f0c46f}
+.public-status.fight-week-match .status-card.primary{border-color:rgba(92,244,170,.44)}
+.public-status.fight-week-match .status-card.primary small,.public-status.fight-week-match .status-card.primary b{color:#62f0a8}
 .public-status.hypothetical-match .status-card.primary{border-color:rgba(85,168,255,.42)}
 .result-mode-pill{display:inline-flex;align-items:center;justify-content:center;margin:8px auto 0;padding:8px 12px;border:1px solid #3a4359;border-radius:999px;background:#151a27;color:#b9c3d6;font:900 9px "DM Mono";letter-spacing:1.3px;text-transform:uppercase}
 .result-mode-pill.verified{border-color:rgba(214,173,100,.55);color:#f0c46f;background:rgba(214,173,100,.08)}
@@ -189,6 +191,8 @@ dialog{border-radius:20px}
 .status-metrics small{color:#8791a5;font:900 8px "DM Mono";letter-spacing:.9px;text-transform:uppercase}
 .public-status.verified-match>.status-card.primary{border-color:rgba(214,173,100,.42)}
 .public-status.verified-match>.status-card.primary small,.public-status.verified-match>.status-card.primary b{color:#f0c46f}
+.public-status.fight-week-match>.status-card.primary{border-color:rgba(92,244,170,.4)}
+.public-status.fight-week-match>.status-card.primary small,.public-status.fight-week-match>.status-card.primary b{color:#62f0a8}
 .public-status.hypothetical-match>.status-card.primary{border-color:rgba(85,168,255,.34)}
 
 .desk-compact{min-height:78px;padding:16px 18px;grid-template-columns:190px minmax(0,1fr) 148px;background:linear-gradient(90deg,rgba(32,38,56,.86),rgba(18,24,36,.86))}
