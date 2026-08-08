@@ -30,7 +30,7 @@ function decorateRoster(){
  fighters.forEach(f=>{f.compubox=window.COMPUBOX_DATA?.profileFor(f)||f.compubox||null});
  fighters.forEach(f=>f.years.forEach(v=>{if(!v.weight)v.weight=divisionWeightsLb[v.division||f.division]||160}));
 }
-let selected={a:fighters[0],b:fighters[1]},versions={a:0,b:0},pickerSide="a",scheduled=12,fight=null,current=0,archiveDivision="All",researchDesk=null,lastSavedFight=null,replayingSavedFight=false,savedFightRows=[],rosterAdmin=false,verifiedFightRows=[],verifiedFightSyncPromise=null,upcomingFightRows=[...(window.RINGSIDE_UPCOMING_FIGHTS||[])],upcomingFightSyncPromise=null;
+let selected={a:fighters[0],b:fighters[1]},versions={a:0,b:0},pickerSide="a",scheduled=12,fight=null,current=0,archiveDivision="All",researchDesk=null,lastSavedFight=null,replayingSavedFight=false,savedFightRows=[],rosterAdmin=false,verifiedFightRows=[],verifiedFightSyncPromise=null,upcomingFightRows=[...(window.RINGSIDE_UPCOMING_FIGHTS||[])],upcomingFightSyncPromise=null,activeFightCard=null;
 const $=s=>document.querySelector(s);
 function setImage(img,src,alt=""){
  if(!img)return;
@@ -166,6 +166,7 @@ function applyDynamicCurrentForms(){
 }
 function clearFightWeekForms(){
  fighters.forEach(f=>{if(f?.years?.length)f.years=f.years.filter(v=>!v.dynamicFightWeekForm)});
+ activeFightCard=null;
 }
 function baseVersionIndexForCard(f,card,side){
  const label=card[`${side}VersionLabel`];
@@ -214,6 +215,7 @@ function buildFightWeekFormVersion(f,card,side){
 }
 function applyFightWeekFormsForCard(card){
  clearFightWeekForms();
+ activeFightCard=card||null;
  const sides={a:["red","a"],b:["blue","b"]};
  Object.entries(sides).forEach(([side,[cardSide]])=>{
   const f=selected[side];
@@ -321,8 +323,9 @@ async function syncRosterFromSupabase(){
   applyDynamicCurrentForms();
   for(const side of ["a","b"]){
    selected[side]=fighters.find(f=>f.id===previous[side].id)||selected[side];
+   ensureSelectedSide(side);
    const sameVersion=selected[side].years.findIndex(v=>(v.label||"")===previous[side].label);
-   versions[side]=sameVersion>=0?sameVersion:Math.min(versions[side],selected[side].years.length-1);
+   versions[side]=sameVersion>=0?sameVersion:Math.max(0,Math.min(versions[side],selected[side].years.length-1));
   }
   renderFighter("a");renderFighter("b");renderArchive($("#fighter-search")?.value||"");
   if(!$("#roster-manager")?.classList.contains("hidden"))renderRosterManager();
@@ -406,7 +409,39 @@ async function syncUpcomingFightsFromSupabase(force=false,includeCancelled=false
  })();
  return upcomingFightSyncPromise;
 }
-function active(side){return {...selected[side],...selected[side].years[versions[side]]}}
+function fallbackVersionFor(f={}){
+ const division=f.division||f.primary_division||"Welterweight";
+ return {
+  year:new Date().getFullYear(),
+  label:"Current Form",
+  division,
+  weight:divisionWeightsLb[division]||147,
+  stance:f.stance||"Orthodox",
+  power:80,
+  speed:80,
+  chin:80,
+  defense:80,
+  iq:80,
+  footwork:80,
+  cardio:80,
+  accuracy:80,
+  aggression:80
+ };
+}
+function fallbackFighter(side){
+ const other=side==="a"?selected.b:selected.a;
+ return fighters.find(f=>f&&f.id!==other?.id&&Array.isArray(f.years)&&f.years.length)||fighters.find(f=>f&&Array.isArray(f.years)&&f.years.length)||fighters[0];
+}
+function ensureSelectedSide(side){
+ if(!selected[side]||!fighters.some(f=>f.id===selected[side]?.id))selected[side]=fallbackFighter(side);
+ if(!Array.isArray(selected[side].years)||!selected[side].years.length)selected[side].years=[fallbackVersionFor(selected[side])];
+ versions[side]=Math.max(0,Math.min(Number(versions[side])||0,selected[side].years.length-1));
+ return selected[side];
+}
+function active(side){
+ const f=ensureSelectedSide(side);
+ return {...f,...(f.years[versions[side]]||f.years[0]||fallbackVersionFor(f))};
+}
 function versionProfile(f,v){
  if(v.dynamicFightWeekForm){
   return {
@@ -432,7 +467,7 @@ function versionProfile(f,v){
  return {style,notes:parts.slice(0,3).join(" · ")||"balanced version ratings"};
 }
 function renderFighter(side){
- const f=selected[side],v=active(side);
+ const f=ensureSelectedSide(side),v=active(side);
  setImage($(`#portrait-${side}`),f.portrait||f.img,f.name);$(`#name-${side}`).textContent=f.name;
  $(`#meta-${side}`).textContent=`${f.country} · ${v.stance||f.stance} · ${v.division||f.division}`;
  $(`#year-${side}`).innerHTML=f.years.map((y,i)=>`<option value="${i}" ${i===versions[side]?"selected":""}>${y.label}</option>`).join("");
@@ -649,8 +684,12 @@ function userLabel(user){
 }
 function renderAuthState(){
  const user=authUser(),button=$("#auth-button"),copy=$("#my-fights-copy"),card=document.querySelector(".auth-card"),message=$("#auth-message"),chip=$("#auth-profile-chip"),emailPanel=document.querySelector(".email-auth-panel");
- if(button)button.textContent=user?userLabel(user):"SIGN IN";
- if(button)button.setAttribute("aria-label",user?`Profile for ${user.email}`:"Sign in to RINGSIDE");
+ if(button){
+  button.textContent=user?userLabel(user):"SIGN IN";
+  button.dataset.authState=user?"signed-in":"signed-out";
+  button.classList.toggle("signed-in",!!user);
+  button.setAttribute("aria-label",user?`Profile for ${user.email}`:"Sign in to RINGSIDE");
+ }
  if(copy)copy.textContent=user?`Signed in as ${user.email}. These saved fights belong to your profile.`:"Sign in to keep your saved replays private. Share links still work for anyone with the link.";
  card?.classList.toggle("signed-in",!!user);
  document.body.classList.toggle("signed-in",!!user);
@@ -660,6 +699,23 @@ function renderAuthState(){
  }
  if(user)emailPanel?.removeAttribute("open");
  if(message)message.textContent=user?`Signed in as ${user.email}. Your fight vault is now private to this profile.`:"Continue with GitHub to save fights privately. Fastest option for this preview.";
+}
+async function initializeAuthState(){
+ renderAuthState();
+ try{
+  const session=await window.RINGSIDE_SUPABASE?.completeOAuthFromUrl?.();
+  if(session){
+   refreshAfterAuth();
+   $("#auth-dialog")?.close?.();
+   return;
+  }
+  if(window.RINGSIDE_SUPABASE?.getSession?.()){
+   await window.RINGSIDE_SUPABASE.refreshSession?.().catch(()=>null);
+   renderAuthState();
+  }
+ }catch(error){
+  openAuthDialog(error.message||"GitHub sign-in could not be completed. Try again.");
+ }
 }
 function signedOutVaultHtml(reason="Sign in to view your private fight vault."){
  return `<div class="vault-empty auth-required-card"><small>PRIVATE VAULT</small><b>Sign in to see My Fights</b><span>${reason} GitHub is the fastest path; email is only a backup.</span><button class="inline-auth" data-open-auth>Continue with GitHub</button></div>`;
@@ -893,8 +949,8 @@ async function deleteRosterVersion(){
   rosterStatus(`Deleting ${v.label}…`);
   await window.RINGSIDE_SUPABASE.deleteFighterVersion({fighter_id:f.id,label:v.label});
   f.years=(f.years||[]).filter(version=>!(version.synced&&(version.label||"")===v.label));
-  versions.a=Math.min(versions.a,selected.a.years.length-1);
-  versions.b=Math.min(versions.b,selected.b.years.length-1);
+  ensureSelectedSide("a");
+  ensureSelectedSide("b");
   await syncRosterFromSupabase();
   renderRosterPickers();$("#roster-fighter").value=f.id;fillRosterForm();
   renderLiveDataWorkflow();
@@ -1252,9 +1308,9 @@ function renderFightCards(){
     </div>
    </div>
    <div class="fight-card-action">
-    <small>${preview.ready?"Engine lean":"Roster gap"}</small>
+    <small>${preview.ready?"Fight Week Form":"Roster gap"}</small>
     <b>${preview.lean}</b>
-    <button ${ready?`data-load-card="${card.id}"`:"disabled"}>${ready?"SIMULATE":"ADD FIGHTERS"}</button>
+    <button ${ready?`data-load-card="${card.id}"`:"disabled"}>${ready?"LOAD INTO LAB":"ADD FIGHTERS"}</button>
    </div>
   </article>`;
  }).join("");
@@ -1641,9 +1697,10 @@ $("#fighter-grid").onclick=e=>{
  if(!btn)return;
  const other=pickerSide==="a"?"b":"a";
  clearFightWeekForms();
- selected[pickerSide]=fighters.find(f=>f.id===btn.dataset.id);
+ selected[pickerSide]=fighters.find(f=>f.id===btn.dataset.id)||fallbackFighter(pickerSide);
  versions[pickerSide]=0;
- versions[other]=Math.min(versions[other],selected[other].years.length-1);
+ ensureSelectedSide(other);
+ versions[other]=Math.max(0,Math.min(versions[other],selected[other].years.length-1));
  renderFighter(pickerSide);
  renderFighter(other);
  renderResearchDesk();
@@ -1758,14 +1815,7 @@ $("#weight").onchange=renderResearchDesk;
 renderFighter("a");renderFighter("b");renderArchive();
 try{if(localStorage.getItem("ringsideQuickStartHidden")==="1")$("#quick-start")?.classList.add("hidden")}catch{}
 renderFightCards();
-renderAuthState();
-window.RINGSIDE_SUPABASE?.completeOAuthFromUrl?.().then(session=>{
- if(!session)return;
- refreshAfterAuth();
- $("#auth-dialog")?.close?.();
-}).catch(error=>{
- openAuthDialog(error.message||"GitHub sign-in could not be completed. Try again.");
-});
+initializeAuthState();
 syncRosterFromSupabase();
 syncVerifiedFightsFromSupabase();
 syncUpcomingFightsFromSupabase();
