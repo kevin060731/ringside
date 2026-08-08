@@ -3,7 +3,7 @@ vm.runInThisContext(fs.readFileSync("fight-history.js","utf8"));
 vm.runInThisContext(fs.readFileSync("rummy-corner-data.js","utf8"));
 vm.runInThisContext(fs.readFileSync("research-desk.js","utf8"));
 
-const shakur={id:"stevenson",year:2026,label:"CURRENT · JUL 2026",name:"Shakur Stevenson",last:"Stevenson",stance:"Southpaw",division:"Lightweight",power:82,speed:97,chin:89,defense:100,iq:98,footwork:98,cardio:95,accuracy:96,aggression:74,gems:{videoCount:17,tags:["Defensive Layers"],sources:[]}};
+const shakur={id:"stevenson",year:2026,label:"CURRENT · JUL 2026",name:"Shakur Stevenson",last:"Stevenson",stance:"Southpaw",division:"Junior Welterweight",weight:140,power:82,speed:97,chin:89,defense:100,iq:98,footwork:98,cardio:95,accuracy:96,aggression:74,gems:{videoCount:17,tags:["Defensive Layers"],sources:[]}};
 const teofimo={id:"lopez",year:2026,label:"CURRENT · JUL 2026",name:"Teófimo López",last:"López",stance:"Orthodox",division:"Junior Welterweight",power:92,speed:91,chin:90,defense:86,iq:89,footwork:88,cardio:91,accuracy:88,aggression:88,gems:{videoCount:6,tags:["Counterpunching"],sources:[]}};
 const crawford={id:"crawford",year:2023,label:"2023 · UNDISPUTED",name:"Terence Crawford",last:"Crawford",stance:"Switch",division:"Welterweight",power:91,speed:94,chin:91,defense:95,iq:99,footwork:95,cardio:96,accuracy:97,aggression:89};
 const ward={id:"ward",year:2011,label:"2011 · SUPER SIX",name:"Andre Ward",last:"Ward",stance:"Orthodox",division:"Super Middleweight",power:84,speed:91,chin:92,defense:98,iq:99,footwork:96,cardio:96,accuracy:95,aggression:78};

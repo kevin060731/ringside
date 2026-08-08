@@ -18,7 +18,7 @@ test("fighter-specific style identities replace generic archetype language",()=>
  assert.equal(fight.rounds[0].report.join(" ").includes("a varied jab and power combinations"),false);
 });
 test("completed fights replay the official result and statistics",()=>{
- const shakur={...a,id:"stevenson",last:"Stevenson"},teofimo={...b,id:"lopez",last:"López"};
+ const shakur={...a,id:"stevenson",last:"Stevenson",year:2026,division:"Junior Welterweight",weight:140},teofimo={...b,id:"lopez",last:"López",year:2026,division:"Junior Welterweight",weight:140};
  const fight=BoxingEngine.buildFight(shakur,teofimo,{rounds:10,ring:20});
  assert.equal(fight.historical,true);
  assert.equal(fight.rounds.length,12);
@@ -111,7 +111,7 @@ test("every simulated round includes paragraph-length film study",()=>{
  }
 });
 test("historical film study uses a distinct lens and adjustment every round",()=>{
- const shakur={...a,id:"stevenson",last:"Stevenson"},teofimo={...b,id:"lopez",last:"López"};
+ const shakur={...a,id:"stevenson",last:"Stevenson",year:2026,division:"Junior Welterweight",weight:140},teofimo={...b,id:"lopez",last:"López",year:2026,division:"Junior Welterweight",weight:140};
  const fight=BoxingEngine.buildFight(shakur,teofimo,{rounds:12,ring:20});
  assert.equal(new Set(fight.rounds.map(r=>r.report[1])).size,12);
  assert.equal(new Set(fight.rounds.map(r=>r.report[2])).size,12);
@@ -120,7 +120,7 @@ test("historical film study uses a distinct lens and adjustment every round",()=
  assert.match(fight.rounds[11].report[1],/risk ledger/);
 });
 test("Haney-Lomachenko separates the official cards from fan consensus",()=>{
- const haney={...a,id:"haney",last:"Haney"},loma={...b,id:"lomachenko",last:"Lomachenko"};
+ const haney={...a,id:"haney",last:"Haney",year:2023,division:"Lightweight",weight:135},loma={...b,id:"lomachenko",last:"Lomachenko",year:2023,division:"Lightweight",weight:135};
  const fight=BoxingEngine.buildFight(haney,loma,{rounds:12,ring:20});
  assert.equal(fight.winner,"a");
  assert.deepEqual(fight.judges,[
@@ -131,6 +131,14 @@ test("Haney-Lomachenko separates the official cards from fan consensus",()=>{
  assert.deepEqual([fight.totals.kdA,fight.totals.kdB],[0,0]);
  assert.equal(fight.event.fanConsensus.label,"HIGHLY DISPUTED DECISION");
  assert.ok(fight.event.fanConsensus.sources.every(source=>source.url.includes("reddit.com/r/Boxing")));
+});
+test("version-mismatched prior fights stay hypothetical instead of replaying the archive",()=>{
+ const undisputedHaney={...a,id:"haney",last:"Haney",year:2026,label:"2026 · 147-LB WBO CHAMPION",division:"Welterweight",weight:147};
+ const matrixLoma={...b,id:"lomachenko",last:"Lomachenko",year:2018,label:"2018 · LIGHTWEIGHT MATRIX",division:"Lightweight",weight:135};
+ assert.equal(BOXING_FIGHT_HISTORY.find(undisputedHaney,matrixLoma),null);
+ const fight=BoxingEngine.buildFight(undisputedHaney,matrixLoma,{rounds:12,ring:20,weight:"Welterweight"});
+ assert.notEqual(fight.historical,true);
+ assert.notEqual(fight.event?.id,"haney-lomachenko-2023");
 });
 test("every curated historical replay includes sourced fan consensus",()=>{
  const curated=BOXING_FIGHT_HISTORY.fights.filter(f=>["stevenson-lopez-2026","stevenson-zepeda-2025","haney-lomachenko-2023","whitaker-delahoya-1997","mayweather-pacquiao-2015"].includes(f.id));
@@ -143,7 +151,7 @@ test("every curated historical replay includes sourced fan consensus",()=>{
  }
 });
 test("Mayweather-Pacquiao has official cards and historical fan context",()=>{
- const floyd={...a,id:"mayweather",last:"Mayweather"},manny={...b,id:"pacquiao",last:"Pacquiao"};
+ const floyd={...a,id:"mayweather",last:"Mayweather",year:2015,division:"Welterweight",weight:147},manny={...b,id:"pacquiao",last:"Pacquiao",year:2015,division:"Welterweight",weight:147};
  const fight=BoxingEngine.buildFight(floyd,manny,{rounds:12,ring:20});
  assert.equal(fight.winner,"a");
  assert.deepEqual(fight.judges,[

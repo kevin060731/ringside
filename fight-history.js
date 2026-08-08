@@ -156,14 +156,87 @@ const fights=[{
   ]
 }];
 
-function find(a,b){
-  return fights.filter(f=>(f.red===a.id&&f.blue===b.id)||(f.red===b.id&&f.blue===a.id))
-    .sort((x,y)=>y.date.localeCompare(x.date))[0]||null;
-}
-
 const requests=new Map();
 const clean=s=>(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase()
   .replace(/\b(jr|sr|ii|iii|the)\b/g,"").replace(/[^a-z0-9]/g,"");
+const norm=s=>(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z]/g,"");
+const divisionLimits={
+  "Strawweight":105,"Minimumweight":105,"Junior Flyweight":108,"Light Flyweight":108,"Flyweight":112,
+  "Junior Bantamweight":115,"Super Flyweight":115,"Bantamweight":118,"Junior Featherweight":122,"Super Bantamweight":122,
+  "Featherweight":126,"Junior Lightweight":130,"Super Featherweight":130,"Lightweight":135,
+  "Junior Welterweight":140,"Super Lightweight":140,"Welterweight":147,"Junior Middleweight":154,"Super Welterweight":154,
+  "Middleweight":160,"Super Middleweight":168,"Light Heavyweight":175,"Cruiserweight":200,"Heavyweight":260,
+  "Open Weight":260
+};
+function fightYear(record={}){
+  const year=Number(String(record.date||"").match(/\b(18|19|20)\d{2}\b/)?.[0]);
+  return Number.isFinite(year)&&year>=1800?year:null;
+}
+function versionYear(f={}){
+  const raw=Number(f.versionYear||f.year||String(f.label||"").match(/\b(19|20)\d{2}\b/)?.[0]);
+  return Number.isFinite(raw)&&raw>=1900?raw:null;
+}
+function divisionLimit(division=""){
+  const key=Object.keys(divisionLimits).find(k=>norm(k)===norm(division));
+  return key?divisionLimits[key]:null;
+}
+function selectedWeight(f={}){
+  const raw=Number(f.weight_lbs||f.weight||f.weightLimit);
+  if(Number.isFinite(raw)&&raw>0)return raw;
+  return divisionLimit(f.division||f.primary_division);
+}
+function eraCompatible(f={},record={}){
+  const selected=versionYear(f),real=fightYear(record);
+  if(!selected||!real)return true;
+  const tolerance=real>=2000?2:3;
+  return Math.abs(selected-real)<=tolerance;
+}
+function divisionCompatible(f={},record={}){
+  if(!record.division||!f.division)return true;
+  if(norm(record.division)===norm(f.division))return true;
+  const limit=divisionLimit(record.division),weight=selectedWeight(f);
+  if(limit&&weight)return Math.abs(weight-limit)<=6;
+  return false;
+}
+function recordSideVersion(record={},side="red"){
+  const year=Number(record[`${side}VersionYear`]);
+  const weight=Number(record[`${side}Weight`]);
+  return {
+    year:Number.isFinite(year)&&year>0?year:null,
+    label:record[`${side}VersionLabel`]||"",
+    division:record.division,
+    weight:Number.isFinite(weight)&&weight>0?weight:null
+  };
+}
+function sideEraCompatible(f={},record={},side="red"){
+  const sideVersion=recordSideVersion(record,side);
+  if(!sideVersion.year)return eraCompatible(f,record);
+  const selected=versionYear(f);
+  if(!selected)return true;
+  return Math.abs(selected-sideVersion.year)<=1;
+}
+function sideDivisionCompatible(f={},record={},side="red"){
+  const sideVersion=recordSideVersion(record,side);
+  if(sideVersion.weight){
+    const weight=selectedWeight(f);
+    if(weight)return Math.abs(weight-sideVersion.weight)<=5;
+  }
+  return divisionCompatible(f,record);
+}
+function versionCompatible(f={},record={},side="red"){
+  return sideEraCompatible(f,record,side)&&sideDivisionCompatible(f,record,side);
+}
+function matchesVersionedRecord(record,a,b){
+  const sameOrder=record.red===a.id&&record.blue===b.id;
+  const reversed=record.red===b.id&&record.blue===a.id;
+  if(!sameOrder&&!reversed)return false;
+  if(sameOrder)return versionCompatible(a,record,"red")&&versionCompatible(b,record,"blue");
+  return versionCompatible(a,record,"blue")&&versionCompatible(b,record,"red");
+}
+function find(a,b){
+  return fights.filter(f=>matchesVersionedRecord(f,a,b))
+    .sort((x,y)=>y.date.localeCompare(x.date))[0]||null;
+}
 const wikiAliases={"Saúl Álvarez":"Canelo Álvarez","Gennadiy Golovkin":"Gennady Golovkin","Floyd Mayweather":"Floyd Mayweather Jr.","Jesse Rodriguez":"Jesse Rodríguez (boxer)","Julio César Chávez":"Julio César Chávez"};
 function pageName(f){return f.wiki||wikiAliases[f.name]||f.name}
 function dataQuality(record={}){
@@ -189,6 +262,12 @@ function normalizeRemoteFight(row={}){
     date:row.fight_date||row.date||"",
     venue:row.venue||"",
     division:row.division||"",
+    redVersionLabel:row.red_version_label||row.redVersionLabel||"",
+    blueVersionLabel:row.blue_version_label||row.blueVersionLabel||"",
+    redVersionYear:Number(row.red_version_year||row.redVersionYear)||null,
+    blueVersionYear:Number(row.blue_version_year||row.blueVersionYear)||null,
+    redWeight:Number(row.red_weight_lbs||row.redWeight)||null,
+    blueWeight:Number(row.blue_weight_lbs||row.blueWeight)||null,
     rounds:Number(row.scheduled_rounds||row.rounds||12),
     endedRound:Number(row.ended_round||row.endedRound||row.scheduled_rounds||row.rounds||12),
     red:row.red_fighter_id,
